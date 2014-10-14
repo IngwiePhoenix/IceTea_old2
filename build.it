@@ -1,5 +1,6 @@
 target("IceTea", "exe") {
     input: ["./*.cpp"],
+    "C++": { foo: "bar" },
     init: function() {
         cli.group "IceTea";
         cli.insert {
