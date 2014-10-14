@@ -1,0 +1,48 @@
+target("IceTea", "exe") {
+    input: ["./*.cpp"],
+    init: function() {
+        cli.group "IceTea";
+        cli.insert {
+            longopt: "--enable-pthreads",
+            desc: "Enable pthreads"
+        }
+        cli.group "PHP"
+        cli.insert {
+            longopt: "--php-enable-maintainer-zts",
+            desc: "Enable Zend ThreadSafety (TSRM)"
+        }
+        cli.group "Test"
+        cli.insert {
+            longopt: "--fltk-enable-native-image-libraries",
+            arg: "lib1,lib2,...",
+            desc: "Enable selected libs. I.e.: libpng,libjpeg"
+        }
+    },
+    configure: function() {
+        print "I am configuring with: " .. this;
+    }
+}
+
+rule("cxx", "C++") {
+    accepts: ["*.cpp", "*.cxx", "*.c++"],
+    outputs: (osType()=="unix" ? "%b.o":"%b.obj"),
+    prepare: function() {
+        print "Checking for a C++ compiler...";
+    },
+    build: function(input) {
+        print "Building: " .. input;
+    }
+}
+
+rule("exe", "Executable") {
+    accepts: [(osType()=="unix" ? "*.o":"*.obj")],
+    outputs: (osType()=="unix" ? "%b":"%b.exe"),
+    prepare: function() {},
+    build: function(input) {
+        print "Building EXE: " .. input;
+    }
+}
+
+action("build") {
+    build: ["*"]
+}
