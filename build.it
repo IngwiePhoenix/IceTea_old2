@@ -13,36 +13,35 @@ rule("exe", "Executable") {
     accepts: [(osType()=="unix" ? "*.o":"*.obj")],
     outputs: (osType()=="unix" ? "%b":"%b.exe"),
     prepare: function() {},
-    build: function(input) {
+    build: function(input, output, targetName, target) {
         print "Building EXE: " .. input;
     }
 }
 
 target("IceTea", "exe") {
-    input: ["./*.cpp"],
+    input: ["src/*.cpp"],
     "C++": { foo: "bar" },
     init: function() {
         cli.group "IceTea";
         cli.insert {
-            longopt: "--enable-pthreads",
-            desc: "Enable pthreads"
+            longopt: "--meep",
+            desc: "Meep 1"
         }
-        cli.group "PHP"
         cli.insert {
-            longopt: "--php-enable-maintainer-zts",
-            arg: "bool",
-            desc: "Enable Zend ThreadSafety (TSRM)"
-        }
-        cli.group "Test"
-        cli.insert {
-            longopt: "--fltk-enable-native-image-libraries",
-            arg: "lib1,lib2,...",
-            desc: "Enable selected libs. I.e.: libpng,libjpeg"
+            longopt: "--meep",
+            desc: "Meep 2"
         }
     },
     configure: function() {
         print "I am configuring with: " .. this;
+        return true;
     }
+}
+
+// Duplicate entry, just to test how it handles multiple targets.
+target("IceTea_2", "exe") {
+    input: ["src/*.cpp"],
+    configure: function() { print "o.o"; return true; }
 }
 
 action("build") {

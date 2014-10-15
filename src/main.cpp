@@ -61,7 +61,7 @@ enum TaskType { SCRIPT, COMMAND };
 struct Task {
     string ruleName;
     string targetName;
-    vector<string> files;
+    string input;
     string output;
 
     TaskType type;
@@ -93,7 +93,7 @@ void getFileList(string pattern, list<string> &rt_list) {
     GetFileList(dirName.c_str(), fList);
     for(StringList::iterator j=fList.begin(); j != fList.end(); j++) {
         if(WildcardMatch((j->c_str()), PathToFileName(pattern.c_str()))) {
-            rt_list.push_back(dirName + *j);
+            rt_list.push_back(dirName + "/" + *j);
         }
     }
 }
@@ -146,29 +146,30 @@ void unlockOS() { OSMutex.unlock(); }
 // Processors
 bool Initializer(OS* os) {
     os->pushValueById(targets->valueID);
-    for(int i=os->getLen(); i>0; i--) {
-        os->nextIteratorStep();
-        Value::String key(os, -2);
-        Value::Object val(os);
-        os->getProperty("_"); // Guarantee'd to exist.
-        Value::String ruleName(os);
-        if(!ruleExists(&ruleName, os)) {
-            cerr << "Target \"" << key << "\" refferences to non-existing rule \"" << ruleName << "\"." << endl;
+    os->getProperty(-1, "keys"); // triggers the getKeys method.
+    Value::Array keys(os);
+    for(int i=0; i<keys.length(); i++) {
+        Value::String* key = (Value::String*)keys[i];
+        Value::Object* val = (Value::Object*)(*targets)[(*key)];
+        Value::String* ruleName = (Value::String*)(*val)["_"];
+        if(!ruleExists(ruleName, os)) {
+            cerr << "Target \"" << (*key) << "\" refferences to non-existing rule \"" << (*ruleName) << "\"." << endl;
             return false;
         }
-        os->pushValueById(val.valueID);
+        os->pushValueById(val->valueID);
         os->pushString("init");
         if(os->in(-1, -2)) {
             os->popString();
             os->getProperty("init");
             if(os->isFunction()) {
-                Value::Method mt(os, &val, "init");
+                Value::Method mt(os, val, "init");
                 mt(0,0);
             } else {
                 cerr << "[IceTea]: The init() method in " << key << "is not a function! Found "
                      << os->getTypeStr().toChar() << " instead.";
             }
         } else {
+            /*
             cerr << "IceTea: Error detected. Stack:" << endl
                  << "    -1: " << os->getTypeStr(-1).toChar() << " --> " << os->toString(-1).toChar() << endl
                  << "    -2: " << os->getTypeStr(-2).toChar() << " --> " << os->toString(-2).toChar() << endl
@@ -176,7 +177,14 @@ bool Initializer(OS* os) {
                  << "    -4: " << os->getTypeStr(-4).toChar() << " --> " << os->toString(-4).toChar() << endl
                  << "    -5: " << os->getTypeStr(-5).toChar() << " --> " << os->toString(-5).toChar() << endl
                  << endl;
+             */
         }
+
+        // cleanup
+        delete key;
+        delete val;
+        delete ruleName;
+
         // Cause IceTea to exit
         if(os->isExceptionSet()) return false;
     }
@@ -184,35 +192,49 @@ bool Initializer(OS* os) {
 }
 bool Preprocessor(OS* os) {
     os->pushValueById(targets->valueID);
-    for(int i=os->getLen(); i>0; i--) {
-        os->nextIteratorStep();
-        Value::String key(os, -2);
-        Value::Object val(os);
+    os->getProperty(-1, "keys"); // triggers the getKeys method.
+    Value::Array keys(os);
+    for(int i=0; i<keys.length(); i++) {
+        Value::String* key = (Value::String*)keys[i];
+        Value::Object* val = (Value::Object*)(*targets)[(*key)];
+        os->pushValueById(val->valueID);
         os->pushString("configure");
         if(os->in(-1, -2)) {
             os->popString();
             os->getProperty("configure");
             if(os->isFunction()) {
-                Value::Method mt(os, &val, "configure");
-                mt(0,0);
+                Value::Method mt(os, val, "configure");
+                mt(0,1);
+                if(os->toBool() == false) {
+                    cerr << "We have a false!" << endl;
+                    // Configure returned false. So we quickly drop out.
+                    return false;
+                }
             } else {
-                cerr << "[IceTea]: The configure() method in " << key << "is not a function! Found "
-                     << os->getTypeStr().toChar() << " instead.";
+                //cerr << "[IceTea]: The configure() method in " << key << "is not a function! Found "
+                //     << os->getTypeStr().toChar() << " instead.";
             }
         }
-        os->pop(); // string: configure
 
         // Now strech the input parameter.
-        Value::Array* input = (Value::Array*)val["input"];
+        Value::Array* input = (Value::Array*)(*val)["input"];
         list<string> fileList;
         getFileListRec(input, fileList);
-        os->getProperty("input");
+        os->pushValueById(val->valueID);
+        int ojoff = os->getAbsoluteOffs(-1);
         os->newArray(); // Overwrite the previous
+        int aroff = os->getAbsoluteOffs(-1);
         for(list<string>::iterator it=fileList.begin(); it!=fileList.end(); ++it) {
             os->pushString((*it).c_str());
-            os->addProperty(-2);
+            os->addProperty(aroff);
         }
+        os->setProperty(ojoff, "input");
         os->pop();
+
+        // clean up
+        delete key;
+        delete val;
+        delete input;
 
         // Cause IceTea to exit
         if(os->isExceptionSet()) return false;
@@ -264,19 +286,30 @@ bool Transformer(OS* os, TaskQueue* queue) {
     // We only must push "safe" targets into the queue...
     lockOS(); // We are prepping targets. It must be completely locked first.
     os->pushValueById(targets->valueID);
-    for(int i=os->getLen(); i>0; i--) {
-        os->nextIteratorStep();
-        Value::String key(os, -2);
-        Value::Object val(os);
-        Value::Array* input = (Value::Array*)val["input"];
-        Value::String* ruleName = (Value::String*)val["_"];
-        for(int j=input->length(); j>0; j--) {
-            // We walk the files backwards, its easier to maintain.
+    os->getProperty(-1, "keys"); // triggers the getKeys method.
+    Value::Array keys(os);
+    for(int i=0; i<keys.length(); i++) {
+        Value::String* key = (Value::String*)keys[i];
+        Value::Object* val = (Value::Object*)(*targets)[(*key)];
+        cout << "Working with: "<< (*key) << endl;
+        Value::String* ruleName = (Value::String*)(*val)["_"];
+        Value::Array* input = (Value::Array*)(*val)["input"];
+        for(int j=0; j<input->length(); j++) {
             Value::String* v_file = (Value::String*)(*input)[j];
             string file = (*v_file);
             string rule = (*ruleName);
+
             // Now we need to resolve the rules.
+            cout << "Processing(" << j << "): " << file << endl;
+
+            delete v_file;
         }
+
+        // clean up
+        delete key;
+        delete val;
+        delete ruleName;
+        delete input;
     }
     unlockOS();
     return false;
@@ -290,15 +323,11 @@ void Run(void* threadData) {
     Task* task;
     while(!tasks->hasToStop()) {
         if(tasks->remove(task)) {
-            bool doContinue=true;
-            for(int e=0; e>task->files.size(); e++) {
-                if(!FileExists( task->files[e].c_str() )) {
-                    // Put the task back in, we cant run it now.
-                    tasks->add(task);
-                    doContinue=false;
-                }
-            }
-            if(doContinue) {
+            if(!FileExists( task->input.c_str() )) {
+                // Put the task back in, we cant run it now.
+                tasks->add(task);
+            } else {
+                cout << "Running file: " << task->input << endl;
                 if(task->type == SCRIPT) {
                     lockOS();
                     // ...
@@ -326,8 +355,16 @@ int main(int argc, const char** argv) {
     os->setSetting(OS_SETTING_CREATE_COMPILED_FILE,     0);
     os->setSetting(OS_SETTING_SOURCECODE_MUST_EXIST,    1);
 
+    // Generate a pretty copyright.
+    stringstream cpr;
+    cpr << "IceTea 0.0.1 by Ingwie Phoenix" << endl
+        << OS_COPYRIGHT << endl
+        << "APConsoleLib " << CONSOLELIB_VERSION << endl
+        << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR
+        << endl;
+
     // Arg stuff.
-    CLI* cli = new CLI(argc, argv, "IceTea by Ingwie Phoenix");
+    CLI* cli = new CLI(argc, argv, cpr.str());
     // Fetch thread number beforehand!
     stringstream thrs_sst;
     thrs_sst << thread::hardware_concurrency();
@@ -337,14 +374,20 @@ int main(int argc, const char** argv) {
     cli->insert("-h", "--help", "", "Show this help.");
     cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
     cli->insert("-d", "--define", "key=value", "Define a global value within the scripting language's scope.");
-    cli->insert("", "--debug", "", "Run a debug build; rules and targets may use specialized settings for this build.");
-    cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
     cli->insert(
-        "-j", "--jobs", " ",
+        "-j", "--jobs", "<N>",
         "Amount of jobs to run at the same time. Default: "+thrs_sst.str(),
         true, thrs_sst.str()
     );
     cli->insert("-t", "--target", "<target>", "Build only the specified target.");
+    cli->group("Developer options");
+    cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
+    cli->insert("", "--debug", "", "Run a debug build; rules and targets may use specialized settings for this build.");
+    cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
+    cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
+    cli->insert("-o", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
+    cli->insert("-e", "--os-exec", "<str>", "Run ObjectScript code from string, or if - was given, then from standard input.");
+    cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
     cli->parse();
 
     if(cli->check("-h")) {
@@ -367,6 +410,9 @@ int main(int argc, const char** argv) {
         cerr << "File \"" << cli->value("-f") << "\" does not exist! Aborting." << endl;
         goto itCleanup;
     }
+
+    // init() has added its methods, now its time to put it in.
+    cli->parse();
 
     // Call every target's init() method.
     if(!Initializer(os)) {

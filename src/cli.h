@@ -35,15 +35,20 @@ private:
     std::list<std::string> orderedOpts;
     int argc;
     const char** argv;
-    std::string strayArgsDesc;
     std::string copyright;
     int leftLength;
     std::string lastGroup;
+    // Stray arg stuff
+    std::string strayArgsArg;
+    std::string strayArgsDesc;
+    bool strayArgsOptional;
 public:
     inline CLI(int _argc, const char** _argv, std::string _copyright="") {
         argc=_argc;
         argv=_argv;
         strayArgsDesc="";
+        strayArgsArg="";
+        strayArgsOptional=true;
         copyright=_copyright;
         leftLength=30;
         lastGroup="";
@@ -81,7 +86,11 @@ public:
         lastGroup=name;
         orderedOpts.push_back(name);
     }
-    inline void setStrayArgsDesc(std::string desc) { strayArgsDesc=desc; }
+    inline void setStrayArgs(std::string arg, std::string desc, bool optional=true) {
+        strayArgsDesc=desc;
+        strayArgsArg=arg;
+        strayArgsOptional=optional;
+    }
     std::vector<std::string> getStrayArgs() { return strayArgs; }
     std::pair<std::string, int> findOpt(std::string name) {
         for(OptGroups::iterator it=ga.begin(); it!=ga.end(); ++it) {
@@ -138,7 +147,7 @@ public:
     inline void usage() {
         std::stringstream myout;
         if(copyright!="") std::cout << copyright << std::endl;
-        std::cout << "USAGE: " << argv[0];
+        std::cout << "Usage: " << argv[0];
         for(std::list<std::string>::iterator it=orderedOpts.begin(); it!=orderedOpts.end(); ++it) {
             std::string groupName = *it;
             OptList ol = ga[groupName];
@@ -180,6 +189,14 @@ public:
                 myout << opt->desc << std::endl;
             }
         }
+        if(!strayArgsArg.empty()) {
+            std::cout << " ";
+            if(strayArgsOptional) std::cout << "[";
+            std::cout << strayArgsArg;
+            if(strayArgsOptional) std::cout << "]";
+            std::cout << std::endl << std::endl << strayArgsArg << ": " << strayArgsDesc;
+        }
+
         std::cout << std::endl << myout.str();
     }
 };
