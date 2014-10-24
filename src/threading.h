@@ -27,15 +27,20 @@ private:
     list<T> queue;
     tthread::thread::id myID;
     bool doStop;
+    int itemsEverAdded;
 
 public:
     // Synchronisation
     tthread::mutex               mutex;
     tthread::condition_variable  cond;
     // Misc, inter-thread storage.
-    map<string, ST>              data;
+    ST                           data;
 
-    inline WorkQueue(int amt, ThreadFunction func) : count(amt), myID(tthread::this_thread::get_id()), doStop(false) {
+    inline WorkQueue(int amt, ThreadFunction func)
+        : count(amt),
+          myID(tthread::this_thread::get_id()),
+          doStop(false),
+          itemsEverAdded(0) {
         for(int i=0; i<amt; i++) {
             threads.push_back(new tthread::thread(func, (void*)this));
         }
@@ -83,6 +88,7 @@ public:
     inline void add(T item) {
         tthread::lock_guard<tthread::mutex> guard(mutex);
         queue.push_back(item);
+        itemsEverAdded++;
         cond.notify_one();
     }
 
@@ -106,6 +112,9 @@ public:
         tthread::lock_guard<tthread::mutex> guard(mutex);
         int size = queue.size();
         return size;
+    }
+    inline int countAll() {
+        return itemsEverAdded;
     }
 };
 

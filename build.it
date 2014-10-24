@@ -1,26 +1,70 @@
 rule("cxx", "C++") {
     accepts: ["*.cpp", "*.cxx", "*.c++"],
-    outputs: (osType()=="unix" ? "%b.o":"%b.obj"),
+    output: {
+        pattern: (osType()=="unix" ? "*.o":"*.obj"),
+        expected: (osType()=="unix" ? "%t-%e.o":"%t-%e.obj")
+    },
     prepare: function() {
         print "Checking for a C++ compiler...";
     },
-    build: function(input) {
+    build: function(input, output, targetName, target) {
         print "Building: " .. input;
     }
 }
 
-rule("exe", "Executable") {
-    accepts: [(osType()=="unix" ? "*.o":"*.obj")],
-    outputs: (osType()=="unix" ? "%b":"%b.exe"),
-    prepare: function() {},
+rule("c", "C") {
+    accepts: ["*.c", "*.C"],
+    output: {
+        pattern: (osType()=="unix" ? "*.o":"*.obj"),
+        expected: (osType()=="unix" ? "%t-%e.o":"%t-%e.obj")
+    },
+    prepare: function() {
+        print "Checking for a C compiler...";
+    },
     build: function(input, output, targetName, target) {
-        print "Building EXE: " .. input;
+        print "Building: " .. input;
     }
 }
 
-target("IceTea", "exe") {
+rule("strip", "Strip") {
+    accepts: ["*.o"],
+    output: {
+        pattern: "*.o-stripped",
+        expected: "%t-%e.o-stripped"
+    },
+    build: [
+        "upx"
+    ]
+}
+
+rule("exe", "Executable") {
+    accepts: [(osType()=="unix" ? "*.o-stripped":"*.obj")],
+    output: {
+        pattern: (osType()=="unix" ? "*":"*.exe"),
+        expected: (osType()=="unix" ? "%t":"%t.exe"),
+        multiple: true
+    },
+    prepare: function() {
+        // check for a compiler to use
+    },
+    build: function(input, output, targetName, target) {
+        print "Building EXE: " .. input;
+    },
+    finalize: function(output) {
+        //mv output -> output without .bin or .exe
+    },
+    clean: function(output) {
+        //we must look for a non-shuffixed version of the file.
+    }
+}
+
+target("IceTea_self", "exe") {
     input: ["src/*.cpp"],
-    "C++": { foo: "bar" },
+    settings: {
+        CXX: {
+            includeDirs: ["src"]
+        }
+    },
     init: function() {
         cli.group "IceTea";
         cli.insert {
@@ -39,11 +83,65 @@ target("IceTea", "exe") {
 }
 
 // Duplicate entry, just to test how it handles multiple targets.
-target("IceTea_2", "exe") {
-    input: ["src/*.cpp"],
+/*target("IceTea_2", "exe") {
+    input: ["src/main.cpp"],
     configure: function() { print "o.o"; return true; }
-}
+}*/
+
+/*target("myApp", "exe") {
+    input: ["myfile.c", "otherfile.cpp"],
+    configure: function() {
+        print "ovo";
+        return true;
+    }
+}*/
 
 action("build") {
     build: ["*"]
 }
+
+/*rule("a", "Rule A") {
+    build: [],
+    accepts: ["*.a"],
+    output: {
+        pattern: "*.b",
+        expected: "%e.b"
+    }
+}
+rule("b", "rule b") {
+    build: [],
+    accepts: ["*.b"],
+    output: {
+        pattern: "*.tc",
+        expected: "%e.tc"
+    }
+}
+rule("ct", "rule c") {
+    build: [],
+    accepts: ["*.tc"],
+    output: {
+        pattern: "*.d",
+        expected: "%e.d"
+    }
+}
+rule("d", "rule d") {
+    build: [],
+    accepts: ["*.d"],
+    output: {
+        pattern: "*.x",
+        expected: "%e.x"
+    }
+}
+
+rule("final", "Finalizah") {
+    build: [],
+    accepts: ["*.x"],
+    output: {
+        pattern: "*.w",
+        expected: "%t.w"
+    }
+}
+
+target("test", "final") {
+    input: ["myTEST.a"]
+}*/
