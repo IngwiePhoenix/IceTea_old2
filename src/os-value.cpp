@@ -9,7 +9,9 @@ namespace Value {
 Var::Var(OS* os, int off=-1) : valueID(-1), offset(off) {
     myOS=os;
     type = myOS->getType(off);
+    os->retain();
 }
+Var::~Var() { myOS->release(); }
 
 // Primitive, Null, Int, Float, Bool.
 Primitive::Primitive(OS* os, int off) : Var(os, off) { os->retain(); initialize(); }
@@ -212,6 +214,7 @@ void Function::operator ()(int args, int rtVals) {
 Method::Method(OS* os, Object* obj, const char* methodName) {
     Obj = obj;
     myOS = os;
+    os->retain();
     os->pushValueById(obj->valueID);
     os->pushString(methodName);
     os->getProperty();
@@ -221,6 +224,7 @@ Method::Method(OS* os, Object* obj, const char* methodName) {
 }
 Method::~Method() {
     // Obj was passed in as a reference, the User is responsible for it.
+    myOS->release();
     delete Mtd;
 }
 void Method::operator ()(int args, int rtVals) {

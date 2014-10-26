@@ -13,6 +13,7 @@ namespace Value {
         OS* myOS;
         int valueID;
         Var(OS* os, int off);
+        ~Var();
     };
 
     // Null, Bool, Int/Float

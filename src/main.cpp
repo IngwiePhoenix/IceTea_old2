@@ -75,6 +75,11 @@ struct Task {
 
     // The related target, pushed to the function.
     Value::Object* target;
+
+    ~Task() {
+        if(onBuild!=NULL) delete onBuild;
+        delete target;
+    }
 };
 typedef WorkQueue<Task*, OS*> TaskQueue;
 
@@ -142,9 +147,8 @@ void ReplaceStringInPlace(std::string& subject, const std::string& search,
 }
 
 // In order to call OS savely, we use this.
-tthread::mutex OSMutex;
-void lockOS() { OSMutex.lock(); }
-void unlockOS() { OSMutex.unlock(); }
+static tthread::mutex OSMutex;
+typedef tthread::lock_guard<tthread::mutex> Locker;
 
 string estimateRuleOutput(string rule, string target, OS* os, string file="") {
     os->pushString(rule.c_str());
@@ -234,9 +238,7 @@ void __makeTasks(
             }
         } else if(os->getTypeStr() == "function") {
             t->type=SCRIPT;
-            os->pushValueById(ruleObj->valueID);
-            Value::Object* theRule = new Value::Object(os);
-            t->onBuild = new Value::Method(os, theRule, "build");
+            t->onBuild = new Value::Method(os, ruleObj, "build");
         } else {
             cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                  << "'" << os->getTypeStr() << "' was given instead." << endl;
@@ -287,8 +289,8 @@ void __makeTasks(
                 delete currAccepts;
                 if(outputMatchesAccepted) break;
             }
-            delete currOutputObj;
-            delete currOutputPat;
+            //delete currOutputObj;
+            //delete currOutputPat;
 
             /*
                 So our output pattern might match an input pattern.
@@ -449,6 +451,8 @@ void __makeTasks(
         // If we have reached here, NO RULE DID MATCH.
         //cout << file << " seriously didnt match ANYTHING." << endl;
     }
+    delete targetObj;
+    delete ruleObj;
     delete accepts;
 }
 
@@ -584,7 +588,7 @@ bool Transformer(OS* os, TaskQueue* queue) {
     // We only must push "safe" targets into the queue...
     // There needs to be a mechanism to determine the actual target list.
     // Its easy, really. For now, lets just do all of them.
-    lockOS(); // We are prepping targets. It must be completely locked first.
+    Locker g(OSMutex);
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
     Value::Array keys(os);
@@ -635,9 +639,7 @@ bool Transformer(OS* os, TaskQueue* queue) {
             }
         } else if(os->getTypeStr() == "function") {
             t->type=SCRIPT;
-            os->pushValueById(ruleObj->valueID);
-            Value::Object* theRule = new Value::Object(os);
-            t->onBuild = new Value::Method(os, theRule, "build");
+            t->onBuild = new Value::Method(os, ruleObj, "build");
         } else {
             cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                  << "'" << os->getTypeStr() << "' was given instead." << endl;
@@ -647,12 +649,9 @@ bool Transformer(OS* os, TaskQueue* queue) {
 
         // clean up
         delete key;
-        delete ruleName;
+        delete val;
         delete input;
-        delete ruleObj;
-        delete ruleDisplay;
     }
-    unlockOS();
     return true;
 }
 
@@ -696,8 +695,9 @@ void Run(void* threadData) {
             s << endl;
             p();
             if(task->type == SCRIPT) {
-                lockOS();
+                Locker* g = new Locker(OSMutex);
                 os->newArray(task->input.size());
+                /*
                 for(list<string>::iterator it=task->input.begin(); it!=task->input.end(); ++it) {
                     os->pushString(it->c_str());
                     os->addProperty(-2);
@@ -705,7 +705,7 @@ void Run(void* threadData) {
                 os->pushString(task->output.c_str());
                 os->pushString(task->targetName.c_str());
                 os->pushValueById(task->target->valueID);
-                (*task->onBuild)(4,1);
+                (*task->onBuild)(4,0);
                 if(os->isArray()) {
                     // We got a set of commands to run.
                 } else if(os->isNumber() && os->toBool()) {
@@ -713,12 +713,13 @@ void Run(void* threadData) {
                 } else if(os->isNumber() && !os->toBool()) {
                     // Something is wrong.
                 }
+                */
                 os->pop();
-                unlockOS();
+                delete g;
             } else {
                 // Just run the commands at once.
             }
-
+            //delete task;
         }
     }
 }
@@ -755,7 +756,8 @@ int main(int argc, const char** argv) {
     cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./boot.it");
     cli->insert("-h", "--help", "", "Show this help.");
     cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
-    cli->insert("-d", "--define", "key=value", "Define a global value within the scripting language's scope.");
+    cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", "./out");
+    cli->insert("-D", "--define", "key=value", "Define a global value within the scripting language's scope.");
     cli->insert(
         "-j", "--jobs", "<N>",
         "Amount of jobs to run at the same time. Default: "+thrs_sst.str(),
@@ -774,7 +776,9 @@ int main(int argc, const char** argv) {
     cli->parse();
 
     // Fetching values...
+    const char* bootstrapit = cli->value("-b").c_str();
     const char* buildit = cli->value("-f").c_str();
+    string outputDir = cli->value("-d");
 
     if(cli->check("-h")) {
         cli->usage();

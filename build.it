@@ -9,6 +9,7 @@ rule("cxx", "C++") {
     },
     build: function(input, output, targetName, target) {
         print "Building: " .. input;
+        return true;
     }
 }
 
@@ -23,6 +24,7 @@ rule("c", "C") {
     },
     build: function(input, output, targetName, target) {
         print "Building: " .. input;
+        return true;
     }
 }
 
@@ -49,6 +51,7 @@ rule("exe", "Executable") {
     },
     build: function(input, output, targetName, target) {
         print "Building EXE: " .. input;
+        return true;
     },
     finalize: function(output) {
         //mv output -> output without .bin or .exe
