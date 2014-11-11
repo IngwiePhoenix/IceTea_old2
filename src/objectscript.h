@@ -4,7 +4,7 @@
 /******************************************************************************
 * Copyright (C) 2012-2014 Evgeniy Golovin (evgeniy.golovin@unitpoint.ru)
 *
-* Please feel free to contact me at anytime, 
+* Please feel free to contact me at anytime,
 * my email is evgeniy.golovin@unitpoint.ru, skype: egolovin
 *
 * Latest source code: https://github.com/unitpoint/objectscript
@@ -103,7 +103,7 @@ inline void operator delete(void *, void *){}
 #define OS_INT16 short
 #define OS_U16 unsigned short
 
-#if defined __GNUC__ 
+#if defined __GNUC__
 #include <inttypes.h>
 
 #define OS_INT32 int32_t
@@ -207,7 +207,7 @@ inline void operator delete(void *, void *){}
 #define DEBUG_BREAK raise(SIGTRAP)
 // #define DEBUG_BREAK __builtin_trap()
 #else
-#define DEBUG_BREAK 
+#define DEBUG_BREAK
 #endif
 
 #ifndef OS_PROFILE_BEGIN_OPCODE
@@ -254,7 +254,7 @@ namespace ObjectScript
 		OS_VALUE_TYPE_USERDATA,
 		OS_VALUE_TYPE_USERPTR,
 		OS_VALUE_TYPE_FUNCTION,
-		OS_VALUE_TYPE_CFUNCTION		
+		OS_VALUE_TYPE_CFUNCTION
 	};
 
 	enum OS_ESourceCodeType
@@ -391,7 +391,7 @@ namespace ObjectScript
 
 		class String;
 		class ObjectScriptExtention;
-		
+
 		struct FileHandle {};
 
 	// protected:
@@ -435,7 +435,7 @@ namespace ObjectScript
 				return buf[count-1];
 			}
 
-			bool contains(const T& val) const 
+			bool contains(const T& val) const
 			{
 				for(int i = count-1; i >= 0; i--){
 					if(buf[i] == val){
@@ -613,7 +613,7 @@ namespace ObjectScript
 
 				virtual int getPos() const = 0;
 				virtual void setPos(int) = 0;
-				
+
 				virtual int getSize() const = 0;
 
 				virtual void writeFromStream(StreamReader*);
@@ -663,7 +663,7 @@ namespace ObjectScript
 
 				int getPos() const;
 				void setPos(int);
-				
+
 				int getSize() const;
 
 				void clear();
@@ -687,7 +687,7 @@ namespace ObjectScript
 
 				int getPos() const;
 				void setPos(int);
-				
+
 				int getSize() const;
 
 				void writeBytes(const void*, int len);
@@ -705,7 +705,7 @@ namespace ObjectScript
 
 				virtual int getPos() const = 0;
 				virtual void setPos(int) = 0;
-				
+
 				virtual int getSize() const = 0;
 
 				virtual void movePos(int len) = 0;
@@ -760,7 +760,7 @@ namespace ObjectScript
 
 				int getPos() const;
 				void setPos(int);
-				
+
 				int getSize() const;
 
 				void movePos(int len);
@@ -788,7 +788,7 @@ namespace ObjectScript
 
 				int getPos() const;
 				void setPos(int);
-				
+
 				int getSize() const;
 
 				void movePos(int len);
@@ -976,8 +976,8 @@ namespace ObjectScript
 
 					REGEXP_STRING,  // /.*?[^\\]/\w+
 
-					BEFORE_INJECT_VAR, 
-					AFTER_INJECT_VAR, 
+					BEFORE_INJECT_VAR,
+					AFTER_INJECT_VAR,
 
 					NUMBER,      // -?[0..9][.]?[0..9]+(e[+-]?[0..9]+)?
 
@@ -1208,7 +1208,7 @@ namespace ObjectScript
 				Property * first, * last;
 				IteratorState * iterators;
 
-				Table();    
+				Table();
 				~Table();
 
 				// Property * get(const Value& index);
@@ -1223,15 +1223,15 @@ namespace ObjectScript
 			{
 				int value_id;
 				int ref_count;
-				int external_ref_count; // used to detect external strings, 
-					// they are not conected to values root tree but should not be freed, 
+				int external_ref_count; // used to detect external strings,
+					// they are not conected to values root tree but should not be freed,
 					// ref_count could not be used to detect this situation
 				GCValue * prototype;
 				GCValue * hash_next;
 
 				GCValue * hash_next_free_candidate;
 				// int mark_created_values;
-				
+
 				Table * table;
 				GCStringValue * name;
 
@@ -1370,7 +1370,7 @@ namespace ObjectScript
 			{
 #ifndef OS_NUMBER_NAN_TRICK
 				struct {
-					ValueUnion v; 
+					ValueUnion v;
 					int type;
 				} u;
 
@@ -1449,7 +1449,7 @@ namespace ObjectScript
 #ifdef OS_NUMBER_NAN_TRICK
 				// Value& operator=(const Value& b){ OS_SET_VALUE_NUMBER(*this, OS_VALUE_NUMBER(b)); return *this;  }
 #endif
-				
+
 				void clear();
 
 				GCValue * getGCValue() const;
@@ -1645,7 +1645,7 @@ namespace ObjectScript
 					EXP_TYPE_GET_LOCAL_VAR_AUTO_CREATE,
 					EXP_TYPE_SET_LOCAL_VAR,
 					EXP_TYPE_SET_LOCAL_VAR_NO_POP,
-					
+
 					EXP_TYPE_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCALS,
 					EXP_TYPE_SET_LOCAL_VAR_BY_BIN_OPERATOR_LOCAL_AND_NUMBER,
 
@@ -1669,7 +1669,7 @@ namespace ObjectScript
 					EXP_TYPE_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
 
 					EXP_TYPE_GET_SET_PROPERTY_BY_LOCALS_AUTO_CREATE,
-					
+
 					EXP_TYPE_SET_DIM,
 					EXP_TYPE_SET_DIM_NO_POP,
 
@@ -1824,7 +1824,7 @@ namespace ObjectScript
 						OS_INT16 a, b, c;
 					} slots;
 					ExpressionType type;
-					
+
 					Expression(ExpressionType type, TokenData*);
 					Expression(ExpressionType type, TokenData*, Expression * e1 OS_DBG_FILEPOS_DECL);
 					Expression(ExpressionType type, TokenData*, Expression * e1, Expression * e2 OS_DBG_FILEPOS_DECL);
@@ -2106,7 +2106,7 @@ namespace ObjectScript
 				Expression * newExpressionFromList(ExpressionList& list, int ret_values, bool auto_no_values = false);
 				Expression * newAssingExpression(Scope * scope, Expression * var_exp, Expression * value_exp);
 				Expression * newSingleValueExpression(Expression * exp);
-				
+
 				Expression * postCompileExpression(Scope * scope, Expression * exp);
 				Expression * postCompilePass2(Scope * scope, Expression * exp);
 				Expression * postCompileFixValueType(Scope * scope, Expression * exp);
@@ -2130,14 +2130,14 @@ namespace ObjectScript
 				Expression * expectReturnExpression(Scope*);
 				Expression * expectTryExpression(Scope*);
 				Expression * expectThrowExpression(Scope*);
-				
+
 				enum EFilenameType {
 					GET_FILENAME,
 					GET_DIRNAME
 				};
-				
+
 				Expression * expectFilenameExpression(Scope*, EFilenameType);
-				
+
 				Expression * expectIfExpression(Scope*);
 				Expression * expectWhileExpression(Scope*);
 				Expression * expectDoExpression(Scope*);
@@ -2258,7 +2258,7 @@ namespace ObjectScript
 				int num_functions;
 
 				Vector<OS_U32> opcodes;
-				
+
 				struct DebugInfoItem
 				{
 					OS_U32 line;
@@ -2310,7 +2310,7 @@ namespace ObjectScript
 
 				Value * values;
 				bool is_stack_locals;
-				
+
 				// int num_parents;
 
 				Locals ** getParents();
@@ -2332,10 +2332,10 @@ namespace ObjectScript
 				GCArrayValue * rest_arguments;
 
 				Vector<GCFunctionValue*> sub_funcs;
-				
+
 				int caller_stack_size;
 				int locals_stack_pos;
-				
+
 				int need_ret_values;
 				OS_U32 * opcodes;
 			};
@@ -2565,7 +2565,7 @@ namespace ObjectScript
 			Value check_get_recursion;
 			Value check_set_recursion;
 			Value check_valueof_recursion;
-			
+
 			enum {
 				PROTOTYPE_BOOL,
 				PROTOTYPE_NUMBER,
@@ -2623,7 +2623,7 @@ namespace ObjectScript
 			};
 
 			FreeCandidateValues gc_candidate_values;
-			
+
 			int gc_start_when_used_bytes;
 			int gc_next_when_used_bytes;
 			int gc_step_type;
@@ -2714,7 +2714,7 @@ namespace ObjectScript
 			void releaseValues(const Value*, int count);
 			void releaseValuesAndClear(Value*, int count);
 			void clearStackValues(Value*, int count);
-			void setValue(Value& out, const Value& b);			
+			void setValue(Value& out, const Value& b);
 			template <class T, class T2> void setValue(T*& out, T2 * b)
 			{
 				if(out == b){
@@ -2743,7 +2743,7 @@ namespace ObjectScript
 					++b->ref_count;
 				}
 			}
-			
+
 #ifdef OS_DEBUG
 			bool isValueUsed(GCValue*);
 			bool isValueExist(GCValue*);
@@ -2805,7 +2805,7 @@ namespace ObjectScript
 			void insertValue(Value val, int offs);
 			void pushNull();
 			void pushBool(bool);
-			
+
 			template<class T> void pushNumber(const T& val)
 			{
 			#if 1 // speed optimization
@@ -2821,7 +2821,7 @@ namespace ObjectScript
 				pushValue((OS_NUMBER)val);
 			#endif
 			}
-			
+
 			String getTypeStr(const Value& val);
 			void pushTypeOf(const Value& val);
 			bool pushBoolOf(const Value& val);
@@ -2916,7 +2916,7 @@ namespace ObjectScript
 			bool deleteTableProperty(Table * table, const Value& index);
 			void deleteValueProperty(GCValue * table_value, Value index, bool del_enabled, bool prototype_enabled);
 			void deleteValueProperty(const Value& table_value, const Value& index, bool del_enabled, bool prototype_enabled);
-			
+
 			void copyTableProperties(Table * dst, Table * src);
 			void copyTableProperties(GCValue * dst_value, GCValue * src_value, bool setter_enabled);
 
@@ -2929,7 +2929,7 @@ namespace ObjectScript
 			static int compareObjectPropertiesReverse(OS*, const void*, const void*, void*);
 			static int compareUserPropValues(OS*, const void*, const void*, void*);
 			static int compareUserPropValuesReverse(OS*, const void*, const void*, void*);
-			
+
 			static int comparePropKeys(OS*, const void*, const void*, void*);
 			static int comparePropKeysReverse(OS*, const void*, const void*, void*);
 			static int compareUserPropKeys(OS*, const void*, const void*, void*);
@@ -2968,7 +2968,7 @@ namespace ObjectScript
 
 			void callFT(int start_pos, int call_params, int ret_values, GCValue * self_for_proto, OS_ECallEnter call_enter, OS_ECallType call_type, OS_CallThisUsage call_this_usage);
 			void callFT(int params, int ret_values, GCValue * self_for_proto, OS_ECallEnter call_enter, OS_ECallType call_type, OS_CallThisUsage call_this_usage);
-			
+
 			void callFT(int params, int ret_values, OS_ECallType call_type = OS_CALLTYPE_AUTO, OS_CallThisUsage call_this_usage = OS_CALLTHIS_KEEP_STACK_VALUE);
 			void callTF(int params, int ret_values, OS_ECallType call_type = OS_CALLTYPE_AUTO, OS_CallThisUsage call_this_usage = OS_CALLTHIS_KEEP_STACK_VALUE);
 			void callF(int params, int ret_values, OS_ECallType call_type = OS_CALLTYPE_AUTO);
@@ -2985,7 +2985,9 @@ namespace ObjectScript
 
 		MemoryManager * memory_manager;
 		Core * core;
+	public:
 		int ref_count;
+	protected:
 
 #ifdef OS_DEBUG
 		int native_stack_start_mark;
@@ -3115,13 +3117,13 @@ namespace ObjectScript
 		void getProperty(const Core::String&, bool getter_enabled = true, bool prototype_enabled = true);
 		void getProperty(int offs, const OS_CHAR*, bool getter_enabled = true, bool prototype_enabled = true);
 		void getProperty(int offs, const Core::String&, bool getter_enabled = true, bool prototype_enabled = true);
-		
+
 		void setProperty(bool setter_enabled = true);
 		void setProperty(const OS_CHAR*, bool setter_enabled = true);
 		void setProperty(const Core::String&, bool setter_enabled = true);
 		void setProperty(int offs, const OS_CHAR*, bool setter_enabled = true);
 		void setProperty(int offs, const Core::String&, bool setter_enabled = true);
-		
+
 		void addProperty(bool setter_enabled = true);
 		void addProperty(int offs, bool setter_enabled = true);
 
@@ -3139,7 +3141,7 @@ namespace ObjectScript
 		void setGlobal(const Core::String&, bool setter_enabled = true);
 
 		struct FuncDef;
-		
+
 		void setGlobal(const FuncDef& func, bool setter_enabled = true);
 
 		void getPrototype();
@@ -3147,10 +3149,10 @@ namespace ObjectScript
 		void setPrototype(int userdata_crc);
 
 		int getCFuncClosureCount(int offs = -1); // no pop
-		
+
 		void getCFuncClosure(int offs, int i);
 		void getCFuncClosure(int i);
-		
+
 		void setCFuncClosure(int offs, int i);
 		void setCFuncClosure(int i);
 
@@ -3190,7 +3192,7 @@ namespace ObjectScript
 
 		int getStackSize();
 		int getAbsoluteOffs(int offs);
-		
+
 		void remove(int start_offs = -1, int count = 1);
 		// void removeAll(); it's not safe to remove all
 		void pop(int count = 1);
@@ -3230,7 +3232,7 @@ namespace ObjectScript
 		double		toDouble(int offs = -1, bool valueof_enabled = true);
 		int			toInt(int offs = -1, bool valueof_enabled = true);
 		String		toString(int offs = -1, bool valueof_enabled = true);
-		
+
 		bool		toBool(int offs, bool def);
 		OS_NUMBER	toNumber(int offs, OS_NUMBER def, bool valueof_enabled = true);
 		float		toFloat(int offs, float def, bool valueof_enabled = true);
@@ -3264,13 +3266,13 @@ namespace ObjectScript
 
 		// deprecated, use callFT, callTF or callF
 		// void call(int params = 0, int ret_values = 0, OS_ECallType call_type = OS_CALLTYPE_AUTO, OS_CallThisUsage call_this_usage = OS_CALLTHIS_KEEP_STACK_VALUE);
-		
+
 		// stack: func + this + params
 		void callFT(int params = 0, int ret_values = 0, OS_ECallType call_type = OS_CALLTYPE_AUTO, OS_CallThisUsage call_this_usage = OS_CALLTHIS_KEEP_STACK_VALUE);
 
 		// stack: this + func + params
 		void callTF(int params = 0, int ret_values = 0, OS_ECallType call_type = OS_CALLTYPE_AUTO, OS_CallThisUsage call_this_usage = OS_CALLTHIS_KEEP_STACK_VALUE);
-		
+
 		// stack: func + params, it uses function's this
 		void callF(int params = 0, int ret_values = 0, OS_ECallType call_type = OS_CALLTYPE_AUTO);
 
@@ -3297,12 +3299,12 @@ namespace ObjectScript
 			OS_CFunction func;
 			void * user_param;
 		};
-		
+
 		struct NumberDef {
 			const OS_CHAR * name;
 			OS_NUMBER value;
 		};
-		
+
 		struct StringDef {
 			const OS_CHAR * name;
 			const OS_CHAR * value;
@@ -3311,9 +3313,9 @@ namespace ObjectScript
 		struct NullDef {
 			const OS_CHAR * name;
 		};
-		
+
 		struct Pop {
-			OS * os; 
+			OS * os;
 			Pop(OS * p_os): os(p_os){}
 			~Pop(){ os->pop(); }
 		};
@@ -3336,15 +3338,15 @@ namespace ObjectScript
 
 		String changeFilenameExt(const String& filename, const String& ext);
 		String changeFilenameExt(const String& filename, const OS_CHAR * ext);
-		
+
 		String getFilenameExt(const String& filename);
 		String getFilenameExt(const OS_CHAR * filename);
 		String getFilenameExt(const OS_CHAR * filename, int len);
-		
+
 		String getFilename(const String& filename);
 		String getFilename(const OS_CHAR * filename);
 		String getFilename(const OS_CHAR * filename, int len);
-		
+
 		String getFilenamePath(const String& filename);
 		String getFilenamePath(const OS_CHAR * filename);
 		String getFilenamePath(const OS_CHAR * filename, int len);

@@ -28,19 +28,20 @@ private:
     tthread::thread::id myID;
     bool doStop;
     int itemsEverAdded;
+    // Misc...
+    ST data;
 
 public:
     // Synchronisation
     tthread::mutex               mutex;
     tthread::condition_variable  cond;
-    // Misc, inter-thread storage.
-    ST                           data;
 
-    inline WorkQueue(int amt, ThreadFunction func)
+    inline WorkQueue(int amt, ThreadFunction func, ST udata=NULL)
         : count(amt),
           myID(tthread::this_thread::get_id()),
           doStop(false),
-          itemsEverAdded(0) {
+          itemsEverAdded(0),
+          data(udata) {
         for(int i=0; i<amt; i++) {
             threads.push_back(new tthread::thread(func, (void*)this));
         }
@@ -116,6 +117,7 @@ public:
     inline int countAll() {
         return itemsEverAdded;
     }
+    inline ST getData() { return data; }
 };
 
 #endif

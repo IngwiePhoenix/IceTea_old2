@@ -186,6 +186,7 @@ void __makeTasks(
     string& input, bool finalRule=false
 ) {
     if(!ruleExists(rule, os)) {
+        cerr << "[IceTea]: Rule \"" << rule << "\" does not exist." << endl;
         return;
     }
 
@@ -264,9 +265,9 @@ void __makeTasks(
         Value::Object* outputObj = (Value::Object*)(*ruleObj)["output"];
         os->pushValueById(rules->valueID);
         os->getProperty(-1, "keys");
-        Value::Array ruleNames(os);
-        for(int r=0; r<ruleNames.length(); r++) {
-            Value::String* ruleName = (Value::String*)ruleNames[r];
+        Value::Array* ruleNames = new Value::Array(os);
+        for(int r=0; r<ruleNames->length(); r++) {
+            Value::String* ruleName = (Value::String*)(*ruleNames)[r];
             Value::Object* currRule = (Value::Object*)(*rules)[(*ruleName)];
 
             /*
@@ -591,9 +592,9 @@ bool Transformer(OS* os, TaskQueue* queue) {
     Locker g(OSMutex);
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
-    Value::Array keys(os);
-    for(int i=0; i<keys.length(); i++) {
-        Value::String* key = (Value::String*)keys[i];
+    Value::Array* keys = new Value::Array(os);
+    for(int i=0; i<keys->length(); i++) {
+        Value::String* key = (Value::String*)(*keys)[i];
         Value::Object* val = (Value::Object*)(*targets)[(*key)];
         string target = (*key);
         Value::String* ruleName = (Value::String*)(*val)["_"];
@@ -616,6 +617,10 @@ bool Transformer(OS* os, TaskQueue* queue) {
             string file = (*v_file);
             // Now we need to resolve the rules.
             // We have rule, file and target name.
+            #ifdef IT_DEBUG
+                cerr << "Before makeTaks: " << os->ref_count << endl;
+                cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
+            #endif
             string partialInput = makeTasks(rule, file, target, queue, os);
             // The final rule itself however, is reserved to be done by hand.
             if(!partialInput.empty()) {
@@ -625,6 +630,9 @@ bool Transformer(OS* os, TaskQueue* queue) {
             }
             delete v_file;
         }
+        #ifdef IT_DEBUG
+            cerr << "after MakeTasks: " << os->ref_count << endl;
+        #endif
 
         // Fill in the rest...
         // Find out what type the rule is. A function, or an array of commands?
@@ -651,6 +659,10 @@ bool Transformer(OS* os, TaskQueue* queue) {
         delete key;
         delete val;
         delete input;
+
+        #ifdef IT_DEBUG
+            cerr << "Transformer, after | OS' refcount: " << os->ref_count << endl;
+        #endif
     }
     return true;
 }
@@ -662,16 +674,8 @@ void Run(void* threadData) {
     stringstream s;
     LinePrinter p(&s);
     TaskQueue* tasks = (TaskQueue*)threadData;
-    OS* os;
+    OS* os = tasks->getData();
     Task* task;
-
-    // Preparational loop.
-    while(true) {
-        if(tasks->data != NULL) {
-            os = tasks->data;
-            break;
-        }
-    }
 
     while(!tasks->hasToStop() && tasks->remove(task) && task != NULL) {
         bool canExecute=false;
@@ -693,11 +697,13 @@ void Run(void* threadData) {
                 s << task->output;
             }
             s << endl;
+            #ifdef IT_DEBUG
+                s << "Run | OS' refcount: " << os->ref_count << endl;
+            #endif
             p();
             if(task->type == SCRIPT) {
                 Locker* g = new Locker(OSMutex);
                 os->newArray(task->input.size());
-                /*
                 for(list<string>::iterator it=task->input.begin(); it!=task->input.end(); ++it) {
                     os->pushString(it->c_str());
                     os->addProperty(-2);
@@ -713,7 +719,6 @@ void Run(void* threadData) {
                 } else if(os->isNumber() && !os->toBool()) {
                     // Something is wrong.
                 }
-                */
                 os->pop();
                 delete g;
             } else {
@@ -785,6 +790,11 @@ int main(int argc, const char** argv) {
         goto itCleanup;
     }
 
+#ifdef IT_DEBUG
+    cerr << "DEBUG: Before InitIceTeaExt()" << endl;
+    cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
+#endif
+
     // Initialize ObjectScript with our stuff.
     initIceTeaExt(os, cli);
 
@@ -815,6 +825,10 @@ int main(int argc, const char** argv) {
 
     // Run the script to populate the global objects.
     if(FileExists(buildit)) {
+        #ifdef IT_DEBUG
+            cerr << "After InitIceTeaExt() and before require(build.it)" << endl;
+            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
+        #endif
         OS::StringDef strs[] = {
             {OS_TEXT("__filename"), OS_TEXT(buildit)},
             {OS_TEXT("__dirname"), OS_TEXT(string(StripLastPath(buildit)+"/").c_str())},
@@ -842,8 +856,18 @@ int main(int argc, const char** argv) {
         cli->usage();
         goto itCleanup;
     } else {
+        #ifdef IT_DEBUG
+            cerr << "Before Preprocessor..." << endl;
+            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
+        #endif
+
         // Run configure and strech inputs
         if(!Preprocessor(os)) goto itCleanup;
+
+        #ifdef IT_DEBUG
+            cerr << "After Preprocessor..." << endl;
+            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
+        #endif
 
         // We do this after we configure, since now all the filenames are streched.
         if(cli->check("--print-targets")) {
@@ -862,10 +886,10 @@ int main(int argc, const char** argv) {
         tmp << cli->value("-j");
         tmp >> thrs;
         // Now that we have the thread amount value, lets make it happen.
-        TaskQueue* tasks = new TaskQueue(thrs, Run);
-
-        // Save our OS instance to the thread stuff.
-        tasks->data = os;
+        #ifdef IT_DEBUG
+            cerr << "Initializing with " << thrs << " threads." << endl;
+        #endif
+        TaskQueue* tasks = new TaskQueue(thrs, Run, os);
 
         // Now, we've got a waiting task runner there, we ned to feed it one by one.
         if(!Transformer(os, tasks)) {
@@ -883,6 +907,11 @@ int main(int argc, const char** argv) {
         // Its now save to delete the pool!
         delete tasks;
     }
+
+    #ifdef IT_DEBUG
+        cerr << "After everything..." << endl;
+        cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
+    #endif
 
     // Clean up.
     itCleanup:
