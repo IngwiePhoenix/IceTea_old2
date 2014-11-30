@@ -5,7 +5,7 @@
 #include <vector>
 #include <sstream>
 
-#include "exec-stream.h"
+#include "subprocesses.hpp"
 #include "objectscript.h"
 #include "os-icetea.h"
 

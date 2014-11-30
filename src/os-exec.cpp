@@ -2,6 +2,7 @@
 
 using namespace std;
 using namespace ObjectScript;
+using namespace stlplus;
 
 // This is the actual command function.
 CommandResult it_cmd(const string& _cmd, vector<string>& replaces) {
@@ -38,30 +39,24 @@ CommandResult it_cmd(const string& _cmd, vector<string>& replaces) {
     }
 
     // Running the actual command.
-    exec_stream_t runner(program, args);
-    runner.set_text_mode(exec_stream_t::s_all);
-    runner.close_in();
-    string so;
-    string eo;
-    stringstream stdout;
-    stringstream stderr;
-    while( getline(runner.out(), so).good() || getline(runner.err(), eo).good() ) {
-        stdout << so << endl;
-        stderr << eo << endl;
+    async_subprocess runner;
+    runner.spawn(program, args, false, true, true);
+    string stdout;
+    string stderr;
+    while(runner.tick()) {
+        int readOut = runner.read_stdout(stdout);
+        int readErr = runner.read_stderr(stderr);
     }
-    runner.close();
-    int exitc = runner.exit_code();
-
     // Prepare return
-    res.exit_code = exitc;
-    res.streams[1] = stdout.str();
-    res.streams[2] = stderr.str();
+    res.exit_code = runner.error_number();
+    res.streams[1] = stdout;
+    res.streams[2] = stderr;
 
     return res;
 }
 
 OS_FUNC(os_exec) {
-    // Syntax: [int, array] $(command [, replacements])
+    // Syntax: [int, array[3]] $(command [, replacements])
     string         cmd = os->toString(-params+0).toChar();
     vector<string> replaces;
 
@@ -77,7 +72,7 @@ OS_FUNC(os_exec) {
 
     os->pushNumber(res.exit_code);
     os->newArray();
-    os->pushString("");
+    os->pushString(""); // STDIN not supported, yet.
     os->addProperty(-2);
     os->pushString( res.streams[1].c_str() );
     os->addProperty(-2);

@@ -1,0 +1,7 @@
+language: cpp
+compiler:
+  - g++
+  - clang++
+# Change this to your needs
+script: $CXX -Isrc src/*.cpp -o icetea -lpthread -Wno-switch
+test: $CXX -Isrc src/*.cpp main.cpp -o icetea -lpthread -Wno-switch && ./icetea -e "print \"Hello World\""

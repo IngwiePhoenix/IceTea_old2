@@ -15,8 +15,8 @@
 #include "os-icetea.h"
 
 // FS access
-#include "VFS.h"
-#include "VFSTools.h"
+#include "file_system.hpp"
+#include "wildcard.hpp"
 
 // Hashing
 #include "picosha2.h"
@@ -28,12 +28,13 @@
 #include "predef.h"
 #include "cli.h"
 #include "util.h"
+#include "stlplus_version.hpp"
 
 // Namespaces!
 using namespace std;
 using namespace tthread;
 using namespace ObjectScript;
-using namespace ttvfs;
+using namespace stlplus;
 using namespace picosha2;
 
 // IceTea stuff
@@ -87,18 +88,16 @@ struct Task {
 typedef WorkQueue<Task*, OS*> TaskQueue;
 
 // Tool functions
-void getFileList(string pattern, list<string> &rt_list) {
-    StringList fList;
-    string dirName = StripLastPath(pattern);
+void getFileList(string pattern, vector<string> &rt_list) {
+    string dirName = folder_part(pattern);
+    string rpattern = filename_part(pattern);
     if(dirName == "" || dirName == ".") dirName = "./";
-    GetFileList(dirName.c_str(), fList);
-    for(StringList::iterator j=fList.begin(); j != fList.end(); j++) {
-        if(WildcardMatch((j->c_str()), PathToFileName(pattern.c_str()))) {
-            rt_list.push_back(dirName + "/" + *j);
-        }
+    vector<string> res = folder_wildcard(dirName, rpattern);
+    for(vector<string>::iterator it=res.begin(); it!=res.end(); ++it) {
+        rt_list.push_back( create_filespec(dirName, *it) );
     }
 }
-void getFileListRec(Value::Array* arr, list<string> &str_list) {
+void getFileListRec(Value::Array* arr, vector<string> &str_list) {
     for(int i=0; i<arr->length(); i++) {
         Value::String* vs_pat = (Value::String*)(*arr)[i];
         string pat = (*vs_pat);
@@ -148,8 +147,8 @@ string estimateRuleOutput(string rule, string target, OS* os, string file="") {
     string myExpected = (*o_myExpected);
 
     // Replace stuff...
-    string basename = PathToFileName(file.c_str());
-    string ext = StripFileExtension(basename);
+    string basename = filename_part(file);
+    string ext = basename_part(file);
     ReplaceStringInPlace(myExpected, "%t", target);
     ReplaceStringInPlace(myExpected, "%b", basename);
     ReplaceStringInPlace(myExpected, "%e", ext);
@@ -188,7 +187,7 @@ void __makeTasks(
     bool isBaseTarget=false; // Base target = the input file IS the right one. No search needed.
     for(int i=0; i<accepts->length(); i++) {
         Value::String* acceptPattern = (Value::String*)(*accepts)[i];
-        if(WildcardMatch( file.c_str(), (*acceptPattern) )) {
+        if(wildcard( (*acceptPattern), file )) {
             isBaseTarget = true;
             break;
         }
@@ -343,7 +342,7 @@ void __makeTasks(
                 Value::Array* currAccepts = (Value::Array*)(*currRule)["accepts"];
                 for(int n=0; n<currAccepts->length(); n++) {
                     Value::String* accPattern = (Value::String*)(*currAccepts)[n];
-                    if(WildcardMatch(file.c_str(), (*accPattern))) {
+                    if(wildcard((*accPattern), file)) {
                         currentIsBase = true;
                     }
                     delete accPattern;
@@ -544,13 +543,13 @@ bool Preprocessor(OS* os) {
 
         // Now strech the input parameter.
         Value::Array* input = (Value::Array*)(*val)["input"];
-        list<string> fileList;
+        vector<string> fileList;
         getFileListRec(input, fileList);
         os->pushValueById(val->valueID);
         int ojoff = os->getAbsoluteOffs(-1);
         os->newArray(); // Overwrite the previous
         int aroff = os->getAbsoluteOffs(-1);
-        for(list<string>::iterator it=fileList.begin(); it!=fileList.end(); ++it) {
+        for(vector<string>::iterator it=fileList.begin(); it!=fileList.end(); ++it) {
             os->pushString((*it).c_str());
             os->addProperty(aroff);
         }
@@ -663,7 +662,7 @@ void Run(void* threadData) {
     while(!tasks->hasToStop() && tasks->remove(task) && task != NULL) {
         bool canExecute=false;
         for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
-            if(!FileExists( it2->c_str() )) {
+            if(!file_exists( *it2 )) {
                 // Put the task back in, we cant run it now.
                 //tasks->add(task);
             }
@@ -732,6 +731,7 @@ int main(int argc, const char** argv) {
     cpr << "IceTea 0.0.1 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR
+        << "stlplus " << STLPLUS_VERSION << endl
         << endl;
 
     // Arg stuff.
@@ -808,14 +808,13 @@ int main(int argc, const char** argv) {
     // Introduce bootstrap.it later...
 
     // Run the script to populate the global objects.
-    if(FileExists(buildit)) { cout << "building it" << endl;
+    if(file_exists(buildit)) {
         #ifdef IT_DEBUG
             cerr << "After InitIceTeaExt() and before require(build.it)" << endl;
             cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
         #endif
         OS::StringDef strs[] = {
-            {OS_TEXT("__filename"), OS_TEXT(buildit)},
-            {OS_TEXT("__dirname"), OS_TEXT(string(StripLastPath(buildit)+"/").c_str())},
+            {OS_TEXT("__buildit"), OS_TEXT(buildit)},
             {}
         };
         os->pushGlobals();
