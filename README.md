@@ -190,35 +190,86 @@ This object is being used to check for various things on the host.
 
 | Method                   | Description                                     |
 |--------------------------|-------------------------------------------------|
-| .header(name)            | Check for a system header ala `#include <...>`  |
+| .header(name, type)      | Check for a system header ala `#include <...>`  |
 | .lib(name)               | Check for a system library ala `gcc ... -lname` |
-| .function(name)          | Check if a function is available by default.    |
-| .libfnc(lib, name)       | Check if a function is in a library.            |
-| .headerfunc(hdr, name)   | Check if a function is in a specific header.    |
-| .checkfnc(lib, hdr, n)   | Check for function in header AND library.       |
+| .func(name, type)        | Check if a function is available by default.    |
+| .libfunc(lib, name, tp)  | Check if a function is in a library.            |
+| .headerfunc(hdr, nm, tp) | Check if a function is in a specific header.    |
+| .checkfnc(l, h, n, t)    | Check for function in header AND library.       |
 | .with(name, desc, arg)   | Add a --with-NAME flag.                         |
 | .hasWith(name)           | Check if --with-NAME was given.                 |
 | .withValue(name)         | Get the --with-NAME value.                      |
 | .enable(name)            | Add an --enable-NAME flag.                      |
 | .enabled(name)           | Check if --enable-NAME was given.               |
-| .tryCompile(kind, src)   | Try to compile source of kind (name of a rule)  |
+| .tryBuild(kind, src)     | Try to compile source of kind (name of a rule)  |
 | .tryRun(kind, src)       | Try to run the source. Returns bool AND output. |
 | .preprocess(kind, src)   | Run src thru kind's preprocessor, if given.     |
-| .tool(name)              | Check if tool is available on the host.         |
+| .tool(name, confVar)     | Check if tool is available on the host.         |
+| .toolFlag(confVar, flag) | Test the tool within the confVar for a flag.    |
 | .transform(name)         | Transform `name.in` to `name`                   |
 | .transform(from, to)     | Like above but target and destination is given. |
 | .set(name, value)        | Define a configuration value.                   |
 | .get(name)               | Get a configuration value.                      |
-| .detector_dir(name)      | Set working directory for the detector.         |
+| .working_dir(name)       | Set working dir for detector. Default: out/.detector.dir/ |
+| .cache_file(name)        | Set cache file. Default: out/.detector.cache    |
 
-#### Info to .finalize(...)
+#### Info to .transform(...)
 Once called, it will DIRECTLY begin to transform. Set this at the very bottom!
 
 #### Info to .set(...)
 When you `.transform()` a file, you can get values with `@NAME@`. The only special @-Variable is `@ICETEA_CONFIGURE@` which will print all macros (`#define ...`) that it gathered. Use that in soemthing like `config.h`.
 
-#### Information to the kind value.
+#### Information to the `kind` value.
 When you supply the Kind attribute, the engine will place a temporary source file into the current folder and run it thru the casual rules. (The produced objects and alike are deleted afterwards.)
+
+#### Information on `type`
+This is used to specify if we are looking for a specific component. It defaults to "C". The argument can be:
+
+- C
+- C++
+- OBJC
+- OBJC++
+
+A pluggable API might be available at a later point to add support for other languages/compilers.
+
+#### Information about .lib(), .header(), .func() and alike
+Similar to CMake and Autoconf, these functions check for availability. If found, then a `HAVE_`-prefixed define is created. For instance, if you used this code:
+
+```javascript
+detector.header("stdio.h");
+detector.lib("curl");
+```
+
+then you would get:
+
+```c
+#define HAVE_STDIO_H 1
+#define HAVE_LIBCURL 1
+```
+
+This also goes for tools. A full example would be:
+
+```javascript
+var haveDirent =
+    detector.header("dirent.h")
+    || detector.header("sys/dirent.h");
+
+detector.libfunc("socket", "connect");
+detector.libfunc("curl", "connect");
+
+detector.tool("CC", "g++")
+for(var _,f in ["-Wno-switch", "-Wno-format"])
+    detector.toolFlag("CC", f)
+```
+
+Produces:
+
+```c
+#define HAVE_SYS_DIRENT_H 1
+#define HAVE_LIBCURL 1
+#define HAVE_FUNC_CONNECT 1
+#define DETECTOR_CC "g++"
+```
 
 ### fs: File System (ttvfs)
 The Filesystem. Very important.

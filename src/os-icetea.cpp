@@ -3,6 +3,7 @@
 #include "objectscript.h"
 #include "os-value.h"
 #include "os-icetea.h"
+#include "os-exec.h"
 
 #include "picosha2.h"
 
@@ -28,7 +29,6 @@ extern Value::Object* actions;
     In order for it to work, we need 2 C functions and a struct.
     And also a few defines to tell which kind we want to use.
 */
-#define OS_FUNC(name) int name(OS* os, int params, int closure_values, int need_ret_values, void * userData)
 #define IT_TARGET 0x0
 #define IT_RULE 0x1
 #define IT_ACTION 0x2
@@ -73,7 +73,7 @@ OS_FUNC(shotgunner) {
     return 1;
 }
 
-OS_FUNC(os_sh2) {
+OS_FUNC(os_sh2_string) {
     // We can be cool and export this, so it can be used inside build.it's.
     std::string src_str = string( os->popString(-params+0).toChar() );
     std::string hash_hex_str;
@@ -203,7 +203,7 @@ void initObj(OS* os) {
 void initIceTeaExt(OS* os, CLI* cli) {
     // First things first.
     initObj(os);
-    
+
     // Bring it in, the targeter! Will be suited for Targets and Rules.
     os->pushCFunction(shotgunner, (void*)IT_TARGET);
     os->setGlobal("target");
@@ -211,6 +211,10 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->setGlobal("rule");
     os->pushCFunction(shotgunner, (void*)IT_ACTION);
     os->setGlobal("action");
+
+    // Exec
+    os->pushCFunction(os_exec);
+    os->setGlobal("$");
 
     // Option parsing/passing
     OS::FuncDef cliFuncs[] = {
@@ -225,11 +229,17 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->pop();
 
     // Hashing
-    os->pushCFunction(os_sh2);
-    os->setGlobal("sh2");
+    OS::FuncDef sh2Funcs[] = {
+        {OS_TEXT("string"), os_sh2_string},
+        {}
+    };
+    os->getModule("sha2");
+    os->setFuncs(sh2Funcs);
+    os->pop();
 
     // VFS, aka our FS module
-    // Console, APConsoleLib
+    // detect, cDetect in OS
+    // Configurables module
     // Misc
     os->pushCFunction(osType);
     os->setGlobal("osType");

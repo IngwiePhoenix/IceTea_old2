@@ -27,6 +27,7 @@
 // Misc
 #include "predef.h"
 #include "cli.h"
+#include "util.h"
 
 // Namespaces!
 using namespace std;
@@ -76,6 +77,8 @@ struct Task {
     // The related target, pushed to the function.
     Value::Object* target;
 
+    int failureCounter;
+
     ~Task() {
         if(onBuild!=NULL) delete onBuild;
         delete target;
@@ -123,26 +126,6 @@ bool ruleExists(const string ruleName, OS* os) {
     } else {
         os->pop(2);
         return false;
-    }
-}
-
-
-std::string ReplaceString(std::string subject, const std::string& search,
-                          const std::string& replace) {
-    size_t pos = 0;
-    while((pos = subject.find(search, pos)) != std::string::npos) {
-         subject.replace(pos, search.length(), replace);
-         pos += replace.length();
-    }
-    return subject;
-}
-
-void ReplaceStringInPlace(std::string& subject, const std::string& search,
-                          const std::string& replace) {
-    size_t pos = 0;
-    while((pos = subject.find(search, pos)) != std::string::npos) {
-         subject.replace(pos, search.length(), replace);
-         pos += replace.length();
     }
 }
 
@@ -814,6 +797,7 @@ int main(int argc, const char** argv) {
         } else {
             code = cli->value("--os-exec");
         }
+        cout << "Executing: " << code << endl;
         os->eval(code.c_str());
         goto itCleanup;
     }
@@ -824,7 +808,7 @@ int main(int argc, const char** argv) {
     // Introduce bootstrap.it later...
 
     // Run the script to populate the global objects.
-    if(FileExists(buildit)) {
+    if(FileExists(buildit)) { cout << "building it" << endl;
         #ifdef IT_DEBUG
             cerr << "After InitIceTeaExt() and before require(build.it)" << endl;
             cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
