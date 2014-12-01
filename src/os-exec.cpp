@@ -27,30 +27,24 @@ CommandResult it_cmd(const string& _cmd, vector<string>& replaces) {
         cmd = strm.str();
     }
 
-    // Doing a last fixup...
-    string program;
-    string args;
-    if (cmd.find(' ') != string::npos) {
-        program = cmd.substr(0, cmd.find(' '));
-        args    = cmd.substr(cmd.find(' ')+1);
-    } else {
-        program = cmd;
-        args = "";
-    }
+    // This is a minimal interface...
+    struct IceTeaProcess: public subprocess {
+        string stdout;
+        string stderr;
+        bool callback() {
+            read_stdout(stdout);
+            read_stderr(stderr);
+            return error();
+        }
+    };
 
     // Running the actual command.
-    async_subprocess runner;
-    runner.spawn(program, args, false, true, true);
-    string stdout;
-    string stderr;
-    while(runner.tick()) {
-        int readOut = runner.read_stdout(stdout);
-        int readErr = runner.read_stderr(stderr);
-    }
+    IceTeaProcess runner;
+    runner.spawn(cmd, false, true, true);
     // Prepare return
     res.exit_code = runner.error_number();
-    res.streams[1] = stdout;
-    res.streams[2] = stderr;
+    res.streams[1] = runner.stdout;
+    res.streams[2] = runner.stderr;
 
     return res;
 }
@@ -61,6 +55,7 @@ OS_FUNC(os_exec) {
     vector<string> replaces;
 
     if(params >= 2) {
+        cout << "Args: " << params << endl;
         // We have to extract the replaces.
         // We start at 1, because we go down the stack.
         for(int i=1; i<params; i++) {

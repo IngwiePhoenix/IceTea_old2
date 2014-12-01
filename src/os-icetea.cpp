@@ -4,6 +4,7 @@
 #include "os-value.h"
 #include "os-icetea.h"
 #include "os-exec.h"
+#include "os-pfs.h"
 
 #include "picosha2.h"
 
@@ -237,7 +238,8 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->setFuncs(sh2Funcs);
     os->pop();
 
-    // VFS, aka our FS module
+    // PFS, aka our FS module
+    initializePFS(os);
     // detect, cDetect in OS
     // Configurables module
     // Misc
