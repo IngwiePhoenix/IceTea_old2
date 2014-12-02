@@ -19,7 +19,6 @@ bool initializePFS(OS* os) {
         {OS_TEXT("move"),               os_pfs_move},
 
         //{OS_TEXT("open"),               os_pfs_open},
-        //{OS_TEXT("openDir"),            os_pfs_openDir},
 
         {OS_TEXT("getFileList"),        os_pfs_getFileList},
         {OS_TEXT("getDirList"),         os_pfs_getDirList},
@@ -53,15 +52,6 @@ bool initializePFS(OS* os) {
         {OS_TEXT("isRelativePath"),     os_pfs_isRelativePath},
 
         {OS_TEXT("lookup"),             os_pfs_lookup},
-
-        {OS_TEXT("__get@userDir"),      os_pfs_getUserDir},
-        {}
-    };
-    OS::FuncDef sysFuncs[] = {
-        {OS_TEXT("cd"), os_pfs_cd},
-        {OS_TEXT("which"), os_pfs_which},
-        {OS_TEXT("__get@cwd"), os_pfs_cwd},
-        {OS_TEXT("__get@fullCwd"), os_pfs_fullCwd},
         {}
     };
 
@@ -70,10 +60,6 @@ bool initializePFS(OS* os) {
 
     os->getModule("pfs");
     os->setFuncs(pfsFuncs);
-    os->pop();
-
-    os->getModule("sys");
-    os->setFuncs(sysFuncs);
     os->pop();
 
     return true;
@@ -232,12 +218,6 @@ OS_FUNC(os_pfs_glob) {
     return 1;
 }
 
-// System paths
-OS_FUNC(os_pfs_getUserDir) {
-    os->pushString(folder_home().c_str());
-    return 1;
-}
-
 OS_FUNC(os_pfs_wildcardMatch) {
     EXPECT_STRING(1)
     EXPECT_STRING(2)
@@ -273,11 +253,9 @@ CALL_STLPLUS_STRING(os_pfs_extname,             extension_part)
 CALL_STLPLUS_STRING(os_pfs_dirname,             folder_part)
 
 // Working directory stuff
-CALL_STLPLUS_BOOL(os_pfs_cd,                    folder_set_current)
 CALL_STLPLUS_BOOL(os_pfs_isFullPath,            is_full_path)
 CALL_STLPLUS_BOOL(os_pfs_isRelativePath,        is_relative_path)
 
-CALL_STLPLUS_STRING(os_pfs_which,               path_lookup)
 OS_FUNC(os_pfs_lookup) {
     EXPECT_STRING(1)
     string file = os->toString(-params+0).toChar();
@@ -299,14 +277,5 @@ OS_FUNC(os_pfs_lookup) {
         return 1;
     }
     os->pushString( lookup(file, path).c_str() );
-    return 1;
-}
-
-OS_FUNC(os_pfs_cwd) {
-    os->pushString(folder_current().c_str());
-    return 1;
-}
-OS_FUNC(os_pfs_fullCwd) {
-    os->pushString(folder_current_full().c_str());
     return 1;
 }

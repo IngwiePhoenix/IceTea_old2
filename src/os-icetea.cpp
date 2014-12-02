@@ -5,6 +5,7 @@
 #include "os-icetea.h"
 #include "os-exec.h"
 #include "os-pfs.h"
+#include "os-sys.h"
 
 #include "picosha2.h"
 
@@ -80,19 +81,6 @@ OS_FUNC(os_sh2_string) {
     std::string hash_hex_str;
     hash256_hex_string(src_str, hash_hex_str);
     os->pushString( hash_hex_str.c_str() );
-    return 1;
-}
-
-OS_FUNC(osType) {
-    string osStr;
-    #if defined(PREDEF_PLATFORM_UNIX) || defined(PREDEF_OS_MACOSX)
-    osStr="unix";
-    #elif PREDEF_PLATFORM_WIN32
-    osStr="windows";
-    #else
-    osStr="?";
-    #endif
-    os->pushString(osStr.c_str());
     return 1;
 }
 
@@ -243,6 +231,5 @@ void initIceTeaExt(OS* os, CLI* cli) {
     // detect, cDetect in OS
     // Configurables module
     // Misc
-    os->pushCFunction(osType);
-    os->setGlobal("osType");
+    initializeSYS(os);
 }

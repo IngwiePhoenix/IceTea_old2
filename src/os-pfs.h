@@ -57,16 +57,10 @@ OS_FUNC(os_pfs_open);
     // Non-traditional
     OS_FUNC(os_pfs_file_seekRel);
     OS_FUNC(os_pfs_file_getSize);
-    OS_FUNC(os_pfs_file_getBuf);
+    OS_FUNC(os_pfs_file_getContents);
 OS_FUNC(os_pfs_file_close);
-
-OS_FUNC(os_pfs_openDir);
-    OS_FUNC(os_pfs_dir_load);
-    OS_FUNC(os_pfs_dir_getFile);
-    OS_FUNC(os_pfs_dir_getDir);
-    OS_FUNC(os_pfs_dir_getFiles);
-    OS_FUNC(os_pfs_dir_getDirs);
-OS_FUNC(os_pfs_dir_close);
+OS_FUNC(os_pfs_file_write_contents);
+OS_FUNC(os_pfs_file_get_contents);
 */
 
 // TTVFS specific
@@ -104,13 +98,9 @@ OS_FUNC(os_pfs_extname);
 OS_FUNC(os_pfs_dirname);
 
 // Working directory stuff
-OS_FUNC(os_pfs_cd);
 OS_FUNC(os_pfs_isFullPath);
 OS_FUNC(os_pfs_isRelativePath);
 
-OS_FUNC(os_pfs_which);
 OS_FUNC(os_pfs_lookup);
-OS_FUNC(os_pfs_cwd);
-OS_FUNC(os_pfs_fullCwd);
 
 #endif
