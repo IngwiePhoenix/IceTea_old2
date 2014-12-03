@@ -27,3 +27,12 @@ print "    Type               : ${sys.type}"
 print "    Name               : ${sys.name}"
 print "    Directory separator: \"${sys.dirSep}\""
 print "    Path separator     : \"${sys.pathSep}\""
+
+print("");
+print "Testing your environment..."
+print "    HOME: ${sys.getenv('HOME')}"
+
+print(""); // This currently fails.
+sys.putenv("foo","bar");
+print "A changed environment:"
+print "    foo: ${sys.getenv('foo')}"

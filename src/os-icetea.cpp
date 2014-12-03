@@ -6,6 +6,7 @@
 #include "os-exec.h"
 #include "os-pfs.h"
 #include "os-sys.h"
+#include "os-configurable.h"
 
 #include "picosha2.h"
 
@@ -232,4 +233,5 @@ void initIceTeaExt(OS* os, CLI* cli) {
     // Configurables module
     // Misc
     initializeSYS(os);
+    initializeConfigurable(os);
 }

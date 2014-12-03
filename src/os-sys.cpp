@@ -78,7 +78,8 @@ OS_FUNC(os_sys_osName) {
 
 OS_FUNC(os_sys_getenv) {
     EXPECT_STRING(1)
-    os->pushString( getenv(os->toString(-params+0).toChar()) );
+    const char* env = os->toString(-params+0).toChar();
+    os->pushString( getenv(env) );
     return 1;
 }
 
@@ -87,10 +88,12 @@ OS_FUNC(os_sys_putenv) {
     EXPECT_STRING(2)
     string str;
     str.append( os->toString(-params+0).toChar() );
-    str.append( "=\"" );
+    str.append( "=" );
     str.append( os->toString(-params+1).toChar() );
-    str.append( "\"" );
-    os->pushNumber( putenv((char*)str.c_str()) );
+    // Wow, C-like memory management. whut.
+    char* nstr = new char[str.length()+1];
+    strcpy(nstr, str.c_str());
+    os->pushNumber( putenv(nstr) );
     return 1;
 }
 
