@@ -10,11 +10,12 @@ I think you can relate to at least one of those issues. And if you can't, then t
 ```javascript
 target("myProg", "exe") {
     input: ["src/*.cpp"],
-    CXX: {
-        include_dirs: ["src/"]
+    settings: {
+        native: {
+            include_dirs: ["src/"]
+        }
     }
 }
-
 ```
 
 This will compile all files in `src/` into an executable called `myProg`. It will also create an output folder and build all objects with the prefix `myProg-` - and then link them into the top-level.
@@ -25,23 +26,27 @@ But what if you wish to run a bit of configuration?
 target("myLib", "shlib") {
     input: ["lib/*.cxx"],
     configure: function() {
-        // *.in -> *. Basically, config.h.in becomes config.h
-        // To apply our own configuration into this file, just add @ICETEA_CONFIG@! :)
-        config.transform("lib/config.h.in");
-        config.sys_header("stdio.h");
-        config.sys_header("sys/dirent.h");
-        config.stdc_headers(); // Checks for all standart C headers.
-        config.define("MY_NAME","Value"); // @MY_NAME@ -> Value
-        config.sys_library("z");
-        // We can use the following to automatically extend our target.
-        // In this case, we'd add: libraries: ["curl"]
-        config.add_sys_library("curl");
-        config.function("popen"); // Check if we have popen() by default.
+        detect.header("stdio.h");
+        detect.header("sys/dirent.h");
+        detect.stdc_headers(); // Checks for all standart C headers.
+        detect.set("MY_NAME", "Value"); // @MY_NAME@ -> Value
+        detect.lib("z");
+        // Check and add the library to @settings.native.libraries
+        detect.add_lib("curl");
+        detect.func("popen"); // Check if we have popen() by default.
 
-        // When we're done, we finalize it.
-        config.finalize();
+        // *.in -> *. Basically, config.h.in becomes config.h
+        detect.transform("lib/config.h.in");
+        // We can use the following call to create an "actual" header.
+        detect.write_header("config.h");
+        // If you are using another tool to post-process your config, you can...
+        detect.write_json("config-h.json");
     },
-    CXX: { include_dirs: ["lib/"] }
+    settings: {
+        native: {
+            include_dirs: ["lib/"]
+        }
+    }
 }
 ```
 
@@ -71,7 +76,7 @@ target("mySpecialLib", "lib") {
             // Do something because foo was enabled.
         }
         if(config.with("libmeep")) {
-            if(fs.isDir(config.withValue("libmeep"))) {
+            if(pfs.isDir(config.withValue("libmeep"))) {
                 // Do something, if the value of --XYZ-with-libmeep is a dir.
             }
         }
@@ -98,15 +103,15 @@ You have multiple ways of getting a dependency: Via the full name, or multiple v
 
 ```javascript
 target("foo-ext-a", "lib") {
-    ...
+    // ...
     tag: "foo-ext"
 }
 target("foo-ext-b", "lib") {
-    ...
+    // ...
     tag: "foo-ext"
 }
 target("bar", "exe") {
-    ...
+    // ...
     needs: tag("foo-ext") + ["somethingElse"] // -> foo-ext-a, foo-ext-b, somethingElse
 }
 ```
@@ -195,7 +200,11 @@ This object is being used to check for various things on the host.
 | .func(name, type)        | Check if a function is available by default.    |
 | .libfunc(lib, name, tp)  | Check if a function is in a library.            |
 | .headerfunc(hdr, nm, tp) | Check if a function is in a specific header.    |
-| .checkfnc(l, h, n, t)    | Check for function in header AND library.       |
+| .checkfunc(l, h, n, t)   | Check for function in header AND library.       |
+| .add_lib(name)           | Call `.lib()` and if found, add to target.      |
+| .add_libfunc(...)        | Same as above.                                  |
+| .add_headerfunc(...)     | Again, the same.                                |
+| .add_checkfunc(...)      | Checks for header, lib and function and add lib |
 | .with(name, desc, arg)   | Add a --with-NAME flag.                         |
 | .hasWith(name)           | Check if --with-NAME was given.                 |
 | .withValue(name)         | Get the --with-NAME value.                      |
@@ -208,16 +217,20 @@ This object is being used to check for various things on the host.
 | .toolFlag(confVar, flag) | Test the tool within the confVar for a flag.    |
 | .transform(name)         | Transform `name.in` to `name`                   |
 | .transform(from, to)     | Like above but target and destination is given. |
+| .write_header(to)        | Write a C header containing all variables.      |
+| .write_json(to)          | Write a JSON file with all detector variables.  |
 | .set(name, value)        | Define a configuration value.                   |
 | .get(name)               | Get a configuration value.                      |
 | .working_dir(name)       | Set working dir for detector. Default: out/.detector.dir/ |
 | .cache_file(name)        | Set cache file. Default: out/.detector.cache    |
+| .have_prefix(str)        | Define the define-prefix. Default: HAVE_*       |
+| .havelib_prefix(str)     | Define the define-prefix for a lib. DeAULTf: HAVE_LIB* |
 
-#### Info to .transform(...)
+#### Info to .transform(...), .write_header() and .write_json()
 Once called, it will DIRECTLY begin to transform. Set this at the very bottom!
 
 #### Info to .set(...)
-When you `.transform()` a file, you can get values with `@NAME@`. The only special @-Variable is `@ICETEA_CONFIGURE@` which will print all macros (`#define ...`) that it gathered. Use that in soemthing like `config.h`.
+When you `.transform()` a file, you can get values with `@NAME@`. The only special @-Variable is `@ICETEA_CONFIGURE@` which will print all macros (`#define ...`) that it gathered. Use that in soemthing like `config.h.in`, if you already have a template.
 
 #### Information to the `kind` value.
 When you supply the Kind attribute, the engine will place a temporary source file into the current folder and run it thru the casual rules. (The produced objects and alike are deleted afterwards.)
@@ -270,6 +283,8 @@ Produces:
 #define HAVE_FUNC_CONNECT 1
 #define DETECTOR_CC "g++"
 ```
+
+Further, if you are making a library lookup, you can use the `.add_lib()` function to add it to your target.
 
 ### fs: File System (ttvfs)
 The Filesystem. Very important.

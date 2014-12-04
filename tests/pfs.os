@@ -3,7 +3,6 @@
 */
 
 // Own lookup.
-print("");
 var list = pfs.lookup("main.cpp", [__DIR__ .. "/../src/"]);
 print "Looked up main.cpp and got: ${list}"
 

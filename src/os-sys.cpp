@@ -79,7 +79,13 @@ OS_FUNC(os_sys_osName) {
 OS_FUNC(os_sys_getenv) {
     EXPECT_STRING(1)
     const char* env = os->toString(-params+0).toChar();
-    os->pushString( getenv(env) );
+    char* val;
+    val = getenv(env);
+    if(val == NULL) {
+        // The variable was not found. Make it empty.
+        val = (char*)"";
+    }
+    os->pushString( val );
     return 1;
 }
 

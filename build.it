@@ -1,8 +1,8 @@
 rule("cxx", "C++") {
     accepts: ["*.cpp", "*.cxx", "*.c++"],
     output: {
-        pattern: (osType()=="unix" ? "*.o":"*.obj"),
-        expected: (osType()=="unix" ? "%t-%e.o":"%t-%e.obj")
+        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
+        expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
     },
     prepare: function() {
         print "Checking for a C++ compiler...";
@@ -16,8 +16,8 @@ rule("cxx", "C++") {
 rule("c", "C") {
     accepts: ["*.c", "*.C"],
     output: {
-        pattern: (osType()=="unix" ? "*.o":"*.obj"),
-        expected: (osType()=="unix" ? "%t-%e.o":"%t-%e.obj")
+        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
+        expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
     },
     prepare: function() {
         print "Checking for a C compiler...";
@@ -40,10 +40,10 @@ rule("strip", "Strip") {
 }
 
 rule("exe", "Executable") {
-    accepts: [(osType()=="unix" ? "*.o-stripped":"*.obj")],
+    accepts: [(sys.type=="unix" ? "*.o-stripped":"*.obj")],
     output: {
-        pattern: (osType()=="unix" ? "*":"*.exe"),
-        expected: (osType()=="unix" ? "%t":"%t.exe"),
+        pattern: (sys.type=="unix" ? "*":"*.exe"),
+        expected: (sys.type=="unix" ? "%t":"%t.exe"),
         multiple: true
     },
     prepare: function() {
@@ -69,6 +69,7 @@ target("IceTea_self", "exe") {
         }
     },
     init: function() {
+        print("Configuring for ${sys.name} (${sys.type})");
         cli.group "IceTea";
         cli.insert {
             longopt: "--meep",

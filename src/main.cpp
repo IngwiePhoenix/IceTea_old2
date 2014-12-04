@@ -87,6 +87,11 @@ struct Task {
 };
 typedef WorkQueue<Task*, OS*> TaskQueue;
 
+// Other globals...
+OS*  os;
+CLI* cli;
+
+
 // Tool functions
 void getFileList(string pattern, vector<string> &rt_list) {
     string dirName = folder_part(pattern);
@@ -105,7 +110,7 @@ void getFileListRec(Value::Array* arr, vector<string> &str_list) {
     }
 }
 
-bool ruleExists(Value::String* ruleName, OS* os) {
+bool ruleExists(Value::String* ruleName) {
     os->pushValueById(ruleName->valueID);
     os->pushValueById(rules->valueID);
     if(os->in(/* string in object */)) {
@@ -116,7 +121,7 @@ bool ruleExists(Value::String* ruleName, OS* os) {
         return false;
     }
 }
-bool ruleExists(const string ruleName, OS* os) {
+bool ruleExists(const string ruleName) {
     os->pushString(ruleName.c_str());
     os->pushValueById(rules->valueID);
     if(os->in(/* string in object */)) {
@@ -132,7 +137,7 @@ bool ruleExists(const string ruleName, OS* os) {
 static tthread::mutex OSMutex;
 typedef tthread::lock_guard<tthread::mutex> Locker;
 
-string estimateRuleOutput(string rule, string target, OS* os, string file="") {
+string estimateRuleOutput(string rule, string target, string file="") {
     os->pushString(rule.c_str());
     os->pushValueById(rules->valueID);
     if(!os->in()) {
@@ -164,10 +169,10 @@ string estimateRuleOutput(string rule, string target, OS* os, string file="") {
 
 void __makeTasks(
     string rule, string file, string target,
-    TaskQueue* queue, OS* os,
+    TaskQueue* queue,
     string& input, bool finalRule=false
 ) {
-    if(!ruleExists(rule, os)) {
+    if(!ruleExists(rule)) {
         cerr << "[IceTea]: Rule \"" << rule << "\" does not exist." << endl;
         return;
     }
@@ -195,7 +200,7 @@ void __makeTasks(
     }
 
     // In any case, we want to create the expected value. Its easy.
-    string myExpected = estimateRuleOutput(rule, target, os, file);
+    string myExpected = estimateRuleOutput(rule, target, file);
 
     if(isBaseTarget) {
         // Do not even go much further, add the target accordingly.
@@ -354,7 +359,7 @@ void __makeTasks(
                     // In this case, recall ourself. The above, first check will pass
                     // and it will execute a base rule.
                     string newInput;
-                    __makeTasks((*ruleName), file, target, queue, os, newInput);
+                    __makeTasks((*ruleName), file, target, queue, newInput);
                     //if(newInput.empty()) continue;
                     input = newInput;
                 } else {
@@ -373,7 +378,7 @@ void __makeTasks(
                         Beyond that, we return the expected output, as well.
                     */
                     string newInput;
-                    __makeTasks((*ruleName), file, target, queue, os, newInput);
+                    __makeTasks((*ruleName), file, target, queue, newInput);
                     //cout << (*ruleName) << ": Current is CHILD -- " << file << endl;
                     //cout << rule << "@" << (*ruleName) << ": " << newInput << " | " << myExpected << endl;
 
@@ -383,7 +388,7 @@ void __makeTasks(
                         continue;
                     }
 
-                    string theExpected = estimateRuleOutput((*ruleName), target, os, file);
+                    string theExpected = estimateRuleOutput((*ruleName), target, file);
                     Value::String* t_rd = (Value::String*)(*currRule)["display"];
                     string display = (*t_rd);
                     string _ruleName = (*ruleName);
@@ -440,10 +445,10 @@ void __makeTasks(
 }
 
 
-string makeTasks(string rule, string file, string target, TaskQueue* queue, OS* os) {
+string makeTasks(string rule, string file, string target, TaskQueue* queue) {
     string tmp;
     // The first call ALWAYS results in the actual thing.
-    __makeTasks(rule, file, target, queue, os, tmp, true);
+    __makeTasks(rule, file, target, queue, tmp, true);
     return tmp;
 }
 
@@ -469,7 +474,7 @@ string makeTasks(string rule, string file, string target, TaskQueue* queue, OS* 
             * Process the task accordingly (run commands, request OS call)
 */
 // Processors
-bool Initializer(OS* os) {
+bool Initializer() {
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
     Value::Array keys(os);
@@ -477,7 +482,7 @@ bool Initializer(OS* os) {
         Value::String* key = (Value::String*)keys[i];
         Value::Object* val = (Value::Object*)(*targets)[(*key)];
         Value::String* ruleName = (Value::String*)(*val)["_"];
-        if(!ruleExists(ruleName, os)) {
+        if(!ruleExists(ruleName)) {
             cerr << "Target \"" << (*key) << "\" refferences to non-existing rule \"" << (*ruleName) << "\"." << endl;
             return false;
         }
@@ -515,7 +520,7 @@ bool Initializer(OS* os) {
     }
     return true;
 }
-bool Preprocessor(OS* os) {
+bool Preprocessor() {
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
     Value::Array keys(os);
@@ -566,7 +571,7 @@ bool Preprocessor(OS* os) {
     }
     return true;
 }
-bool Transformer(OS* os, TaskQueue* queue) {
+bool Transformer(TaskQueue* queue) {
     // And now lets get serious.
     // We only must push "safe" targets into the queue...
     // There needs to be a mechanism to determine the actual target list.
@@ -592,7 +597,7 @@ bool Transformer(OS* os, TaskQueue* queue) {
         t->target = val;
         t->ruleName = rule;
         t->ruleDisplay = display;
-        t->output = estimateRuleOutput(rule, target, os);
+        t->output = estimateRuleOutput(rule, target);
 
         for(int j=0; j<input->length(); j++) {
             Value::String* v_file = (Value::String*)(*input)[j];
@@ -603,12 +608,15 @@ bool Transformer(OS* os, TaskQueue* queue) {
                 cerr << "Before makeTaks: " << os->ref_count << endl;
                 cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
             #endif
-            string partialInput = makeTasks(rule, file, target, queue, os);
+            string partialInput = makeTasks(rule, file, target, queue);
             // The final rule itself however, is reserved to be done by hand.
             if(!partialInput.empty()) {
                 t->input.push_back(partialInput);
             } else {
-                cout << "Empty and Partial: " << partialInput << endl;
+                cerr << "IceTea: Appearently there was no matching routine to process '"
+                     << file << "' with specified '"<< rule << "'. Are your rules properly "
+                     << "connected?" << endl;
+                continue; // Skip the rest of the loop.
             }
             delete v_file;
         }
@@ -656,7 +664,6 @@ void Run(void* threadData) {
     stringstream s;
     LinePrinter p(&s);
     TaskQueue* tasks = (TaskQueue*)threadData;
-    OS* os = tasks->getData();
     Task* task;
 
     while(!tasks->hasToStop() && tasks->remove(task) && task != NULL) {
@@ -712,13 +719,27 @@ void Run(void* threadData) {
 }
 
 // Handle errors properly.
-void terminator(OS* os) {
-    cerr << "--- Terminating ---" << endl;
+inline bool terminator() {
+    if(os->isExceptionSet()) {
+        cerr << "--- Terminating ---" << endl;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+int itCleanup() {
+    delete cli;
+    delete targets;
+    delete rules;
+    delete actions;
+    os->release();
+    return 0;
 }
 
 int main(int argc, const char** argv) {
     // Inner globals
-    OS* os = OS::create();
+    os = OS::create();
 
     // Make OS silent about creating files.
     os->setSetting(OS_SETTING_CREATE_TEXT_OPCODES,      0);
@@ -730,18 +751,18 @@ int main(int argc, const char** argv) {
     stringstream cpr;
     cpr << "IceTea 0.0.1 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
-        << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR
-        << "stlplus " << STLPLUS_VERSION << endl
-        << endl;
+        << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
+        << "stlplus " << stlplus::version() << endl;
 
     // Arg stuff.
-    CLI* cli = new CLI(argc, argv, cpr.str());
+    cli = new CLI(argc, argv, cpr.str());
     // Fetch thread number beforehand!
     stringstream thrs_sst;
     thrs_sst << thread::hardware_concurrency();
     cli->group("Main options");
     cli->insert("-f", "--file", "<file>", "Select a different built file.", true, "./build.it");
-    cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./boot.it");
+    cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./bootstrap.it");
+    cli->insert("-C", "--chdir", "<dir>", "Change to this directory before doing anything.", true);
     cli->insert("-h", "--help", "", "Show this help.");
     cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
     cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", "./out");
@@ -752,10 +773,12 @@ int main(int argc, const char** argv) {
         true, thrs_sst.str()
     );
     cli->insert("-t", "--target", "<target>", "Build only the specified target.");
+
     cli->group("Developer options");
     cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
     cli->insert("", "--debug", "", "Run a debug build; rules and targets may use specialized settings for this build.");
     cli->insert("", "--print-targets", "", "Dump all targets in JSON format to standard error output. Export with: icetea --print-targets 2>targets.json");
+    cli->insert("", "--print-actions", "", "Dump all actions in JSON format to standard error output. Export with: icetea --print-actions 2>actions.json");
     cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
     cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
     cli->insert("-o", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
@@ -770,7 +793,7 @@ int main(int argc, const char** argv) {
 
     if(cli->check("-h")) {
         cli->usage();
-        goto itCleanup;
+        return itCleanup();
     }
 
 #ifdef IT_DEBUG
@@ -784,7 +807,7 @@ int main(int argc, const char** argv) {
     // We have a script file to run.
     if(cli->check("--os")) {
         os->require(cli->value("--os").c_str());
-        goto itCleanup;
+        return itCleanup();
     }
     // Or a string.
     if(cli->check("--os-exec")) {
@@ -797,47 +820,51 @@ int main(int argc, const char** argv) {
         } else {
             code = cli->value("--os-exec");
         }
-        cout << "Executing: " << code << endl;
+        cout << "os> " << code << endl;
         os->eval(code.c_str());
-        goto itCleanup;
+        return itCleanup();
     }
 
     // Pre-check
     if(cli->check("-u")) cli->group("Project options");
 
-    // Introduce bootstrap.it later...
-
     // Run the script to populate the global objects.
     if(file_exists(buildit)) {
-        #ifdef IT_DEBUG
-            cerr << "After InitIceTeaExt() and before require(build.it)" << endl;
-            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
-        #endif
         OS::StringDef strs[] = {
-            {OS_TEXT("__buildit"), OS_TEXT(buildit)},
+            {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
+            {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
             {}
         };
         os->pushGlobals();
         os->setStrings(strs);
         os->pop();
+        if(file_exists(bootstrapit)) {
+            os->require(bootstrapit);
+            if(terminator()) return itCleanup();
+        } else {
+            // We'd have to load one from memory...+
+            cerr << "IceTea: Using internal bootstrap.it file, since '" << bootstrapit << "' "
+                 << "was not found." << endl;
+        }
         os->require(buildit);
+        if(terminator()) return itCleanup();
     } else {
         cerr << "File \"" << cli->value("-f") << "\" does not exist! Aborting." << endl;
-        goto itCleanup;
+        return itCleanup();
     }
 
     // init() has added its methods, now its time to put it in.
     cli->parse();
 
     // Call every target's init() method.
-    if(!Initializer(os)) {
-        goto itCleanup;
+    if(!Initializer()) {
+        return itCleanup();
     }
 
     // Post-check
     if(cli->check("-u")) {
         cli->usage();
-        goto itCleanup;
+        return itCleanup();
     } else {
         #ifdef IT_DEBUG
             cerr << "Before Preprocessor..." << endl;
@@ -845,7 +872,7 @@ int main(int argc, const char** argv) {
         #endif
 
         // Run configure and strech inputs
-        if(!Preprocessor(os)) goto itCleanup;
+        if(!Preprocessor()) return itCleanup();
 
         #ifdef IT_DEBUG
             cerr << "After Preprocessor..." << endl;
@@ -859,7 +886,16 @@ int main(int argc, const char** argv) {
             os->pushValueById(targets->valueID);
             os->callF(1,1);
             cerr << os->toString() << endl;
-            goto itCleanup;
+            return itCleanup();
+        }
+
+        if(cli->check("--print-actions")) {
+            os->getGlobal("json");
+            os->getProperty("encode");
+            os->pushValueById(actions->valueID);
+            os->callF(1,1);
+            cerr << os->toString() << endl;
+            return itCleanup();
         }
 
 
@@ -875,7 +911,7 @@ int main(int argc, const char** argv) {
         TaskQueue* tasks = new TaskQueue(thrs, Run, os);
 
         // Now, we've got a waiting task runner there, we ned to feed it one by one.
-        if(!Transformer(os, tasks)) {
+        if(!Transformer(tasks)) {
             // Meep! We have to kill all the threads, at once.
             // We can savely let it go to a fiish by stopping them.
             tasks->stop();
@@ -896,12 +932,5 @@ int main(int argc, const char** argv) {
         cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
     #endif
 
-    // Clean up.
-    itCleanup:
-    delete cli;
-    delete targets;
-    delete rules;
-    delete actions;
-    os->release();
     return 0;
 }

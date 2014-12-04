@@ -2,6 +2,11 @@ language: cpp
 compiler:
   - g++
   - clang++
-# Change this to your needs
-script: $CXX -Isrc src/*.cpp -o icetea -lpthread -Wno-switch
-test: $CXX -Isrc src/*.cpp main.cpp -o icetea -lpthread -Wno-switch && ./icetea -e "print \"Hello World\""
+os:
+  - linux
+  - osx
+osx_image: xcode61
+env:
+  - COMPILE_FLAGS=-lpthread -Wno-switch
+script: $CXX src/*.cpp -o icetea $COMPILE_FLAGS
+test: $CXX src/*.cpp main.cpp -o icetea $COMPILE_FLAGS && ./icetea -o tests/run_tests.os
