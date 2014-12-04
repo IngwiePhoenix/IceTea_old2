@@ -1,5 +1,9 @@
 # IceTea - couldn't be chillier.
 
+## Quick summary:
+[![Build Status](https://travis-ci.org/IngwiePhoenix/IceTea.svg?branch=master)](https://travis-ci.org/IngwiePhoenix/IceTea)
+
+## Disclaimer
 Are you also a developer that wishes to work cross-platform with as less of an efford as possible? Then you most probably have ran into CMake, premake or even GYP. But were you satisfied with them? Most of those that I met, weren't. Then there are also the traditional tools - autotools (autoconf, autoheader, auto...) for UNIX and MSBuild for Windows - that can be very frustrating, too.
 
 But to top it all, what if you wanted to add a project into your own, i.e. a library?

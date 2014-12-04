@@ -29,6 +29,7 @@
 #include "cli.h"
 #include "util.h"
 #include "stlplus_version.hpp"
+#include "filecache.hpp"
 
 // Namespaces!
 using namespace std;
@@ -86,10 +87,12 @@ struct Task {
     }
 };
 typedef WorkQueue<Task*, OS*> TaskQueue;
+typedef Filecache<string,string> StringCache;
 
 // Other globals...
-OS*  os;
-CLI* cli;
+OS*          os;
+CLI*         cli;
+StringCache* fc;
 
 
 // Tool functions
@@ -734,6 +737,11 @@ int itCleanup() {
     delete rules;
     delete actions;
     os->release();
+
+    if(folder_empty(cli->value("--dir"))) {
+        folder_delete(cli->value("--dir"));
+    }
+
     return 0;
 }
 
@@ -790,6 +798,12 @@ int main(int argc, const char** argv) {
     const char* bootstrapit = cli->value("-b").c_str();
     const char* buildit = cli->value("-f").c_str();
     string outputDir = cli->value("-d");
+
+    // Output folder
+    folder_create(cli->value("--dir"));
+
+    // Cache
+    fc = new StringCache( create_filespec(cli->value("--dir"), ".cache.it") );
 
     if(cli->check("-h")) {
         cli->usage();
