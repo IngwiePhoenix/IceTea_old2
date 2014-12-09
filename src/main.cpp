@@ -13,6 +13,7 @@
 #include "objectscript.h"
 #include "os-value.h"
 #include "os-icetea.h"
+#include "os-detector.h"
 
 // FS access
 #include "file_system.hpp"
@@ -79,6 +80,7 @@ struct Task {
     // The related target, pushed to the function.
     Value::Object* target;
 
+    // Increased if target can not be built due to missing dependency.
     int failureCounter;
 
     ~Task() {
@@ -87,12 +89,11 @@ struct Task {
     }
 };
 typedef WorkQueue<Task*, OS*> TaskQueue;
-typedef Filecache<string,string> StringCache;
 
 // Other globals...
-OS*          os;
-CLI*         cli;
-StringCache* fc;
+OS*        os;
+CLI*       cli;
+Filecache* fc;
 
 
 // Tool functions
@@ -732,15 +733,15 @@ inline bool terminator() {
 }
 
 int itCleanup() {
+    string outdir = cli->value("--dir");
+    // Do a proper cleanup if needed.
+    folder_empty(outdir) && folder_delete(outdir);
+
     delete cli;
     delete targets;
     delete rules;
     delete actions;
     os->release();
-
-    if(folder_empty(cli->value("--dir"))) {
-        folder_delete(cli->value("--dir"));
-    }
 
     return 0;
 }
@@ -770,16 +771,17 @@ int main(int argc, const char** argv) {
     cli->group("Main options");
     cli->insert("-f", "--file", "<file>", "Select a different built file.", true, "./build.it");
     cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./bootstrap.it");
-    cli->insert("-C", "--chdir", "<dir>", "Change to this directory before doing anything.", true);
+    cli->insert("-C", "--chdir", "<dir>", "Change to this directory before doing anything.");
     cli->insert("-h", "--help", "", "Show this help.");
     cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
-    cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", "./out");
+    cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", true, "./out");
     cli->insert("-D", "--define", "key=value", "Define a global value within the scripting language's scope.");
     cli->insert(
         "-j", "--jobs", "<N>",
         "Amount of jobs to run at the same time. Default: "+thrs_sst.str(),
         true, thrs_sst.str()
     );
+    cli->insert("-p", "--purge", "", "Purge the cache file.");
     cli->insert("-t", "--target", "<target>", "Build only the specified target.");
 
     cli->group("Developer options");
@@ -803,7 +805,11 @@ int main(int argc, const char** argv) {
     folder_create(cli->value("--dir"));
 
     // Cache
-    fc = new StringCache( create_filespec(cli->value("--dir"), ".cache.it") );
+    string cacheFile = create_filespec(cli->value("--dir"), ".cache.it");
+    if(cli->check("-p")) {
+        file_delete(cacheFile);
+    }
+    fc = new Filecache( cacheFile );
 
     if(cli->check("-h")) {
         cli->usage();
@@ -817,6 +823,7 @@ int main(int argc, const char** argv) {
 
     // Initialize ObjectScript with our stuff.
     initIceTeaExt(os, cli);
+    initializeDetector(os, fc, cli);
 
     // We have a script file to run.
     if(cli->check("--os")) {
@@ -946,5 +953,5 @@ int main(int argc, const char** argv) {
         cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
     #endif
 
-    return 0;
+    return itCleanup();
 }

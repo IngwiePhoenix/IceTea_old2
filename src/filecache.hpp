@@ -1,109 +1,176 @@
-#ifndef FILECACHE_HPP
-#define FILECACHE_HPP
+#ifndef FILECACHE_H
+#define FILECACHE_H
 
-#include <map>
-#include <string>
-#include <sstream>
 #include <stdlib.h>
-#include <stdio.h>
+#include <iostream>
 
+#include "minijson.h"
+#include "tinythread.h"
 #include "file_system.hpp"
 
-#define KV_SEP '='
-
-template<typename key, typename val> class Filecache {
-private:
-    std::string outputfile;
-    bool is_open;
-public:
-    // The store
-    std::map<key, val> store;
-
-    Filecache(const std::string filename) : outputfile(filename) {
-        if(stlplus::file_exists(filename)) {
-            // Read existing cache
-            FILE* fh = fopen(filename.c_str(), "rb");
-            if(!fh) {
-                fputs("Filecache: Error: Can not seem to open file!\n", stderr);
-                is_open=false;
-                return;
-            } else {
-                is_open=true;
-            }
-            fseek(fh, 0, SEEK_END);
-            long fhSize = ftell(fh);
-            rewind(fh);
-            // Get the whole thing in at once.
-            char* buffer = (char*)malloc(sizeof(char)*fhSize);
-            if(buffer == NULL) {
-                fputs("Filecache: Memory error\n", stderr);
-                is_open=false;
-                return;
-            }
-            size_t result = fread(buffer, 1, fhSize, fh);
-            if(result != fhSize) {
-                fputs("Filecache: The read file does not match with the estimated length.\n", stderr);
-                is_open=false;
-                return;
-            }
-
-            // Now process the cache file.
-            std::stringstream _key;
-            std::stringstream _val;
-            bool writeVal=false;
-            for(long i=0; i<fhSize; i++) {
-                if(buffer[i] != KV_SEP && buffer[i] != '\n') {
-                    if(!writeVal)
-                        _key << buffer[i];
-                    else
-                        _val << buffer[i];
-                } else if(buffer[i] == KV_SEP) {
-                    if(!writeVal) {
-                        // We currently are writing the key, switch.
-                        writeVal=true;
-                    }
-                } else if(buffer[i] == '\n') {
-                    store[_key.str()]=_val.str();
-                    _key.clear();
-                    _val.clear();
-                    writeVal=false;
-                }
-            }
-        }
-    }
-    ~Filecache() { write(); }
-
-    inline bool isOpen() { return is_open; }
-    inline void setOutput(const std::string& fn) { outputfile=fn; }
-
-    // Always overwrites the cache...for now.
-    inline bool write() {
-        FILE* fh = fopen(outputfile.c_str(), "wb");
-        if(fh==NULL) {
-            fputs("Error while opening for write.\n", stderr);
-            return false;
-        }
-        typename std::map<key, val>::iterator it=store.begin();
-        for(; it!=store.end(); ++it) {
-            std::stringstream data;
-            data << it->first;
-            data << KV_SEP;
-            data << it->second;
-            data << '\n';
-            std::string out = data.str();
-            fwrite(out.c_str(), sizeof(char), sizeof(out.c_str()), fh);
-            data.clear();
-        }
-        fclose(fh);
-        return true;
-    }
-
-    inline bool unlink() {
-        if(stlplus::file_exists(outputfile)) {
-            return stlplus::file_delete(outputfile);
-        }
+// Simplified functions due to error handling
+inline bool _fc_fopen(FILE*& fh, const char* file, const char* mode) {
+    fh = fopen(file, mode);
+    if(!fh || ferror(fh) != 0) {
+        #ifdef DEBUG
+        std::cerr << "Filecache: could not open file: " << file << std::flush;
+        std::cerr << std::endl;
+        #endif
         return false;
     }
+    return true;
+}
+inline long _fc_fsize(FILE*& fh) {
+    fseek(fh, 0L, SEEK_END);
+    long sz = ftell(fh);
+    fseek(fh, 0L, SEEK_SET);
+    return sz;
+}
+
+class Filecache {
+    typedef tthread::lock_guard<tthread::mutex> _guard;
+public:
+    // Predefs...
+    inline bool sync();
+    inline bool reread();
+private:
+    std::string filename;
+    minijson::value v;
+    minijson::object o;
+    tthread::mutex m;
+
+    void run() {
+        reread();
+    }
+public:
+    Filecache(const char* fname)      : filename(fname) { run(); }
+    Filecache(const std::string fname): filename(fname) { run(); }
+    ~Filecache() { sync(); }
+
+    inline void set(const std::string key, const std::string val, std::string obj="") {
+        using namespace minijson;
+        _guard g(m);
+        if(obj=="") {
+            o[key]=val;
+        } else {
+            object o2;
+            if(o.find(obj) != o.end()) {
+                // The specified object does exist.
+                o2 = o[obj].get<object>();
+            }
+            o2[key]=val;
+            o[obj]=value(o2);
+        }
+        #ifdef DEBUG
+        v = o;
+        std::cerr << "Filecache: Current JSON> " << v.str() << std::endl;
+        #endif
+    }
+
+    inline std::string get(const std::string key, const std::string obj="") {
+        using namespace minijson;
+        _guard g(m);
+        #ifdef DEBUG
+        std::cerr << "Filecache: " << key << "..." << std::endl;
+        #endif
+        if(obj == "") {
+            if(o.find(key) == o.end())
+                return string("");
+            else
+                return o[key].get<string>();
+        } else {
+            if(o.find(obj) != o.end()) {
+                #ifdef DEBUG
+                std::cerr << "Filecache: Found " << obj << std::endl;
+                #endif
+                object o2 = o[obj].get<object>();
+                if(o2.find(key) == o2.end()) {
+                    #ifdef DEBUG
+                    std::cerr << "Filecache: " << key << " was not found." << std::endl;
+                    #endif
+                    return std::string("");
+                } else {
+                    #ifdef DEBUG
+                    std::cerr << "Filecache: " << key << " was found." << std::endl;
+                    #endif
+                    return o2[key].get<string>();
+                }
+            } else {
+                #ifdef DEBUG
+                std::cerr << "Filecache: " << obj << " not found." << std::endl;
+                #endif
+                return std::string("");
+            }
+        }
+        return std::string("");
+    }
+
+    inline void file(const char* fn) {
+        filename = std::string(fn);
+    }
+    inline void file(const std::string fn) {
+        filename = fn;
+    }
+    inline std::string file() {
+        return filename;
+    }
 };
+
+inline bool Filecache::sync() {
+    _guard g(m);
+    FILE* fh;
+    _fc_fopen(fh, filename.c_str(), "wb");
+    v = o;
+    std::string vstr = v.str();
+    int size = vstr.size();
+    #ifdef DEBUG
+    std::cerr << "Going to write " << size << " bytes with content: " << vstr << std::endl;
+    #endif
+    int res = fwrite(vstr.c_str(), 1, size, fh);
+    fclose(fh);
+    return (res==0?true:false);
+}
+
+inline bool Filecache::reread() {
+    if(stlplus::file_exists(filename)) {
+        FILE* fh;
+        _fc_fopen(fh, filename.c_str(), "rb");
+        size_t size = stlplus::file_size(filename);
+        char* buf = (char*)malloc(sizeof(char)*size);
+        size_t res = fread(buf, sizeof(char), size, fh);
+        if(res != size || ferror(fh) != 0) {
+            #ifdef DEBUG
+            std::cerr << "Reading failed: " << std::endl;
+            std::cerr << "Read: " << res << " | Size: " << size << std::endl;
+            #endif
+            fclose(fh);
+            return false;
+        }
+        fclose(fh);
+        // Parse it now. Or, try to...
+        minijson::error e = parse(buf, this->v);
+        if(e == minijson::no_error) {
+            // Overwrite it...
+            if(v.getType() == minijson::object_type) {
+                #ifdef DEBUG
+                std::cerr << "Filecache: value is an object." << std::endl;
+                #endif
+                o = v.get<minijson::object>();
+            } else {
+                #ifdef DEBUG
+                std::cerr << "Filecache: value is NOT object." << std::endl;
+                #endif
+                v.str("{}");
+                o = minijson::object();
+            }
+            return true;
+        } else return false;
+    } else {
+        // Create a dummy...
+        v.str("{}");
+        o = minijson::object();
+        return false;
+    }
+}
 
 #endif

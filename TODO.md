@@ -7,10 +7,11 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [ ] Implement sanity checks to make sure that an action/target/rule object is correctly entered.
 - [ ] Introduce `external(name) {... opts ...}`
 - [ ] Implement the detector module.
-- [ ] Implement an overall caching storage to make it possible for the app to store a cache for detector and alike.
+- [X] Implement an overall caching storage to make it possible for the app to store a cache for detector and alike.
 - [ ] Somehow introduce console colors for all platforms.
 - [ ] Introduce pre-inclusion (`require()`ing all files within a specified subfolder)
 - [ ] Introduce addition to `require()` to automatically include a project. I.e.: `require.project "submodule/"`
 - [ ] Begin using the `prepare()` method for rules.
 - [ ] Implement the `tag()` mechanism for usage inside targets/externals and the function to do a proper lookup.
 - [ ] Introduce the array `+` operator. I.e.: `var a=["foo"] + ["bar"]`. `o` should now contain: `["foo","bar"]`
+- [ ] Proper SHA2 implementation

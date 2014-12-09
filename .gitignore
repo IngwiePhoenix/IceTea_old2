@@ -2,3 +2,4 @@
 *.o
 icetea
 .DS_Store
+out/*

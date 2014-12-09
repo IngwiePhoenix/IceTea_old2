@@ -5,7 +5,7 @@ using namespace ObjectScript;
 using namespace stlplus;
 
 // This is the actual command function.
-CommandResult it_cmd(const string& _cmd, vector<string>& replaces) {
+CommandResult it_cmd(const string& _cmd, vector<string> replaces) {
     string cmd = _cmd;
     CommandResult res;
 
@@ -42,7 +42,7 @@ CommandResult it_cmd(const string& _cmd, vector<string>& replaces) {
     IceTeaProcess runner;
     runner.spawn(cmd, false, true, true);
     // Prepare return
-    res.exit_code = runner.error_number();
+    res.exit_code = runner.exit_status();
     res.streams[1] = runner.stdout;
     res.streams[2] = runner.stderr;
 

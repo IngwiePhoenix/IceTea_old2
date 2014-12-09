@@ -15,7 +15,7 @@ struct CommandResult {
 };
 
 // This is the actual command function.
-CommandResult it_cmd(const std::string& cmd, std::vector<std::string>& replaces);
+CommandResult it_cmd(const std::string& cmd, std::vector<std::string> replaces);
 
 OS_FUNC(os_exec);
 

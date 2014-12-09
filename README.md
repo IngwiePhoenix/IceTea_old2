@@ -176,10 +176,10 @@ Within all and every IceTea (aka. ObjectScript) files, you have a set of functio
 ### cli: command line interface
 | Method                   | Description                                     |
 |--------------------------|-------------------------------------------------|
-| .group(*string* Name)    | Add a new group to the command line output.     |
-| .insert(*object* Option) | Insert a new option into the current group.     |
-| .check(*string* Name)    | Check if __shortopt__ or __longopt__ was given. |
-| .value(*string* Name)    | Similar to .check() but returns the value.      |
+| .group(name)    | Add a new group to the command line output.     |
+| .insert(option) | Insert a new option into the current group.     |
+| .check(name)    | Check if __shortopt__ or __longopt__ was given. |
+| .value(name)    | Similar to .check() but returns the value.      |
 
 
 #### object: Option
@@ -199,12 +199,12 @@ This object is being used to check for various things on the host.
 
 | Method                   | Description                                     |
 |--------------------------|-------------------------------------------------|
-| .header(name, type)      | Check for a system header ala `#include <...>`  |
+| .header(type, name)      | Check for a system header ala `#include <...>`  |
 | .lib(name)               | Check for a system library ala `gcc ... -lname` |
-| .func(name, type)        | Check if a function is available by default.    |
-| .libfunc(lib, name, tp)  | Check if a function is in a library.            |
-| .headerfunc(hdr, nm, tp) | Check if a function is in a specific header.    |
-| .checkfunc(l, h, n, t)   | Check for function in header AND library.       |
+| .func(type, def)         | Check if a function is available by default.    |
+| .libfunc(lib, name)      | Check if a function is in a library.            |
+| .headerfunc(tp, hdr, nm) | Check if a function is in a specific header.    |
+| .checkfunc(t, l, h, n)   | Check for function in header AND library.       |
 | .add_lib(name)           | Call `.lib()` and if found, add to target.      |
 | .add_libfunc(...)        | Same as above.                                  |
 | .add_headerfunc(...)     | Again, the same.                                |
@@ -228,7 +228,8 @@ This object is being used to check for various things on the host.
 | .working_dir(name)       | Set working dir for detector. Default: out/.detector.dir/ |
 | .cache_file(name)        | Set cache file. Default: out/.detector.cache    |
 | .have_prefix(str)        | Define the define-prefix. Default: HAVE_*       |
-| .havelib_prefix(str)     | Define the define-prefix for a lib. DeAULTf: HAVE_LIB* |
+| .havelib_prefix(str)     | Define the define-prefix for a lib. Default: HAVE_LIB* |
+| .havefunc_prefix(str)    | Define the define prefix for a function. Default: HAVE_* |
 
 #### Info to .transform(...), .write_header() and .write_json()
 Once called, it will DIRECTLY begin to transform. Set this at the very bottom!
