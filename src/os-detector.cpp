@@ -223,7 +223,7 @@ string find_compiler(const string kind) {
     } else {
         string rt = find_tool(cmds);
         if(rt.empty()) {
-            if(doPrint) cout << "ERROR: Required tool not found!!" << endl;
+            if(doPrint) cout << "No" << endl;
             return string("");
         } else {
             cache->set(skey, rt, "detector");
@@ -267,14 +267,11 @@ pair<bool,CommandResult> run_task(const string source, const string kind, string
     string bname = create_filename(fname, "bin");
 
     if(write_file(source, fname)) {
+        res = true;
         stringstream cmd;
         // We simply assume, that this works. Should use some @settings of the rule...? FIXME pls.
         cmd << tool << " " << fname << " -o " << fname << ".bin " << add;
         CommandResult rt = it_cmd(cmd.str(), vector<string>());
-
-        if(rt.exit_code == 0) {
-            res = true;
-        }
 
         if(!run) {
             out.first = res;
@@ -561,6 +558,8 @@ OS_FUNC(osd_libfunc) {
             }
         } else {
             cout << "No. Reason: Compilation failed." << endl;
+            cout << "STDOUT:" << endl << pcom.second.streams[1];
+            cout << "STDERR:" << endl << pcom.second.streams[2];
         }
     }
 
