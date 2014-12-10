@@ -548,7 +548,7 @@ OS_FUNC(osd_libfunc) {
         OUTPUT(cout) << "Checking for function " << name << " in library " << libname << "... ";
         string LDFLAGS;
         string libdl = (wildcard("*cl*", tool) ? "Kernel32" : "dl");
-        LDFLAGS.append(ReplaceString(compilers["CC"][tool].libflag, "%", libdl));
+        LDFLAGS.append(ReplaceString(compilers["CC"][tool]->libflag, "%", libdl));
         pair<bool,CommandResult> pcom = run_task(code.str(), "c", LDFLAGS, true);
         // This time we are ACTUALLY running the code...thats far more interesting.
         if(pcom.first) {
