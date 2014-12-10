@@ -4,6 +4,12 @@ using namespace std;
 using namespace ObjectScript;
 using namespace stlplus;
 
+bool IceTeaProcess::callback() {
+    read_stdout(stdout);
+    read_stderr(stderr);
+    return error();
+}
+
 // This is the actual command function.
 CommandResult it_cmd(const string& _cmd, vector<string> replaces) {
     string cmd = _cmd;
@@ -27,24 +33,14 @@ CommandResult it_cmd(const string& _cmd, vector<string> replaces) {
         cmd = strm.str();
     }
 
-    // This is a minimal interface...
-    struct IceTeaProcess: public subprocess {
-        string stdout;
-        string stderr;
-        bool callback() {
-            read_stdout(stdout);
-            read_stderr(stderr);
-            return error();
-        }
-    };
-
     // Running the actual command.
-    IceTeaProcess runner;
-    runner.spawn(cmd, false, true, true);
+    IceTeaProcess* runner = new IceTeaProcess();
+    runner->spawn(cmd, false, true, true);
     // Prepare return
-    res.exit_code = runner.exit_status();
-    res.streams[1] = runner.stdout;
-    res.streams[2] = runner.stderr;
+    res.exit_code = runner->exit_status();
+    res.streams[1] = runner->stdout;
+    res.streams[2] = runner->stderr;
+    res.p = runner;
 
     return res;
 }

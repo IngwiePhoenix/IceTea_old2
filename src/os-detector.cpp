@@ -54,7 +54,7 @@ typedef map< string, compiler_map_t > compiler_list_t;
 compiler_list_t compilers;
 void initCompilers() {
     // C compilers and their flags...
-    compilers["CC"]["gcc"]      = new compiler_t("-l", "-I", "-c", "-o");
+    compilers["CC"]["gcc"]      = new compiler_t("-l %", "-I", "-c", "-o");
     compilers["CC"]["clang"]    = new compiler_t("-l %", "-I", "-c", "-o");
     compilers["CC"]["cl"]       = new compiler_t("/nologo", "lib%.lib", "/I", "/c", "/Fo");
     compilers["CXX"]["clang-cl"]= new compiler_t("%.lib", "/I", "/c", "/Fo");
@@ -305,11 +305,16 @@ pair<bool,CommandResult> run_task(const string source, const string kind, string
             out.first = res;
             out.second = rt;
         } else {
-            stringstream cmd2;
-            cmd2 << create_filespec(".", bname);
-            CommandResult cr2 = it_cmd(cmd2.str(), vector<string>());
-            out.first = res;
-            out.second = cr2;
+            if(rt.exit_code == 0) {
+                stringstream cmd2;
+                cmd2 << create_filespec(".", bname);
+                CommandResult cr2 = it_cmd(cmd2.str(), vector<string>());
+                out.first = res;
+                out.second = cr2;
+            } else {
+                out.first = false;
+                out.second = rt;
+            }
         }
 
         // Try to clean up
@@ -484,8 +489,8 @@ OS_FUNC(osd_libfunc) {
     }
 
     // Generate a bit of C
-    stringstream code;
-    code << "#ifdef _WIN32" << endl
+    stringstream basecode;
+    basecode << "#ifdef _WIN32" << endl
          << "#include <windows.h>" << endl
          << "#define LIBNAME(l) TEXT(\"lib\" l \".dll\")" << endl
          << "#else" << endl
@@ -501,7 +506,7 @@ OS_FUNC(osd_libfunc) {
          << "int main(int argc, char** argv) {" << endl
          << "#ifndef _WIN32" << endl
          << "    int rtv=0;" << endl
-         << "    void* dh = dlopen(" << lib << ", RTLD_LAZY);" << endl
+         << "    <DLOPEN>" << endl
          << "    if(dh == NULL) {"<< endl
          << "        rtv=1;" << endl
          << "        goto end;" << endl
@@ -527,10 +532,16 @@ OS_FUNC(osd_libfunc) {
          << "        GetModuleHandle(" << lib << "," << endl
          << "        \"" << name << "\"" << endl
          << "    );" << endl
-         << "    if(fh == NULL) return 1;" << endl
-         << "    return 0;" << endl
+         << "    if(fh == NULL) return 6;" << endl
+         << "    return 7;" << endl
          << "#endif" << endl
          << "}";
+    stringstream dlopen1;
+    dlopen1 << "void* dh = dlopen(" << lib << ", RTLD_LAZY);";
+    stringstream dlopen2;
+    dlopen2 << "void* dh = dlopen(0, RTLD_LAZY);";
+    string code1 = ReplaceString(basecode.str(), "<DLOPEN>", dlopen1.str());
+    string code2 = ReplaceString(basecode.str(), "<DLOPEN>", dlopen2.str());
 
     if(!funccached.empty() && !libcached.empty()) {
         // Both are defined.
@@ -544,12 +555,39 @@ OS_FUNC(osd_libfunc) {
         }
         cout << " (Cached)" << endl;
     } else {
-        // None of them exists...
-        OUTPUT(cout) << "Checking for function " << name << " in library " << libname << "... ";
+        // None of them exists...now comes the really bitchy part.
+        bool runSecond=false;
+
+        // Goto mark
+        LIBFUNC_switcher:
+        if(runSecond == false) {
+            OUTPUT(cout) << "Checking for function " << name << " in library " << libname << "... ";
+        } else {
+            OUTPUT(cout) << "Re-checking function " << name << " in library " << libname << "... ";
+        }
         string LDFLAGS;
-        string libdl = (wildcard("*cl*", tool) ? "Kernel32" : "dl");
-        LDFLAGS.append(ReplaceString(compilers["CC"][tool]->libflag, "%", libdl));
-        pair<bool,CommandResult> pcom = run_task(code.str(), "c", LDFLAGS, true);
+        string libdl = (wildcard("*\\cl.exe", tool) ? "Kernel32" : "dl");
+        LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", libdl));
+        if(runSecond) {
+            LDFLAGS.append(" ");
+            LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", lib));
+        }
+        string compcode = (runSecond==false ? code1 : code2);
+        pair<bool,CommandResult> pcom = run_task(compcode, "c", LDFLAGS, true);
+        #ifdef IT_WRITE_TESTS
+        // Write it, for the lulz...
+        string tname;
+        tname.append(libname);
+        tname.append("-");
+        tname.append(name);
+        if(runSecond == false) {
+            tname.append(".1");
+        } else {
+            tname.append(".2");
+        }
+        tname.append(".c");
+        write_file(compcode, tname);
+        #endif
         // This time we are ACTUALLY running the code...thats far more interesting.
         if(pcom.first) {
             // It passed...
@@ -585,7 +623,23 @@ OS_FUNC(osd_libfunc) {
                     cache->set(funckey, "1", "detector");
                     os->pushBool(true);
                     break;
-                // Windows needs a bit of testing. FIXME. Maybe @unitpoint can do that...?
+                //case 6:
+                //case 7:
+                    // I need to grab a Windoze and test this myself.
+                //    break;
+                case 0:
+                    // For some reason, something actually failed...
+                    // Now, we gotta rerun ourself ... oh lord.
+                    if(runSecond) {
+                        // Oops! We came here again. Horrible issue has landed!
+                        cout << "Definitifely not. An awkward issue was found." << endl;
+                        break;
+                    }
+                    cout << "Rerun required (" << pcom.second.exit_code << ")." << endl;
+                    runSecond = true;
+                    cout << endl << pcom.second.streams[1];
+                    cout << endl << pcom.second.streams[2];
+                    goto LIBFUNC_switcher;
             }
         } else {
             cout << "No. Reason: Compilation failed." << endl;

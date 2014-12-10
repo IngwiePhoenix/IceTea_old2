@@ -9,9 +9,17 @@
 #include "objectscript.h"
 #include "os-icetea.h"
 
+// This is a minimal interface...
+struct IceTeaProcess: public stlplus::subprocess {
+    std::string stdout;
+    std::string stderr;
+    bool callback();
+};
+
 struct CommandResult {
-    int         exit_code;
-    std::string streams[3];
+    int            exit_code;
+    std::string    streams[3]; // 0, 1, 2
+    IceTeaProcess* p;
 };
 
 // This is the actual command function.
