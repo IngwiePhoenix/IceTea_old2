@@ -15,3 +15,4 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [ ] Implement the `tag()` mechanism for usage inside targets/externals and the function to do a proper lookup.
 - [ ] Introduce the array `+` operator. I.e.: `var a=["foo"] + ["bar"]`. `o` should now contain: `["foo","bar"]`
 - [ ] Proper SHA2 implementation
+- [ ] Properly implement the lib+func checks (libdl on linux and what on Win32?)

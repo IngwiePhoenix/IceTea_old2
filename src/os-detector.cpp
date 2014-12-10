@@ -25,6 +25,61 @@ using namespace picosha2;
 #define OUTPUT(strm) strm << "\u2502 "
 #define FOOTER(strm) strm << "\u2514\u2500\u2500\u2500\u2500 "
 
+struct compiler_t {
+    string main;
+    string libflag;
+    string incdirflag;
+    string compileflag;
+    string outputflag;
+    compiler_t(string ma, string lf, string idf, string cf, string of):
+        main(ma),
+        libflag(lf),
+        incdirflag(idf),
+        compileflag(cf),
+        outputflag(of) {
+            // Nothing but dust.
+    }
+    compiler_t(string lf, string idf, string cf, string of):
+        libflag(lf),
+        incdirflag(idf),
+        compileflag(cf),
+        outputflag(of) {
+            // Nothing but dust.
+    }
+    compiler_t() {}
+};
+
+typedef map<string, compiler_t*> compiler_map_t;
+typedef map< string, compiler_map_t > compiler_list_t;
+compiler_list_t compilers;
+void initCompilers() {
+    // C compilers and their flags...
+    compilers["CC"]["gcc"]      = new compiler_t("-l", "-I", "-c", "-o");
+    compilers["CC"]["clang"]    = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CC"]["cl"]       = new compiler_t("/nologo", "lib%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["clang-cl"]= new compiler_t("%.lib", "/I", "/c", "/Fo");
+
+    // C++ compilers
+    compilers["CXX"]["g++"]     = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CXX"]["clang++"] = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CXX"]["cl"]      = new compiler_t("/nologo", "%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["clang-cl"]= new compiler_t("lib%.lib", "/I", "/c", "/Fo");
+
+    // Objective-C
+    compilers["OBJC"]["gcc"]     = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJC"]["clangcc"] = new compiler_t("-l %", "-I", "-c", "-o");
+
+    // Objective-C++
+    compilers["OBJCXX"]["g++"]     = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJCXX"]["clang++"] = new compiler_t("-l %", "-I", "-c", "-o");
+
+    // Java
+    compilers["JAVAC"]["javac"] = new compiler_t();
+
+    // Swift
+    compilers["SWIFTC"]["swiftc"] = new compiler_t();
+}
+
 string have_prefix("HAVE_");
 string havelib_prefix("HAVE_LIB");
 string havefunc_prefix("HAVE_");
@@ -166,36 +221,9 @@ string find_compiler(const string kind) {
     vector<string> cmds;
     string skey = kind2key(kind);
     string cname = key2name(skey);
-    if( skey == "CC" ) {
-        #ifdef PREDEF_PLATFORM_WIN32
-        cmds.push_back("cl.exe");
-        #endif
-        cmds.push_back("clang");
-        cmds.push_back("gcc");
-        cmds.push_back("tcc");
-        cmds.push_back("clang-cl");
-        cmds.push_back("icc");
-    } else if( skey == "CXX" ) {
-        #ifdef PREDEF_PLATFORM_WIN32
-        cmds.push_back("cl.exe");
-        #endif
-        cmds.push_back("clang++");
-        cmds.push_back("g++");
-        cmds.push_back("clang-cl");
-        cmds.push_back("cfront");
-    } else if( skey == "OBJC" ) {
-        cmds.push_back("clang");
-        cmds.push_back("gcc");
-    } else if( skey == "OBJCXX" ){
-        cmds.push_back("clang++");
-        cmds.push_back("g++");
-    } else if( skey == "JAVAC" ){
-        cmds.push_back("javac");
-    } else if( skey == "SWIFTC" ){
-        cmds.push_back("swiftc");
-    } else {
-        throw new exception();
-        return string("");
+    compiler_map_t::iterator it=compilers[skey].begin();
+    for(; it!=compilers[skey].end(); ++it) {
+        cmds.push_back(it->first);
     }
 
     // We reached this part, so we can define this to exist.
@@ -518,7 +546,10 @@ OS_FUNC(osd_libfunc) {
     } else {
         // None of them exists...
         OUTPUT(cout) << "Checking for function " << name << " in library " << libname << "... ";
-        pair<bool,CommandResult> pcom = run_task(code.str(), "c", "", true);
+        string LDFLAGS;
+        string libdl = (wildcard("*cl*", tool) ? "Kernel32" : "dl");
+        LDFLAGS.append(ReplaceString(compilers["CC"][tool].libflag, "%", libdl));
+        pair<bool,CommandResult> pcom = run_task(code.str(), "c", LDFLAGS, true);
         // This time we are ACTUALLY running the code...thats far more interesting.
         if(pcom.first) {
             // It passed...
@@ -595,6 +626,7 @@ OS_FUNC(osd_havelib_prefix) {}
 */
 
 bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
+    initCompilers();
     cache = _cache;
     OS::FuncDef dtFuncs[] = {
         // Display and output
