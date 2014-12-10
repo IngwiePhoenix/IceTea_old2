@@ -1,7 +1,6 @@
 #ifndef CLI_H
 #define CLI_H
 
-#include <unordered_map>
 #include <map>
 #include <list>
 #include <vector>
@@ -28,7 +27,7 @@ private:
         std::string value;
     };
     typedef std::vector<Option*> OptList;
-    typedef std::unordered_map<std::string, OptList> OptGroups;
+    typedef std::map<std::string, OptList> OptGroups;
     // [group] => (...args...)
     OptGroups ga;
     std::vector<std::string> strayArgs;

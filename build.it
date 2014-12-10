@@ -1,66 +1,3 @@
-rule("cxx", "C++") {
-    accepts: ["*.cpp", "*.cxx", "*.c++"],
-    output: {
-        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
-        expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
-    },
-    prepare: function() {
-        print "Checking for a C++ compiler...";
-    },
-    build: function(input, output, targetName, target) {
-        print "Building: " .. input;
-        return true;
-    }
-}
-
-rule("c", "C") {
-    accepts: ["*.c", "*.C"],
-    output: {
-        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
-        expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
-    },
-    prepare: function() {
-        print "Checking for a C compiler...";
-    },
-    build: function(input, output, targetName, target) {
-        print "Building: " .. input;
-        return true;
-    }
-}
-
-rule("strip", "Strip") {
-    accepts: ["*.o"],
-    output: {
-        pattern: "*.o-stripped",
-        expected: "%t-%e.o-stripped"
-    },
-    build: [
-        "upx"
-    ]
-}
-
-rule("exe", "Executable") {
-    accepts: [(sys.type=="unix" ? "*.o-stripped":"*.obj")],
-    output: {
-        pattern: (sys.type=="unix" ? "*":"*.exe"),
-        expected: (sys.type=="unix" ? "%t":"%t.exe"),
-        multiple: true
-    },
-    prepare: function() {
-        // check for a compiler to use
-    },
-    build: function(input, output, targetName, target) {
-        print "Building EXE: " .. input;
-        return true;
-    },
-    finalize: function(output) {
-        //mv output -> output without .bin or .exe
-    },
-    clean: function(output) {
-        //we must look for a non-shuffixed version of the file.
-    }
-}
-
 target("IceTea_self", "exe") {
     input: ["src/*.cpp"],
     settings: {
@@ -69,16 +6,7 @@ target("IceTea_self", "exe") {
         }
     },
     init: function() {
-        print("Configuring for ${sys.name} (${sys.type})");
-        cli.group "IceTea";
-        cli.insert {
-            longopt: "--meep",
-            desc: "Meep 1"
-        }
-        cli.insert {
-            longopt: "--meep",
-            desc: "Meep 2"
-        }
+        return true;
     },
     configure: function() {
         print "I am configuring with: " .. this;
@@ -86,66 +14,14 @@ target("IceTea_self", "exe") {
     }
 }
 
-// Duplicate entry, just to test how it handles multiple targets.
-/*target("IceTea_2", "exe") {
-    input: ["src/main.cpp"],
-    configure: function() { print "o.o"; return true; }
-}*/
-
-/*target("myApp", "exe") {
-    input: ["myfile.c", "otherfile.cpp"],
-    configure: function() {
-        print "ovo";
-        return true;
-    }
-}*/
-
-action("build") {
+action("all") {
     build: ["*"]
 }
 
-/*rule("a", "Rule A") {
-    build: [],
-    accepts: ["*.a"],
-    output: {
-        pattern: "*.b",
-        expected: "%e.b"
+action("dist"){|args|
+    print "Creating a distribution...";
+    if(sys.which("tar") != "") {
+        sys.cd(pfs.dirname(__FILE__));
+        $ "tar cvfz icetea.tar.gz icetea README.md"
     }
 }
-rule("b", "rule b") {
-    build: [],
-    accepts: ["*.b"],
-    output: {
-        pattern: "*.tc",
-        expected: "%e.tc"
-    }
-}
-rule("ct", "rule c") {
-    build: [],
-    accepts: ["*.tc"],
-    output: {
-        pattern: "*.d",
-        expected: "%e.d"
-    }
-}
-rule("d", "rule d") {
-    build: [],
-    accepts: ["*.d"],
-    output: {
-        pattern: "*.x",
-        expected: "%e.x"
-    }
-}
-
-rule("final", "Finalizah") {
-    build: [],
-    accepts: ["*.x"],
-    output: {
-        pattern: "*.w",
-        expected: "%t.w"
-    }
-}
-
-target("test", "final") {
-    input: ["myTEST.a"]
-}*/

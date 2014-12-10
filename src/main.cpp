@@ -520,7 +520,11 @@ bool Initializer() {
         delete ruleName;
 
         // Cause IceTea to exit
-        if(os->isExceptionSet()) return false;
+        if(os->isExceptionSet()) {
+            cout << "Exception??" << endl;
+            os->handleException();
+            return false;
+        }
     }
     return true;
 }
@@ -879,6 +883,7 @@ int main(int argc, const char** argv) {
 
     // Call every target's init() method.
     if(!Initializer()) {
+        cout << "whut?" << endl;
         return itCleanup();
     }
 
