@@ -570,7 +570,7 @@ OS_FUNC(osd_libfunc) {
         LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", libdl));
         if(runSecond) {
             LDFLAGS.append(" ");
-            LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", lib));
+            LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", libname));
         }
         string compcode = (runSecond==false ? code1 : code2);
         pair<bool,CommandResult> pcom = run_task(compcode, "c", LDFLAGS, true);
@@ -592,11 +592,6 @@ OS_FUNC(osd_libfunc) {
         if(pcom.first) {
             // It passed...
             switch(pcom.second.exit_code) {
-                case 1:
-                    cout << "No. Library couldn't be loaded." << endl;
-                    cache->set(libkey, "0", "detector");
-                    os->pushBool(false);
-                    break;
                 case 2:
                     cout << "No. Loading of '" << name << "' failed." << endl;
                     cache->set(libkey, "1", "detector");
@@ -628,23 +623,24 @@ OS_FUNC(osd_libfunc) {
                     // I need to grab a Windoze and test this myself.
                 //    break;
                 case 0:
-                    // For some reason, something actually failed...
-                    // Now, we gotta rerun ourself ... oh lord.
+                case 1:
+                    // Either my error handling went wrong, OR we actually ran into an dlopen issue.
+                    // Therefore we are going to re-test it to see if our guess is right or not.
                     if(runSecond) {
                         // Oops! We came here again. Horrible issue has landed!
                         cout << "Definitifely not. An awkward issue was found." << endl;
+                        cache->set(libkey, "0", "detector");
+                        os->pushBool(false);
                         break;
                     }
-                    cout << "Rerun required (" << pcom.second.exit_code << ")." << endl;
+                    cout << "No. Library couldn't be loaded. Attempting re-run." << endl;
                     runSecond = true;
-                    cout << endl << pcom.second.streams[1];
-                    cout << endl << pcom.second.streams[2];
                     goto LIBFUNC_switcher;
             }
         } else {
-            cout << "No. Reason: Compilation failed." << endl;
-            cout << "STDOUT:" << endl << pcom.second.streams[1];
-            cout << "STDERR:" << endl << pcom.second.streams[2];
+            cout << "No. Reason: Compilation failed. Library probably missing." << endl;
+            // Need to implement logging here.
+            os->pushBool(false);
         }
     }
 
