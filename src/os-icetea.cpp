@@ -205,6 +205,8 @@ void initIceTeaExt(OS* os, CLI* cli) {
     // Exec
     os->pushCFunction(os_exec);
     os->setGlobal("$");
+    os->pushCFunction(os_system);
+    os->setGlobal("shell");
 
     // Option parsing/passing
     OS::FuncDef cliFuncs[] = {

@@ -103,6 +103,8 @@ public:
         return std::pair<std::string, int>("", -1);
     }
     inline bool parse() {
+        // This has to be done to avoid multiples if we parse multiple times.
+        strayArgs.clear();
         int argn;
         std::pair<std::string, int> opt;
         for(argn=1; argn < argc; argn++) { /* Read command line. */

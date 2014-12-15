@@ -74,14 +74,17 @@ public:
     inline void drain() {
         if(myID != tthread::this_thread::get_id()) return;
         // Just a stub to wait for the data list to flail out again.
-        while(size() != 0) { cond.notify_one(); }
+        while(size() != 0) {
+            if(!stillGoing()) break;
+            cond.notify_one();
+        }
     }
     inline void stop() {
         doStop = true;
         cond.notify_all();
     }
     inline bool hasToStop() {
-        // This might end up in a race condition...I am nto sure.
+        // This might end up in a race condition...I am not sure.
         return doStop;
     }
 
@@ -96,17 +99,14 @@ public:
     // Get item from list's front.
     inline bool remove(T& item) {
         tthread::lock_guard<tthread::mutex> guard(mutex);
-        while(queue.empty() && doStop != true) {
-            cond.wait<tthread::mutex>(mutex);
-        }
-
         if(doStop) return false;
+        cond.wait<tthread::mutex>(mutex);
 
-        //if(!queue.empty()) {
+        if(!queue.empty()) {
             item = queue.front();
             queue.pop_front();
             return true;
-        //} else return false;
+        } else return false;
     }
 
     inline int size() {

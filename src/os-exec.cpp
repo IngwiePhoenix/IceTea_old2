@@ -1,4 +1,5 @@
 #include "os-exec.h" // Contains everything.
+#include <stdlib.h>
 
 using namespace std;
 using namespace ObjectScript;
@@ -7,7 +8,11 @@ using namespace stlplus;
 bool IceTeaProcess::callback() {
     read_stdout(stdout);
     read_stderr(stderr);
-    return error();
+    if(error()) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 // This is the actual command function.
@@ -35,7 +40,7 @@ CommandResult it_cmd(const string& _cmd, vector<string> replaces) {
 
     // Running the actual command.
     IceTeaProcess* runner = new IceTeaProcess();
-    runner->spawn(cmd, false, true, true);
+    res.spawned = runner->spawn(cmd, false, true, true);
     // Prepare return
     res.exit_code = runner->exit_status();
     res.streams[1] = runner->stdout;
@@ -71,4 +76,15 @@ OS_FUNC(os_exec) {
     os->addProperty(-2);
 
     return 2;
+}
+
+OS_FUNC(os_system) {
+    // Flat wrapper around the system call.
+    if(params < 1 || params > 1) {
+        os->setException("System only expects one parameter, and one only.");
+        return 0;
+    }
+    int res = system( os->toString(-params+0).toChar() );
+    os->pushNumber(res);
+    return 1;
 }

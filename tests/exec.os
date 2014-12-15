@@ -25,3 +25,10 @@ $("echo ?", "Hello, World!");
 
 print "Running with quoted replace"
 $("echo '?'", "Yo, amma quoted.");
+
+print "Using the exec command now."
+var r = shell("ls -aGp")
+print "Result is: " .. r
+
+print "Without capturing the output"
+shell "ls -aGp"

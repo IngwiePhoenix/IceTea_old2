@@ -18,6 +18,7 @@ struct IceTeaProcess: public stlplus::subprocess {
 
 struct CommandResult {
     int            exit_code;
+    bool           spawned;
     std::string    streams[3]; // 0, 1, 2
     IceTeaProcess* p;
 };
@@ -26,5 +27,6 @@ struct CommandResult {
 CommandResult it_cmd(const std::string& cmd, std::vector<std::string> replaces);
 
 OS_FUNC(os_exec);
+OS_FUNC(os_system);
 
 #endif

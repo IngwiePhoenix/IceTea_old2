@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iostream>
 
 #ifdef MSWINDOWS
 #ifdef __BORLANDC__
@@ -1008,9 +1009,15 @@ namespace stlplus
                                   bool connect_stdin, bool connect_stdout, bool connect_stderr)
   {
     arg_vector arguments = command_line;
-    if (arguments.size() == 0) return false;
+    if (arguments.size() == 0) {
+        std::cout << "arguments are 0" << std::endl;
+        return false;
+    }
     std::string path = path_lookup(arguments.argv0());
-    if (path.empty()) return false;
+    if (path.empty()) {
+        std::cout << "path is empty" << std::endl;
+        return false;
+    }
     return spawn(path, arguments, connect_stdin, connect_stdout, connect_stderr);
   }
 

@@ -8,8 +8,8 @@ rule("cxx", "C++") {
         print "Checking for a C++ compiler...";
     },
     build: function(input, output, targetName, target) {
-        print "Building: " .. input;
-        return true;
+        //print "Building: " .. input;
+        shell "echo lurk: ${input}"
     }
 }
 
@@ -23,8 +23,6 @@ rule("c", "C") {
         print "Checking for a C compiler...";
     },
     build: function(input, output, targetName, target) {
-        print "Building: " .. input;
-        return true;
     }
 }
 
@@ -34,9 +32,15 @@ rule("strip", "Strip") {
         pattern: "*.o-stripped",
         expected: "%t-%e.o-stripped"
     },
-    build: [
-        "upx"
-    ]
+    build: function(input, output, targetName, target) {
+        var dirstr = "out/"..targetName;
+        for(var i,v in input) {
+            input[i]=dirstr.."/"..input[i];
+        }
+        var instr = input.split(" ");
+        //var e,o = $("cp ? ?", instr, output);
+        shell "echo ${dirstr}"
+    }
 }
 
 rule("exe", "Executable") {
