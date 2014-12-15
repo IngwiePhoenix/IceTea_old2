@@ -151,13 +151,8 @@ OS_FUNC(cli_insert) {
 OS_FUNC(cli_value) {
     CLI* cli = (CLI*)userData;
     string key( os->toString(-params+0).toChar() );
-    if(cli->check(key)) {
-        os->pushString( cli->value(key).c_str() );
-        return 1;
-    } else {
-        os->pushNull();
-        return 1;
-    }
+    os->pushString( cli->value(key).c_str() );
+    return 1;
 }
 OS_FUNC(cli_check) {
     CLI* cli = (CLI*)userData;

@@ -102,5 +102,6 @@ OS_FUNC(os_pfs_isFullPath);
 OS_FUNC(os_pfs_isRelativePath);
 
 OS_FUNC(os_pfs_lookup);
+OS_FUNC(os_pfs_join);
 
 #endif

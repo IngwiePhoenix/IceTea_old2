@@ -5,11 +5,34 @@ rule("cxx", "C++") {
         expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
     },
     prepare: function() {
-        print "Checking for a C++ compiler...";
+        detect.compiler("c++");
     },
     build: function(input, output, targetName, target) {
-        //print "Building: " .. input;
-        shell "echo lurk: ${input}"
+        // Now lets get serious.
+        var settings = target.settings;
+        var outDir = cli.value("-d");
+        var targetDir = pfs.join(outDir, "."..targetName);
+        var outFile = pfs.join(targetDir, output);
+        var cmdl=[];
+        // Build the command
+        cmdl[] = detect.compiler("c++");
+        cmdl[] = "-c";
+        cmdl[] = input.join(" ");
+        cmdl[] = "-o";
+        cmdl[] = outFile;
+        var cmd = cmdl.join(" ");
+
+        if(pfs.dirWritable(outDir)) {
+            pfs.mkdir(targetDir);
+            if(pfs.dirWritable(targetDir)) {
+                var s,e,o = $(cmd);
+                if(!s || e!=0) {
+                    echo o[1];
+                    print o[2];
+                    return false;
+                }
+            }
+        }
     }
 }
 
@@ -20,7 +43,7 @@ rule("c", "C") {
         expected: (sys.type=="unix" ? "%t-%e.o":"%t-%e.obj")
     },
     prepare: function() {
-        print "Checking for a C compiler...";
+        detect.compiler("c");
     },
     build: function(input, output, targetName, target) {
     }
@@ -32,14 +55,36 @@ rule("strip", "Strip") {
         pattern: "*.o-stripped",
         expected: "%t-%e.o-stripped"
     },
-    build: function(input, output, targetName, target) {
-        var dirstr = "out/"..targetName;
-        for(var i,v in input) {
-            input[i]=dirstr.."/"..input[i];
+    prepare: function() {
+        // We have to see how we gonna minify this thing.
+        if(detect.tool("upx"))
+            @tool = "upx IN -o OUT";
+        else {
+            if(sys.type == "unix") {
+                @tool = "cp IN OUT";
+            } else {
+                @tool = "copy IN OUT";
+            }
         }
-        var instr = input.split(" ");
-        //var e,o = $("cp ? ?", instr, output);
-        shell "echo ${dirstr}"
+    },
+    build: function(input, output, targetName, target) {
+        var dirstr = "out/."..targetName;
+        var inlist=[];
+        for(var i,v in input) {
+            inlist[i] = "'"..pfs.join(dirstr, input[i]).."' ";
+        }
+        var outstr = pfs.join(dirstr, output);
+        var instr = inlist.join(" ");
+        var cmd = @tool;
+        cmd = cmd.replace("IN", "${instr}");
+        cmd = cmd.replace("OUT", "'${outstr}'");
+        print "$ ${cmd}"
+        var s,e,o = $(cmd);
+        if(!s || e!=0) {
+            print "Execution failed";
+            print o[2];
+            return false;
+        }
     }
 }
 
@@ -54,8 +99,24 @@ rule("exe", "Executable") {
         // check for a compiler to use
     },
     build: function(input, output, targetName, target) {
-        print "Building EXE: " .. input;
-        return true;
+        var LINK=[];
+        var inlist=[];
+        for(var i,v in input) {
+            inlist[] = pfs.join(pfs.join(cli.value("--dir"), "."..targetName), input[i]);
+        }
+        LINK[] = detect.compiler("c++");
+        LINK[] = inlist.join(" ");
+        LINK[] = "-o";
+        LINK[] = pfs.join(cli.value("-d"), output);
+        var cmd = LINK.join(" ");
+        print "$ ${cmd}"
+        var s,e,o = $(cmd);
+        if(!s || e!=0) {
+            echo o[1];
+            echo o[2];
+            print "Process failed";
+            return false;
+        }
     },
     finalize: function(output) {
         //mv output -> output without .bin or .exe

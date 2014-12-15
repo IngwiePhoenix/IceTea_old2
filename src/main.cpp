@@ -100,6 +100,7 @@ string     runScheme("build");
 string     shellName;
 // In order to call OS savely, we use this.
 static tthread::mutex OSMutex;
+static tthread::mutex ConfigMutex;
 typedef tthread::lock_guard<tthread::mutex> Locker;
 
 // Tool functions
@@ -188,7 +189,7 @@ string estimateRuleOutput(string rule, string target, string file="") {
 
 void __makeTasks(
     string rule, string file, string target,
-    string& input, bool finalRule=false
+    string& input, bool& success, bool finalRule=false
 ) {
     if(!ruleExists(rule)) {
         cerr << "[IceTea]: Rule \"" << rule << "\" does not exist." << endl;
@@ -219,6 +220,26 @@ void __makeTasks(
 
     // In any case, we want to create the expected value. Its easy.
     string myExpected = estimateRuleOutput(rule, target, file);
+
+    // Init() the rule that we are about to need.
+    static map<string, bool> rulesChecked;
+    if(rulesChecked.find(rule) == rulesChecked.end()) {
+        os->pushValueById(ruleObj->valueID);
+        os->pushString("prepare");
+        rulesChecked[rule]=true;
+        if(os->in(-1, -2)) {
+            os->getProperty(-2);
+            if(os->isFunction()) {
+                os->pushValueById(ruleObj->valueID);
+                os->callFT(0,1);
+                if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
+                    success = false;
+                    // Exit it here, because something went wrong.
+                    return;
+                }
+            }
+        }
+    }
 
     if(isBaseTarget) {
         // Do not even go much further, add the target accordingly.
@@ -378,7 +399,7 @@ void __makeTasks(
                     // In this case, recall ourself. The above, first check will pass
                     // and it will execute a base rule.
                     string newInput;
-                    __makeTasks((*ruleName), file, target, newInput);
+                    __makeTasks((*ruleName), file, target, newInput, success);
                     //if(newInput.empty()) continue;
                     input = newInput;
                 } else {
@@ -397,7 +418,7 @@ void __makeTasks(
                         Beyond that, we return the expected output, as well.
                     */
                     string newInput;
-                    __makeTasks((*ruleName), file, target, newInput);
+                    __makeTasks((*ruleName), file, target, newInput, success);
                     //cout << (*ruleName) << ": Current is CHILD -- " << file << endl;
                     //cout << rule << "@" << (*ruleName) << ": " << newInput << " | " << myExpected << endl;
 
@@ -465,10 +486,10 @@ void __makeTasks(
 }
 
 
-string makeTasks(string rule, string file, string target) {
+string makeTasks(string rule, string file, string target, bool& successor) {
     string tmp;
     // The first call ALWAYS results in the actual thing.
-    __makeTasks(rule, file, target, tmp, true);
+    __makeTasks(rule, file, target, tmp, successor, true);
     return tmp;
 }
 
@@ -678,16 +699,20 @@ bool Transformer() {
                                 for(int j=0; j<input->length(); j++) {
                                     Value::String* v_file = (Value::String*)(*input)[j];
                                     string file = (*v_file);
+                                    bool successor=true;
                                     // Now we need to resolve the rules.
                                     // We have rule, file and target name.
                                     #ifdef IT_DEBUG
                                         cerr << "Before makeTaks: " << os->ref_count << endl;
                                         cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
                                     #endif
-                                    string partialInput = makeTasks(rule, file, target);
+                                    string partialInput = makeTasks(rule, file, target, successor);
                                     // The final rule itself however, is reserved to be done by hand.
                                     if(!partialInput.empty()) {
                                         t->input.push_back(partialInput);
+                                    } else if(!successor) {
+                                        cerr << "IceTea: Failed while preparing rule: " << rule << endl;
+                                        return false;
                                     } else {
                                         cerr << "IceTea: Appearently there was no matching routine to process '"
                                              << file << "' with specified '"<< rule << "'. Are your rules properly "
@@ -745,6 +770,10 @@ bool Transformer() {
 // The needed struct is above.
 int CurrentTaskCount=0;
 void Run(void* threadData) {
+    // We just wait untill we can aquire a lock.
+    ConfigMutex.lock(); // Should wait here.
+    ConfigMutex.unlock();
+
     stringstream s;
     LinePrinter p(&s);
     TaskQueue* tasks = (TaskQueue*)threadData;
@@ -791,10 +820,9 @@ void Run(void* threadData) {
                     (*task->onBuild)(4,1);
                     if(os->isArray()) {
                         // We got a set of commands to run.
-                    } else if(os->isNumber() && os->toBool()) {
-                        // Success.
-                    } else if(os->isNumber() && !os->toBool()) {
-                        s << "MEEP! The execution failed!!!!!!!!!!!!!!!!!!" << endl;
+                    } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
+                        s << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::build" << endl;
+                        s << "Function returned false." << endl;
                         p();
                         tasks->stop();
                         cancel=true;
@@ -1048,6 +1076,9 @@ int main(int argc, const char** argv) {
             return itCleanup();
         }
 
+        // Lock the threads from doing anything
+        ConfigMutex.lock();
+
         // At this point, we can savely begin to create the needed things for threaded work.
         int thrs;
         stringstream tmp;
@@ -1059,16 +1090,10 @@ int main(int argc, const char** argv) {
         #endif
         tasks = new TaskQueue(thrs, Run, os);
 
-        // We have to find a shell first, fast.
-        vector<string> shells;
-        shells.push_back("bash");
-        shells.push_back("sh");
-        shells.push_back("cmd");
-        shells.push_back("zsh");
-        shellName = find_tool(shells);
-
         // Now, we've got a waiting task runner there, we ned to feed it one by one.
-        if(!Transformer()) {
+        bool transformedYet=Transformer();
+        ConfigMutex.unlock();
+        if(!transformedYet) {
             // Meep! We have to kill all the threads, at once.
             // We can savely let it go to a fiish by stopping them.
             tasks->stop();

@@ -115,7 +115,7 @@ public:
         return size;
     }
     inline int countAll() {
-        return itemsEverAdded;
+        return itemsEverAdded+1;
     }
     inline ST getData() { return data; }
 };

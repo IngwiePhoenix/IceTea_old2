@@ -52,6 +52,7 @@ bool initializePFS(OS* os) {
         {OS_TEXT("isRelativePath"),     os_pfs_isRelativePath},
 
         {OS_TEXT("lookup"),             os_pfs_lookup},
+        {OS_TEXT("join"),               os_pfs_join},
         {}
     };
 
@@ -277,5 +278,14 @@ OS_FUNC(os_pfs_lookup) {
         return 1;
     }
     os->pushString( lookup(file, path).c_str() );
+    return 1;
+}
+
+OS_FUNC(os_pfs_join) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string base = os->toString(-params+0).toChar();
+    string appe = os->toString(-params+1).toChar();
+    os->pushString(create_filespec(base, appe).c_str());
     return 1;
 }

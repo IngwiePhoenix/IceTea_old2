@@ -103,6 +103,19 @@ string have_header(const string name) {
     return s;
 }
 
+string have_tool(const string name) {
+    string s;
+    string n = toUpper(name);
+    ReplaceStringInPlace(n, "-", "_");
+    ReplaceStringInPlace(n, ".", "_");
+    ReplaceStringInPlace(n, "/", "_");
+    ReplaceStringInPlace(n, "\\", "_");
+    ReplaceStringInPlace(n, "+", "X");
+    s.append(n);
+    return s;
+}
+
+
 string have_lib(const string lib) {
     string s;
     s.append(havelib_prefix);
@@ -662,7 +675,6 @@ OS_FUNC(osd_enabled) {}
 OS_FUNC(osd_tryBuild) {}
 OS_FUNC(osd_tryRun) {}
 OS_FUNC(osd_preprocess) {}
-OS_FUNC(osd_tool) {}
 OS_FUNC(osd_toolFlag) {}
 OS_FUNC(osd_transform) {}
 OS_FUNC(osd_write_header) {}
@@ -674,6 +686,45 @@ OS_FUNC(osd_cache_file) {}
 OS_FUNC(osd_have_prefix) {}
 OS_FUNC(osd_havelib_prefix) {}
 */
+
+OS_FUNC(osd_tool) {
+    EXPECT_STRING(1)
+    string tool = os->toString().toChar();
+    string toolkey = have_tool(tool);
+    string cached = cache->get(toolkey, "detector");
+    static map<string,bool> toolsfound;
+    bool doPrint=true;
+    if(toolsfound.find(toolkey) != toolsfound.end()) {
+        doPrint = false;
+    }
+    if(doPrint) OUTPUT(cout) << "Checking for " << tool << "... ";
+    if(cached.empty()) {
+        string realtool = path_lookup(tool);
+        if(realtool.empty()) {
+            if(doPrint) cout << "No" << endl;
+            cache->set(toolkey, "0", "detector");
+            os->pushBool(false);
+        } else {
+            if(doPrint) cout << realtool << endl;
+            cache->set(toolkey, realtool, "detector");
+            os->pushBool(true);
+        }
+        os->pushString(realtool.c_str());
+        cache->sync();
+    } else {
+        if(cached == "0") {
+            if(doPrint) cout << "No (Cached)" << endl;
+            os->pushBool(false);
+            os->pushString("");
+        } else {
+            if(doPrint) cout << cached << " (Cached)" << endl;
+            os->pushBool(true);
+            os->pushString(cached.c_str());
+        }
+    }
+    return 2;
+}
+
 
 bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
     initCompilers();
@@ -689,6 +740,7 @@ bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
         {OS_TEXT("compiler"), osd_compiler},
         {OS_TEXT("func"), osd_func},
         {OS_TEXT("libfunc"), osd_libfunc},
+        {OS_TEXT("tool"), osd_tool},
         {}
     };
     os->getModule("detect");

@@ -66,6 +66,7 @@ OS_FUNC(os_exec) {
 
     CommandResult res = it_cmd(cmd, replaces);
 
+    os->pushBool(res.spawned);
     os->pushNumber(res.exit_code);
     os->newArray();
     os->pushString(""); // STDIN not supported, yet.
@@ -75,7 +76,7 @@ OS_FUNC(os_exec) {
     os->pushString( res.streams[2].c_str() );
     os->addProperty(-2);
 
-    return 2;
+    return 3;
 }
 
 OS_FUNC(os_system) {
