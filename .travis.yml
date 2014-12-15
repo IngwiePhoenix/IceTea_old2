@@ -8,4 +8,8 @@ os:
 osx_image: xcode61
 env:
   - COMPILE_FLAGS="-lpthread -Wno-switch"
-script: $CXX src/*.cpp -o icetea $COMPILE_FLAGS && ./icetea -h && ./icetea -o tests/run_tests.os
+script:
+    - $CXX src/*.cpp -o icetea $COMPILE_FLAGS
+    - ./icetea -h
+    - ./icetea -o tests/run_tests.os
+    - ./icetea
