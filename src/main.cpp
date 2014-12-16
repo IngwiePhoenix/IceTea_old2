@@ -798,7 +798,8 @@ void Run(void* threadData) {
     bool cancel=false;
 
     while(!tasks->hasToStop()) {
-        if(cancel || !tasks->remove(task)) break;
+        if(cancel) break;
+        if(!tasks->remove(task)) break;
         if(task!=NULL) {
             bool canExecute=false;
             for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
@@ -1231,7 +1232,7 @@ int main(int argc, const char** argv) {
         } else {
             // Run untill the list is empty... and then stop all threads.
             tasks->drain();
-            tasks->stop();
+            //tasks->stop();
         }
         // Make sure all threads come together first.
         tasks->joinAll();

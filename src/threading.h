@@ -76,7 +76,7 @@ public:
         // Just a stub to wait for the data list to flail out again.
         while(size() != 0 && stillGoing()) {
             cond.notify_all();
-            tthread::this_thread::sleep_for(tthread::chrono::milliseconds(5));
+            //tthread::this_thread::sleep_for(tthread::chrono::milliseconds(5));
         }
     }
     inline void stop() {
@@ -93,14 +93,14 @@ public:
         tthread::lock_guard<tthread::mutex> guard(mutex);
         queue.push_back(item);
         itemsEverAdded++;
-        cond.notify_one();
+        cond.notify_all();
     }
 
     // Get item from list's front.
     inline bool remove(T& item) {
         tthread::lock_guard<tthread::mutex> guard(mutex);
         if(doStop) return false;
-        cond.wait<tthread::mutex>(mutex);
+        //cond.wait<tthread::mutex>(mutex);
 
         if(!queue.empty()) {
             item = queue.front();
