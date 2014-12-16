@@ -13,7 +13,7 @@ public:
     LinePrinter(std::stringstream* str) : stream(str) {}
     void operator()() {
         tthread::lock_guard<tthread::mutex> guard(m);
-        cout << stream->str();
+        cout << stream->str() << flush;
         stream->clear();
         stream->str("");
     }

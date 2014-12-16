@@ -105,6 +105,32 @@ public:
         return std::string("");
     }
 
+    inline bool remove(const std::string key, std::string obj="") {
+        using namespace minijson;
+        _guard g(m);
+        if(obj == "") {
+            if(o.find(key) != o.end()) {
+                object::iterator it = o.find(key);
+                o.erase(it);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            if(o.find(obj) != o.end()) {
+                object o2 = o[obj].get<object>();
+                if(o2.find(key) != o2.end()) {
+                    object::iterator it = o2.find(key);
+                    o2.erase(it);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
     inline void file(const char* fn) {
         filename = std::string(fn);
     }

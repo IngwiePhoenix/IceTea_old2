@@ -74,9 +74,9 @@ public:
     inline void drain() {
         if(myID != tthread::this_thread::get_id()) return;
         // Just a stub to wait for the data list to flail out again.
-        while(size() != 0) {
-            if(!stillGoing()) break;
-            cond.notify_one();
+        while(size() != 0 && stillGoing()) {
+            cond.notify_all();
+            tthread::this_thread::sleep_for(tthread::chrono::milliseconds(5));
         }
     }
     inline void stop() {
@@ -106,7 +106,10 @@ public:
             item = queue.front();
             queue.pop_front();
             return true;
-        } else return false;
+        } else {
+            item = NULL;
+            return false;
+        }
     }
 
     inline int size() {
@@ -116,6 +119,9 @@ public:
     }
     inline int countAll() {
         return itemsEverAdded+1;
+    }
+    inline void step() {
+        cond.notify_one();
     }
     inline ST getData() { return data; }
 };

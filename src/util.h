@@ -9,5 +9,6 @@ std::string ReplaceString(std::string subject, const std::string& search,
 void ReplaceStringInPlace(std::string& subject, const std::string& search,
                           const std::string& replace);
 
+std::string file2sha2(const std::string filename);
 
 #endif

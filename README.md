@@ -164,11 +164,28 @@ IceTea is ment to be compact (currently 900kb when built with `-O3`) and simple.
 So far, so good. If you want to look into the code, go ahead. To build a test binary, just run:
 
 ```
-g++ -Isrc -Wno-switch src/*.cpp -o icetea
+g++ -Wno-switch src/*.cpp -o icetea
 ```
 
 and you are good to go.
 
+
+## Tiny benchmark
+I did this rather randomly, but I really like the result of it!
+
+```
+# Compiling IceTea itself using standart command line
+$ time g++ src/*.cpp -o icetea -Wno-switch
+real    0m5.395s
+user    0m4.998s
+sys     0m0.379s
+
+# …and then using itself.
+$ time ./icetea
+real    0m1.779s
+user    0m8.201s
+sys     0m0.872s
+```
 
 ## API
 Within all and every IceTea (aka. ObjectScript) files, you have a set of functions and objects available. I will explain to you how these functions and objects look like.

@@ -6,8 +6,8 @@ using namespace ObjectScript;
 using namespace stlplus;
 
 bool IceTeaProcess::callback() {
-    read_stdout(stdout);
-    read_stderr(stderr);
+    while(read_stdout(stdout) != -1) continue;
+    while(read_stderr(stderr) != -1) continue;
     if(error()) {
         return false;
     } else {

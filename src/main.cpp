@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <list>
 #include <map>
 #include <vector>
@@ -84,6 +85,10 @@ struct Task {
     // Increased if target can not be built due to missing dependency.
     int failureCounter;
 
+    // Iteration?
+    Task* parent;
+    Task* child;
+
     ~Task() {
         if(onBuild!=NULL) delete onBuild;
         delete target;
@@ -97,7 +102,7 @@ CLI*       cli;
 Filecache* fc;
 TaskQueue* tasks;
 string     runScheme("build");
-string     shellName;
+string     outputDir;
 // In order to call OS savely, we use this.
 static tthread::mutex OSMutex;
 static tthread::mutex ConfigMutex;
@@ -178,6 +183,7 @@ string estimateRuleOutput(string rule, string target, string file="") {
     ReplaceStringInPlace(myExpected, "%b", basename);
     ReplaceStringInPlace(myExpected, "%e", ext);
     ReplaceStringInPlace(myExpected, "%f", file);
+    ReplaceStringInPlace(myExpected, "%o", outputDir);
 
     // Clean up the heap
     delete outputs;
@@ -189,7 +195,7 @@ string estimateRuleOutput(string rule, string target, string file="") {
 
 void __makeTasks(
     string rule, string file, string target,
-    string& input, bool& success, bool finalRule=false
+    string& input, Task*& parent, bool& success, bool finalRule=false
 ) {
     if(!ruleExists(rule)) {
         cerr << "[IceTea]: Rule \"" << rule << "\" does not exist." << endl;
@@ -221,27 +227,27 @@ void __makeTasks(
     // In any case, we want to create the expected value. Its easy.
     string myExpected = estimateRuleOutput(rule, target, file);
 
-    // Init() the rule that we are about to need.
     static map<string, bool> rulesChecked;
-    if(rulesChecked.find(rule) == rulesChecked.end()) {
-        os->pushValueById(ruleObj->valueID);
-        os->pushString("prepare");
-        rulesChecked[rule]=true;
-        if(os->in(-1, -2)) {
-            os->getProperty(-2);
-            if(os->isFunction()) {
-                os->pushValueById(ruleObj->valueID);
-                os->callFT(0,1);
-                if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
-                    success = false;
-                    // Exit it here, because something went wrong.
-                    return;
-                }
-            }
+    #define RUN_INIT \
+        if(rulesChecked.find(rule) == rulesChecked.end()) { \
+            os->pushValueById(ruleObj->valueID); \
+            os->pushString("prepare"); \
+            rulesChecked[rule]=true; \
+            if(os->in(-1, -2)) { \
+                os->getProperty(-2); \
+                if(os->isFunction()) { \
+                    os->pushValueById(ruleObj->valueID); \
+                    os->callFT(0,1); \
+                    if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) { \
+                        success = false; \
+                        return; \
+                    } \
+                } \
+            } \
         }
-    }
 
     if(isBaseTarget) {
+        RUN_INIT
         // Do not even go much further, add the target accordingly.
         Value::String* t_rd = (Value::String*)(*ruleObj)["display"];
         string display = (*t_rd);
@@ -255,7 +261,7 @@ void __makeTasks(
 
         // Find out what type the rule is. A function, or an array of commands?
         os->pushValueById(ruleObj->valueID);
-        os->getProperty(-1, "build");
+        os->getProperty(-1, runScheme.c_str());
         if(os->getTypeStr() == "array") {
             t->type=COMMAND;
             int objlen = os->getLen();
@@ -266,13 +272,19 @@ void __makeTasks(
             }
         } else if(os->getTypeStr() == "function") {
             t->type=SCRIPT;
-            t->onBuild = new Value::Method(os, ruleObj, "build");
+            t->onBuild = new Value::Method(os, ruleObj, runScheme.c_str());
         } else {
             cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                  << "'" << os->getTypeStr() << "' was given instead." << endl;
         }
 
         t->target = (Value::Object*)(*targets)[target];
+
+        // Relate it
+        t->child = NULL;
+        t->parent = parent;
+        parent->child = t;
+
         tasks->add(t);
 
         // We send the output of this task back to the parent call.
@@ -353,6 +365,7 @@ void __makeTasks(
             */
 
             if(outputMatchesAccepted) {
+                RUN_INIT
                 /*
                     Again, the output of the current rule matches our wanted input.
                     Now we have to verify if we found a base rule, or a child rule.
@@ -394,12 +407,48 @@ void __makeTasks(
                     if(currentIsBase) break;
                 }
 
+                string theExpected = estimateRuleOutput((*ruleName), target, file);
+                Value::String* t_rd = (Value::String*)(*currRule)["display"];
+                string display = (*t_rd);
+                string _ruleName = (*ruleName);
+                delete t_rd;
+
+                Task* t = new Task;
+                t->ruleName = _ruleName;
+                t->targetName = target;
+                t->ruleDisplay = display;
+                t->output = theExpected;
+
+                os->pushValueById(currRule->valueID);
+                os->getProperty(-1, runScheme.c_str());
+                if(os->getTypeStr() == "array") {
+                    t->type=COMMAND;
+                    int objlen = os->getLen();
+                    for(int k=0; k<objlen; k++) {
+                        os->pushNumber(k);
+                        os->getProperty();
+                        t->commands.push_back( os->toString().toChar() );
+                    }
+                } else if(os->getTypeStr() == "function") {
+                    t->type=SCRIPT;
+                    os->pushValueById(currRule->valueID);
+                    Value::Object* theRule = new Value::Object(os);
+                    t->onBuild = new Value::Method(os, theRule, runScheme.c_str());
+                } else {
+                    cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
+                         << "'" << os->getTypeStr() << "' was given instead." << endl;
+                }
+
+                t->target = (Value::Object*)(*targets)[target];
+                parent->child = t;
+                t->parent = parent;
+
                 if(currentIsBase) {
                     // The file we have, and the rule we found, make up for a base.
                     // In this case, recall ourself. The above, first check will pass
                     // and it will execute a base rule.
                     string newInput;
-                    __makeTasks((*ruleName), file, target, newInput, success);
+                    __makeTasks((*ruleName), file, target, newInput, parent, success);
                     //if(newInput.empty()) continue;
                     input = newInput;
                 } else {
@@ -418,7 +467,7 @@ void __makeTasks(
                         Beyond that, we return the expected output, as well.
                     */
                     string newInput;
-                    __makeTasks((*ruleName), file, target, newInput, success);
+                    __makeTasks((*ruleName), file, target, newInput, t, success);
                     //cout << (*ruleName) << ": Current is CHILD -- " << file << endl;
                     //cout << rule << "@" << (*ruleName) << ": " << newInput << " | " << myExpected << endl;
 
@@ -428,45 +477,11 @@ void __makeTasks(
                         continue;
                     }
 
-                    string theExpected = estimateRuleOutput((*ruleName), target, file);
-                    Value::String* t_rd = (Value::String*)(*currRule)["display"];
-                    string display = (*t_rd);
-                    string _ruleName = (*ruleName);
-                    delete t_rd;
-
-                    Task* t = new Task;
-                    t->ruleName = _ruleName;
-                    t->targetName = target;
-                    t->ruleDisplay = display;
-                    t->input.push_back(newInput);
-                    t->output = theExpected;
-
-                    os->pushValueById(currRule->valueID);
-                    os->getProperty(-1, "build");
-                    if(os->getTypeStr() == "array") {
-                        t->type=COMMAND;
-                        int objlen = os->getLen();
-                        for(int k=0; k<objlen; k++) {
-                            os->pushNumber(k);
-                            os->getProperty();
-                            t->commands.push_back( os->toString().toChar() );
-                        }
-                    } else if(os->getTypeStr() == "function") {
-                        t->type=SCRIPT;
-                        os->pushValueById(currRule->valueID);
-                        Value::Object* theRule = new Value::Object(os);
-                        t->onBuild = new Value::Method(os, theRule, "build");
-                    } else {
-                        cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
-                             << "'" << os->getTypeStr() << "' was given instead." << endl;
-                    }
-
-                    t->target = (Value::Object*)(*targets)[target];
-                    tasks->add(t);
-                    input = theExpected;
-
                     //cout << (*ruleName) << ": adding with > " << newInput << endl;
 
+                    t->input.push_back(newInput);
+                    tasks->add(t);
+                    input = theExpected;
                     return; // Done.
                 }
             } else {
@@ -486,10 +501,10 @@ void __makeTasks(
 }
 
 
-string makeTasks(string rule, string file, string target, bool& successor) {
+string makeTasks(string rule, string file, string target, Task*& parent, bool& successor) {
     string tmp;
     // The first call ALWAYS results in the actual thing.
-    __makeTasks(rule, file, target, tmp, successor, true);
+    __makeTasks(rule, file, target, tmp, parent, successor, true);
     return tmp;
 }
 
@@ -706,7 +721,7 @@ bool Transformer() {
                                         cerr << "Before makeTaks: " << os->ref_count << endl;
                                         cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
                                     #endif
-                                    string partialInput = makeTasks(rule, file, target, successor);
+                                    string partialInput = makeTasks(rule, file, target, t, successor);
                                     // The final rule itself however, is reserved to be done by hand.
                                     if(!partialInput.empty()) {
                                         t->input.push_back(partialInput);
@@ -728,22 +743,22 @@ bool Transformer() {
                                 // Fill in the rest...
                                 // Find out what type the rule is. A function, or an array of commands?
                                 os->pushValueById(ruleObj->valueID);
-                                os->getProperty(-1, "build");
+                                os->getProperty(-1, runScheme.c_str());
                                 if(os->getTypeStr() == "array") {
                                     t->type=COMMAND;
                                     for(int k=0; k<os->getLen(); k++) {
                                         os->pushNumber(k);
                                         os->getProperty();
-                                        t->commands.push_back( os->popString().toChar() );
+                                        t->commands.push_back( os->toString().toChar() );
                                     }
                                 } else if(os->getTypeStr() == "function") {
                                     t->type=SCRIPT;
-                                    t->onBuild = new Value::Method(os, ruleObj, "build");
+                                    t->onBuild = new Value::Method(os, ruleObj, runScheme.c_str());
                                 } else {
                                     cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                                          << "'" << os->getTypeStr() << "' was given instead." << endl;
                                 }
-
+                                t->parent = NULL;
                                 tasks->add(t);
 
                                 #ifdef IT_DEBUG
@@ -769,6 +784,8 @@ bool Transformer() {
 // Because Run() is our thread function, it needs some depdendencies
 // The needed struct is above.
 int CurrentTaskCount=0;
+static map<string, Task*> tlog;
+static map<string, Task*> updatelog;
 void Run(void* threadData) {
     // We just wait untill we can aquire a lock.
     ConfigMutex.lock(); // Should wait here.
@@ -781,21 +798,91 @@ void Run(void* threadData) {
     bool cancel=false;
 
     while(!tasks->hasToStop()) {
-        if(cancel) break;
-        tasks->remove(task);
+        if(cancel || !tasks->remove(task)) break;
         if(task!=NULL) {
             bool canExecute=false;
             for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
                 if(!file_exists( *it2 )) {
                     // Put the task back in, we cant run it now.
-                    //tasks->add(task);
+                    tasks->add(task);
+                    canExecute=false;
+                    break;
+                } else {
+                    canExecute=true;
                 }
-                canExecute=true;
-                break;
             }
+
             if(canExecute) {
+                bool reallyRun=true;
+                bool updateHash=false;
+                map<string,string> updateHashes;
+                for(list<string>::iterator at=task->input.begin(); at!=task->input.end(); ++at) {
+                    string cached = fc->get(*at, "sha2_files");
+                    string hex = file2sha2(*at);
+                    if(cached.empty()) {
+                        // The file is not in the cache, add it.
+                        if(hex.empty()) {
+                            s << "Error while building SHA2 sum of '" << *at << "'" << endl;
+                            p();
+                            tasks->stop();
+                            reallyRun = false;
+                            break;
+                        } else {
+                            fc->set(*at, hex, "sha2_files");
+                        }
+                    } else {
+                        if(
+                            (
+                                task->child != NULL
+                                && fc->get(task->child->output, "sha2_files") != file2sha2(task->child->output)
+                            ) || (
+                                task->child != NULL
+                                && updatelog.find(task->child->output) != updatelog.end()
+                            )
+                        ) {
+                            reallyRun = true;
+                            updateHash = true;
+                            break;
+                        } else if(cached == hex && file_exists(task->output)) {
+                            // The file is up2date
+                            reallyRun = false;
+                            tlog[task->output]=task;
+                        } else {
+                            // It's not and we gotta do soemthing about it!
+                            updatelog[task->output]=task;
+                            reallyRun = true;
+                            updateHash=true;
+                            updateHashes[*at]=hex;
+                        }
+                    }
+                    fc->sync();
+                    if(updateHash) {
+                        if(task->parent != NULL) {
+                            if(task->parent->parent != NULL) {
+                                file_delete(task->parent->parent->output);
+                            }
+                            file_delete(task->parent->output);
+                        }
+                    }
+                }
+
+                // Sanity check
+                if(!reallyRun) continue;
+
+                // Do this test.
+                bool doHexCheck=false;
+                string outhex;
+                if(file_exists(task->output)) {
+                    outhex = file2sha2(task->output);
+                    doHexCheck=true;
+                }
+
                 CurrentTaskCount++;
-                s << "[" << CurrentTaskCount << "/" << tasks->countAll() << "]";
+                s << "[#" << CurrentTaskCount;
+                if(cli->check("-v")) {
+                    s << " | Remaining: " << tasks->size();
+                }
+                s << "]";
                 s << " " << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
                 if(task->input.size() == 1 ) {
                     s << task->input.front();
@@ -807,6 +894,7 @@ void Run(void* threadData) {
                     s << "Run | OS' refcount: " << os->ref_count << endl;
                 #endif
                 p();
+                Run_choice:
                 if(task->type == SCRIPT) {
                     Locker* g = new Locker(OSMutex);
                     os->newArray(task->input.size());
@@ -820,6 +908,18 @@ void Run(void* threadData) {
                     (*task->onBuild)(4,1);
                     if(os->isArray()) {
                         // We got a set of commands to run.
+                        // Switch the type, we're gonna go backwards!
+                        task->type = COMMAND;
+                        int alen=os->getLen();
+                        for(int l=0; l<alen; l++) {
+                            os->pushNumber(l);
+                            os->getProperty(-2);
+                            string prop = os->toString().toChar();
+                            os->pop(2);
+                            task->commands.push_back( prop );
+                        }
+                        delete g;
+                        goto Run_choice;
                     } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
                         s << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::build" << endl;
                         s << "Function returned false." << endl;
@@ -836,7 +936,8 @@ void Run(void* threadData) {
                         if(rc.exit_code != 0) {
                             s << "FAILED: " << *it << endl;
                             s << "Program exited with status is: " << rc.exit_code << endl;
-                            s << "STDERR:" << rc.streams[2];
+                            s << "STDERR: " << rc.streams[2];
+                            s << "STDOUT: " << rc.streams[1];
                             tasks->stop();
                             cancel=true;
                         } else if(rc.p->error()) {
@@ -847,13 +948,37 @@ void Run(void* threadData) {
                         } else if(!rc.spawned) {
                             s << "FAILED: " << *it << endl;
                             s << "Subprocess could not be started." << endl;
+                            tasks->stop();
+                            cancel=true;
                         }
-                        s << rc.streams[1];
+                        if(rc.streams[1].length() > 0) {
+                            string sout;
+                            stringstream ssout(rc.streams[1]);
+                            while(getline(ssout, sout).good()) {
+                                s << "| " << sout << endl;
+                            }
+                        }
+                        if(rc.streams[2].length() > 0) {
+                            string serr;
+                            stringstream sserr(rc.streams[2]);
+                            while(getline(sserr, serr).good()) {
+                                s << "> " << serr << endl;
+                            }
+                        }
                         p();
-
                     }
                 }
-                //delete task;
+                if(updateHash) {
+                    for(map<string,string>::iterator mt=updateHashes.begin(); mt!=updateHashes.end(); ++mt) {
+                        fc->set(mt->first, mt->second, "sha2_files");
+                    }
+                    fc->sync();
+                }
+                if(doHexCheck && outhex == file2sha2(task->output)) {
+                    s << task->output << " was left UNCHANGED." << endl;
+                }
+                task = NULL;
+                delete task;
             }
         }
     }
@@ -870,9 +995,8 @@ inline bool terminator() {
 }
 
 int itCleanup() {
-    string outdir = cli->value("--dir");
     // Do a proper cleanup if needed.
-    folder_empty(outdir) && folder_delete(outdir);
+    folder_empty(outputDir) && folder_delete(outputDir);
 
     delete cli;
     delete targets;
@@ -924,14 +1048,12 @@ int main(int argc, const char** argv) {
 
     cli->group("Developer options");
     cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
-    cli->insert("", "--debug", "", "Run a debug build; rules and targets may use specialized settings for this build.");
     cli->insert("", "--print-targets", "", "Dump all targets in JSON format to standard error output. Export with: icetea --print-targets 2>targets.json");
     cli->insert("", "--print-actions", "", "Dump all actions in JSON format to standard error output. Export with: icetea --print-actions 2>actions.json");
     cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
     cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
     cli->insert("-o", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
     cli->insert("-e", "--os-exec", "<str>", "Run ObjectScript code from string, or if - was given, then from standard input.");
-    cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
     cli->group("Build options");
     cli->insert(
         "-w", "--wipe", "",
@@ -941,18 +1063,20 @@ int main(int argc, const char** argv) {
     cli->insert("-m", "--arch", "<str>", "If building architecture-dependent apps, supply your architecture here.", true);
     cli->insert("-s", "--vendor", "<str>", "Supply the vendor of your OS. That is the center part of a platform tripple.", true);
     cli->insert("", "--tripple", "<str>", "Supply a platform tripple.", true);
+    cli->insert("-g", "--debug", "", "Turn on the global DEBUG variable (set it to true)");
+    cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
     cli->parse();
 
     // Fetching values...
     const char* bootstrapit = cli->value("-b").c_str();
     const char* buildit = cli->value("-f").c_str();
-    string outputDir = cli->value("-d");
+    outputDir = cli->value("-d");
 
     // Output folder
-    folder_create(cli->value("--dir"));
+    folder_create(outputDir);
 
     // Cache
-    string cacheFile = create_filespec(cli->value("--dir"), ".cache.it");
+    string cacheFile = create_filespec(outputDir, ".cache.it");
     if(cli->check("-p")) {
         file_delete(cacheFile);
     }
@@ -971,6 +1095,12 @@ int main(int argc, const char** argv) {
     // Initialize ObjectScript with our stuff.
     initIceTeaExt(os, cli);
     initializeDetector(os, fc, cli);
+
+    if(cli->check("-g")) {
+        os->eval("DEBUG=true");
+    } else {
+        os->eval("DEBUG=false");
+    }
 
     // Wiping the source tree...
     if(cli->check("-w")) {
@@ -1006,6 +1136,7 @@ int main(int argc, const char** argv) {
         OS::StringDef strs[] = {
             {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
             {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
+            {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
             {}
         };
         os->pushGlobals();
@@ -1104,6 +1235,12 @@ int main(int argc, const char** argv) {
         }
         // Make sure all threads come together first.
         tasks->joinAll();
+
+        // Well that might happen.
+        if(CurrentTaskCount == 0) {
+            cout << endl << "No work had to be done." << endl;
+        }
+
         // Its now save to delete the pool!
         return itCleanup();
     }
