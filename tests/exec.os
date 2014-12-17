@@ -8,7 +8,7 @@
 exec = $;
 function $(command) {
     print "$ ${command} | ${...}";
-    var e,o = exec.apply(this, arguments);
+    var s,e,o = exec.apply(this, arguments);
     print "$? = ${e}"
     print "STDOUT:\n${o[1]}"
     print "STDERR: ${o[2]}\n"

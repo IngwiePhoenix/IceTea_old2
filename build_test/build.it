@@ -1,0 +1,60 @@
+rule("f2c", "File2C") {
+    accepts: ["*.it"],
+    output: {
+        pattern: "*.c",
+        expected: "%o/%t.c"
+    },
+    prepare: function() {
+        if(!detect.tool("f2c")) {
+            print detect.out .. "Building our own file2c binary.";
+            var cmd=[];
+            var f2c_bin = pfs.join(__outputdir, "file2c");
+            cmd[] = detect.compiler("c++");
+            cmd[] = "misc/file2c.cpp";
+            cmd[] = "-o";
+            cmd[] = f2c_bin;
+            print "$ ${cmd.join(' ')}";
+            var s,e,o = $(cmd.join(" "));
+            if(!s) {
+                print detect.out .. "Compilation was not started!"
+                return false;
+            } else {
+                if(e==0) {
+                    @tool = f2c_bin;
+                } else {
+                    @tool = "false";
+                    print detect.out .. "Error while compiling:"
+                    echo o[1];
+                    echo o[2];
+                    return false;
+                }
+            }
+        } else {
+            @tool = detect.tool("f2c");
+        }
+    },
+    build: function(input, output, targetName, target) {
+        var cmd = "${@tool} ${input.join(' ')} ${output}";
+        var s,e,o = $(cmd);
+        if(s) {
+            pfs.mkdir(pfs.join(__outputdir, "."..targetName));
+            pfs.writeFile(o[1], output);
+        } else {
+            print "Could not run: ${cmd}";
+            return false;
+        }
+    }
+}
+
+for(var i,v in pfs.glob("./", "*.it")) {
+    target(v.replace(".","_"), "f2c") {
+        input: [v]
+    }
+}
+target("printit", "exe") {
+    input: ["src/main.cpp", "out/*.c"]
+}
+
+action("all") {
+    build: ["*"]
+}

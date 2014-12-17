@@ -1,5 +1,6 @@
 #include "objectscript.h"
 #include "os-pfs.h"
+#include "os-detector.h"
 #include "file_system.hpp"
 #include "wildcard.hpp"
 
@@ -53,6 +54,8 @@ bool initializePFS(OS* os) {
 
         {OS_TEXT("lookup"),             os_pfs_lookup},
         {OS_TEXT("join"),               os_pfs_join},
+
+        {OS_TEXT("writeFile"),          os_pfs_writeFile},
         {}
     };
 
@@ -213,7 +216,8 @@ OS_FUNC(os_pfs_glob) {
     strVec res = folder_wildcard(folder, pattern, folders, files);
     os->newArray();
     for(strVec::iterator it=res.begin(); it!=res.end(); ++it) {
-        os->pushString(it->c_str());
+        string realdir = create_filespec(folder, *it);
+        os->pushString(realdir.c_str());
         os->addProperty(-2);
     }
     return 1;
@@ -287,5 +291,14 @@ OS_FUNC(os_pfs_join) {
     string base = os->toString(-params+0).toChar();
     string appe = os->toString(-params+1).toChar();
     os->pushString(create_filespec(base, appe).c_str());
+    return 1;
+}
+
+OS_FUNC(os_pfs_writeFile) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string content = os->toString(-params+0).toChar();
+    string filename = os->toString(-params+1).toChar();
+    os->pushBool(write_file(content, filename));
     return 1;
 }

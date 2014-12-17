@@ -1,3 +1,7 @@
+if(DEBUG) {
+    print "YO YO YO YO YO";
+}
+
 rule("cxx", "C++") {
     accepts: ["*.cpp", "*.cxx", "*.c++"],
     output: {
@@ -15,9 +19,6 @@ rule("cxx", "C++") {
         var cmdl=[];
         // Build the command
         cmdl[] = detect.compiler("c++");
-        for(var _,warning in target.settings.CXX.warnings) {
-            cmdl[] = "-W"..warning;
-        }
         cmdl[] = "-c";
         cmdl[] = input.join(" ");
         cmdl[] = "-o";
@@ -43,7 +44,27 @@ rule("c", "C") {
         detect.compiler("c");
     },
     build: function(input, output, targetName, target) {
+        // Now lets get serious.
+        var settings = target.settings;
+        var outDir = __outputdir;
+        var targetDir = pfs.join(outDir, "."..targetName);
+        var cmdl=[];
+        // Build the command
+        cmdl[] = detect.compiler("c");
+        cmdl[] = "-c";
+        cmdl[] = input.join(" ");
+        cmdl[] = "-o";
+        cmdl[] = output;
+        var cmd = cmdl.join(" ");
+
+        pfs.mkdir(targetDir);
+        if(pfs.dirWritable(targetDir)) {
+            return [cmd];
+        } else {
+            print "ERROR: Target dir is not writable!"
+        }
     }
+
 }
 
 rule("strip", "Strip") {
@@ -93,9 +114,6 @@ rule("exe", "Executable") {
         LINK[] = input.join(" ");
         LINK[] = "-o";
         LINK[] = output;
-        for(var _,lib in target.settings.LINK.libraires) {
-            LINK[] = "-l"..lib;
-        }
         var cmd = LINK.join(" ");
         return [cmd];
     },

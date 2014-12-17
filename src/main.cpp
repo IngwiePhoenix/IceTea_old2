@@ -16,6 +16,8 @@
 #include "os-icetea.h"
 #include "os-detector.h"
 #include "os-exec.h"
+#include "os-pfs.h"
+#include "os-std.h"
 
 // FS access
 #include "file_system.hpp"
@@ -77,7 +79,7 @@ struct Task {
     // Rule.build: function(input, output, target)
     // The function is either called with only one input - or an input array. Thus access to the
     // target is given for settings - such as include dirs and alike.
-    Value::Method* onBuild;
+    //Value::Method* onBuild;
 
     // The related target, pushed to the function.
     Value::Object* target;
@@ -89,8 +91,13 @@ struct Task {
     Task* parent;
     Task* child;
 
+    // Always use this tasks output for display.
+    bool isMaster;
+
+    Task() : isMaster(false) {}
+
     ~Task() {
-        if(onBuild!=NULL) delete onBuild;
+        //if(onBuild!=NULL) delete onBuild;
         delete target;
     }
 };
@@ -109,23 +116,6 @@ static tthread::mutex ConfigMutex;
 typedef tthread::lock_guard<tthread::mutex> Locker;
 
 // Tool functions
-void getFileList(string pattern, vector<string> &rt_list) {
-    string dirName = folder_part(pattern);
-    string rpattern = filename_part(pattern);
-    if(dirName == "" || dirName == ".") dirName = "./";
-    vector<string> res = folder_wildcard(dirName, rpattern);
-    for(vector<string>::iterator it=res.begin(); it!=res.end(); ++it) {
-        rt_list.push_back( create_filespec(dirName, *it) );
-    }
-}
-void getFileListRec(Value::Array* arr, vector<string> &str_list) {
-    for(int i=0; i<arr->length(); i++) {
-        Value::String* vs_pat = (Value::String*)(*arr)[i];
-        string pat = (*vs_pat);
-        getFileList(pat, str_list);
-    }
-}
-
 int itCleanup();
 
 bool ruleExists(Value::String* ruleName) {
@@ -149,10 +139,22 @@ bool ruleExists(const string ruleName) {
         os->pop(2);
         return false;
     }
+    return false;
 }
 bool actionExists(const string name) {
     os->pushString(name.c_str());
     os->pushValueById(actions->valueID);
+    if(os->in(/* string in object */)) {
+        os->pop(2);
+        return true;
+    } else {
+        os->pop(2);
+        return false;
+    }
+}
+bool targetExists(const string name) {
+    os->pushString(name.c_str());
+    os->pushValueById(targets->valueID);
     if(os->in(/* string in object */)) {
         os->pop(2);
         return true;
@@ -166,7 +168,7 @@ string estimateRuleOutput(string rule, string target, string file="") {
     os->pushString(rule.c_str());
     os->pushValueById(rules->valueID);
     if(!os->in()) {
-        cerr << "[IceTea]: " << rule << " does not exist.";
+        cerr << "[IceTea]: Rule '" << rule << "' does not exist.";
         return "";
     }
     os->pushString(rule.c_str());
@@ -248,48 +250,52 @@ void __makeTasks(
 
     if(isBaseTarget) {
         RUN_INIT
-        // Do not even go much further, add the target accordingly.
-        Value::String* t_rd = (Value::String*)(*ruleObj)["display"];
-        string display = (*t_rd);
-        delete t_rd;
-        Task* t = new Task;
-        t->ruleName = rule;
-        t->targetName = target;
-        t->ruleDisplay = display;
-        t->input.push_back(file);
-        t->output = myExpected;
-
-        // Find out what type the rule is. A function, or an array of commands?
-        os->pushValueById(ruleObj->valueID);
-        os->getProperty(-1, runScheme.c_str());
-        if(os->getTypeStr() == "array") {
-            t->type=COMMAND;
-            int objlen = os->getLen();
-            for(int k=0; k<objlen; k++) {
-                os->pushNumber(k);
-                os->getProperty();
-                t->commands.push_back( os->toString().toChar() );
-            }
-        } else if(os->getTypeStr() == "function") {
-            t->type=SCRIPT;
-            t->onBuild = new Value::Method(os, ruleObj, runScheme.c_str());
+        if(finalRule) {
+            // The base target is ALSO the only...all we gotta do is return accordingly.
+            input = file;
         } else {
-            cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
-                 << "'" << os->getTypeStr() << "' was given instead." << endl;
+            // Do not even go much further, add the target accordingly.
+            Value::String* t_rd = (Value::String*)(*ruleObj)["display"];
+            string display = (*t_rd);
+            delete t_rd;
+            Task* t = new Task;
+            t->ruleName = rule;
+            t->targetName = target;
+            t->ruleDisplay = display;
+            t->input.push_back(file);
+            t->output = myExpected;
+
+            // Find out what type the rule is. A function, or an array of commands?
+            os->pushValueById(ruleObj->valueID);
+            os->getProperty(-1, runScheme.c_str());
+            if(os->getTypeStr() == "array") {
+                t->type=COMMAND;
+                int objlen = os->getLen();
+                for(int k=0; k<objlen; k++) {
+                    os->pushNumber(k);
+                    os->getProperty();
+                    t->commands.push_back( os->toString().toChar() );
+                }
+            } else if(os->getTypeStr() == "function") {
+                t->type=SCRIPT;
+            } else {
+                cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
+                     << "'" << os->getTypeStr() << "' was given instead." << endl;
+            }
+
+            t->target = (Value::Object*)(*targets)[target];
+
+            // Relate it
+            t->child = NULL;
+            t->parent = parent;
+            parent->child = t;
+
+            tasks->add(t);
+
+            // We send the output of this task back to the parent call.
+            // That is the new input.
+            input = myExpected;
         }
-
-        t->target = (Value::Object*)(*targets)[target];
-
-        // Relate it
-        t->child = NULL;
-        t->parent = parent;
-        parent->child = t;
-
-        tasks->add(t);
-
-        // We send the output of this task back to the parent call.
-        // That is the new input.
-        input = myExpected;
     } else {
         /*
             This is much more complicated...
@@ -431,9 +437,6 @@ void __makeTasks(
                     }
                 } else if(os->getTypeStr() == "function") {
                     t->type=SCRIPT;
-                    os->pushValueById(currRule->valueID);
-                    Value::Object* theRule = new Value::Object(os);
-                    t->onBuild = new Value::Method(os, theRule, runScheme.c_str());
                 } else {
                     cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                          << "'" << os->getTypeStr() << "' was given instead." << endl;
@@ -607,6 +610,8 @@ bool Preprocessor() {
         }
 
         // Now strech the input parameter.
+        // Wut. Deprecating. Targets must use pfs.glob
+        /*
         Value::Array* input = (Value::Array*)(*val)["input"];
         vector<string> fileList;
         getFileListRec(input, fileList);
@@ -620,11 +625,11 @@ bool Preprocessor() {
         }
         os->setProperty(ojoff, "input");
         os->pop();
+        */
 
         // clean up
         delete key;
         delete val;
-        delete input;
 
         // Cause IceTea to exit
         if(os->isExceptionSet()) return false;
@@ -691,8 +696,9 @@ bool Transformer() {
                         // Now to iterate over all targets and match them.
                         os->pushValueById(targets->valueID);
                         os->getProperty(-1, "keys"); // triggers the getKeys method.
+                        int klen = os->getLen();
                         Value::Array* keys = new Value::Array(os);
-                        for(int i=0; i<keys->length(); i++) {
+                        for(int i=0; i<klen; i++) {
                             Value::String* key = (Value::String*)(*keys)[i];
                             Value::Object* val = (Value::Object*)(*targets)[(*key)];
                             string target = (*key);
@@ -722,8 +728,10 @@ bool Transformer() {
                                         cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
                                     #endif
                                     string partialInput = makeTasks(rule, file, target, t, successor);
-                                    // The final rule itself however, is reserved to be done by hand.
-                                    if(!partialInput.empty()) {
+                                    if(partialInput == file) {
+                                        t->output = estimateRuleOutput(rule, target, file);
+                                        t->input.push_back(file);
+                                    } else if(!partialInput.empty()) {
                                         t->input.push_back(partialInput);
                                     } else if(!successor) {
                                         cerr << "IceTea: Failed while preparing rule: " << rule << endl;
@@ -753,17 +761,20 @@ bool Transformer() {
                                     }
                                 } else if(os->getTypeStr() == "function") {
                                     t->type=SCRIPT;
-                                    t->onBuild = new Value::Method(os, ruleObj, runScheme.c_str());
                                 } else {
                                     cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
                                          << "'" << os->getTypeStr() << "' was given instead." << endl;
                                 }
                                 t->parent = NULL;
+                                t->isMaster = true;
                                 tasks->add(t);
 
                                 #ifdef IT_DEBUG
                                     cerr << "Transformer, after | OS' refcount: " << os->ref_count << endl;
                                 #endif
+
+                                // One thing we forgot.
+                                if(__tname == target) break;
                             } else {
                                 cerr << "Target '" << __tname << "' does not exist or the pattern doesnt match." << endl;
                                 // clean up
@@ -839,6 +850,9 @@ void Run(void* threadData) {
                             ) || (
                                 task->child != NULL
                                 && updatelog.find(task->child->output) != updatelog.end()
+                            ) || (
+                                task->parent != NULL
+                                && updatelog.find(task->parent->output) != updatelog.end()
                             )
                         ) {
                             reallyRun = true;
@@ -861,14 +875,20 @@ void Run(void* threadData) {
                         if(task->parent != NULL) {
                             if(task->parent->parent != NULL) {
                                 file_delete(task->parent->parent->output);
+                                fc->remove(task->parent->parent->output, "sha2_files");
+                                tasks->add(tlog[task->parent->parent->output]);
                             }
                             file_delete(task->parent->output);
+                            fc->remove(task->parent->output, "sha2_files");
+                            tasks->add(tlog[task->parent->output]);
                         }
                     }
                 }
 
                 // Sanity check
-                if(!reallyRun) continue;
+                if(!reallyRun) {
+                    continue;
+                }
 
                 // Do this test.
                 bool doHexCheck=false;
@@ -885,7 +905,7 @@ void Run(void* threadData) {
                 }
                 s << "]";
                 s << " " << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
-                if(task->input.size() == 1 ) {
+                if(task->input.size() == 1 && !task->isMaster) {
                     s << task->input.front();
                 } else {
                     s << task->output;
@@ -898,6 +918,11 @@ void Run(void* threadData) {
                 Run_choice:
                 if(task->type == SCRIPT) {
                     Locker* g = new Locker(OSMutex);
+                    Value::Object* trule = (Value::Object*)(*rules)[task->ruleName];
+                    os->pushValueById(trule->valueID);
+                    os->pushString(runScheme.c_str());
+                    os->getProperty(-2);
+                    os->pushValueById(trule->valueID);
                     os->newArray(task->input.size());
                     for(list<string>::iterator it=task->input.begin(); it!=task->input.end(); ++it) {
                         os->pushString(it->c_str());
@@ -906,7 +931,7 @@ void Run(void* threadData) {
                     os->pushString(task->output.c_str());
                     os->pushString(task->targetName.c_str());
                     os->pushValueById(task->target->valueID);
-                    (*task->onBuild)(4,1);
+                    os->callFT(4,1);
                     if(os->isArray()) {
                         // We got a set of commands to run.
                         // Switch the type, we're gonna go backwards!
@@ -936,9 +961,7 @@ void Run(void* threadData) {
                         CommandResult rc = it_cmd(*it, vector<string>());
                         if(rc.exit_code != 0) {
                             s << "FAILED: " << *it << endl;
-                            s << "Program exited with status is: " << rc.exit_code << endl;
-                            s << "STDERR: " << rc.streams[2];
-                            s << "STDOUT: " << rc.streams[1];
+                            s << "Program exited with status: " << rc.exit_code << endl;
                             tasks->stop();
                             cancel=true;
                         } else if(rc.p->error()) {
@@ -999,6 +1022,14 @@ int itCleanup() {
     // Do a proper cleanup if needed.
     folder_empty(outputDir) && folder_delete(outputDir);
 
+    // OS might has an info we want.
+    int rtc=0;
+    if(os->isExceptionSet()) {
+        rtc=1;
+    } else if(os->isTerminated()) {
+        rtc=os->getTerminatedCode();
+    }
+
     delete cli;
     delete targets;
     delete rules;
@@ -1006,7 +1037,31 @@ int itCleanup() {
     os->release();
     delete tasks;
 
-    return 0;
+    return rtc;
+}
+
+// Minimals
+OS_FUNC(os_estimateRuleOutput) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    EXPECT_STRING(3)
+    string rule = os->toString(-params+0).toChar();
+    string target = os->toString(-params+1).toChar();
+    string file = os->toString(-params+2).toChar();
+    os->pushString(estimateRuleOutput(rule,target,file).c_str());
+    return 1;
+}
+OS_FUNC(os_getTarget) {
+    EXPECT_STRING(1)
+    string target = os->toString(-params+0).toChar();
+    if(targetExists(target)) {
+        os->pushValueById(
+            ((Value::Object*)(*targets)[target])->valueID
+        );
+    } else {
+        os->pushBool(false);
+    }
+    return 1;
 }
 
 int main(int argc, const char** argv) {
@@ -1096,6 +1151,32 @@ int main(int argc, const char** argv) {
     // Initialize ObjectScript with our stuff.
     initIceTeaExt(os, cli);
     initializeDetector(os, fc, cli);
+    initializeStdlib(os);
+    // Those functions are only seen in here.
+    OS::FuncDef itFuncs[] = {
+        {OS_TEXT("estimateRuleOutput"), os_estimateRuleOutput},
+        {OS_TEXT("getTarget"),          os_getTarget},
+        //{OS_TEXT("build")},
+        //{OS_TEXT("clean")},
+        //{OS_TEXT("ruleExists")},
+        //{OS_TEXT("actionExists")},
+        //{OS_TEXT("targetExists")},
+        {}
+    };
+    os->getModule("icetea");
+    os->setFuncs(itFuncs);
+    os->pop();
+
+    // Generic
+    OS::StringDef strs[] = {
+        {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
+        {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
+        {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
+        {}
+    };
+    os->pushGlobals();
+    os->setStrings(strs);
+    os->pop();
 
     if(cli->check("-g")) {
         os->eval("DEBUG=true");
@@ -1108,6 +1189,25 @@ int main(int argc, const char** argv) {
         runScheme = "clean";
     }
 
+    // Run the script to populate the global objects.
+    if(file_exists(bootstrapit)) {
+        os->require(bootstrapit);
+        if(terminator()) return itCleanup();
+    } else {
+        // We'd have to load one from memory...+
+        cerr << "IceTea: Using internal bootstrap.it file, since '" << bootstrapit << "' "
+             << "was not found." << endl;
+    }
+    if(file_exists(buildit)) {
+        os->require(buildit);
+        if(terminator()) return itCleanup();
+    } else {
+        if(!cli->check("--os") && !cli->check("--os-exec")) {
+            cerr << "File \"" << cli->value("-f") << "\" does not exist! Aborting." << endl;
+            return itCleanup();
+        }
+    }
+
     // We have a script file to run.
     if(cli->check("--os")) {
         os->require(cli->value("--os").c_str());
@@ -1117,8 +1217,9 @@ int main(int argc, const char** argv) {
     if(cli->check("--os-exec")) {
         string code;
         if(cli->value("--os-exec") == "-") {
+            cerr << "Press CTRL+D or end input to STDIN to run the code." << endl;
             string line;
-            while(getline(cin, line)) {
+            while(getline(cin, line).good()) {
                 code += line;
             }
         } else {
@@ -1131,32 +1232,6 @@ int main(int argc, const char** argv) {
 
     // Pre-check
     if(cli->check("-u")) cli->group("Project options");
-
-    // Run the script to populate the global objects.
-    if(file_exists(buildit)) {
-        OS::StringDef strs[] = {
-            {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
-            {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
-            {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
-            {}
-        };
-        os->pushGlobals();
-        os->setStrings(strs);
-        os->pop();
-        if(file_exists(bootstrapit)) {
-            os->require(bootstrapit);
-            if(terminator()) return itCleanup();
-        } else {
-            // We'd have to load one from memory...+
-            cerr << "IceTea: Using internal bootstrap.it file, since '" << bootstrapit << "' "
-                 << "was not found." << endl;
-        }
-        os->require(buildit);
-        if(terminator()) return itCleanup();
-    } else {
-        cerr << "File \"" << cli->value("-f") << "\" does not exist! Aborting." << endl;
-        return itCleanup();
-    }
 
     // init() has added its methods, now its time to put it in.
     cli->parse();
@@ -1232,14 +1307,13 @@ int main(int argc, const char** argv) {
         } else {
             // Run untill the list is empty... and then stop all threads.
             tasks->drain();
-            //tasks->stop();
         }
         // Make sure all threads come together first.
         tasks->joinAll();
 
         // Well that might happen.
         if(CurrentTaskCount == 0) {
-            cout << endl << "No work had to be done." << endl;
+            cout << endl << "No task was run." << endl;
         }
 
         // Its now save to delete the pool!

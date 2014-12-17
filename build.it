@@ -1,27 +1,24 @@
 target("IceTea_self", "exe") {
-    input: ["src/*.cpp"],
+    input: pfs.glob("src", "*.cpp"),
     settings: {
+        include_dirs: ["src"],
         CXX: {
-            includeDirs: ["src"]
+            warnings: ["no-switch"]
+        },
+        LINK: {
+            libraries: ["pthread"]
         }
     },
-    init: function() {
-        return true;
-    },
-    configure: function() {
-        print "I am configuring with: " .. this;
-        return true;
-    }
 }
 
 action("all") {
     build: ["*"]
 }
 
-action("dist"){|args|
+action("dist"){||
     print "Creating a distribution...";
     if(sys.which("tar") != "") {
         sys.cd(pfs.dirname(__FILE__));
-        $ "tar cvfz icetea.tar.gz icetea README.md"
+        shell "tar cvfz icetea.tar.gz icetea* README.md TODO.md bootstrap.it"
     }
 }
