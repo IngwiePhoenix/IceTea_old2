@@ -93,7 +93,7 @@ rule("exe", "Executable") {
         LINK[] = input.join(" ");
         LINK[] = "-o";
         LINK[] = output;
-        for(var _,lib in target.settings.LINK.libraires) {
+        for(var _,lib in target.settings.LINK.libraries) {
             LINK[] = "-l"..lib;
         }
         var cmd = LINK.join(" ");
