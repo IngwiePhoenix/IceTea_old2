@@ -194,6 +194,16 @@ string estimateRuleOutput(string rule, string target, string file="") {
     return myExpected;
 }
 
+// When we whipe the output dir, we can use this in place of a non-existing clean method.
+OS_FUNC(os_target_clean) {
+    Task* t = (Task*)userData;
+    string output = os->toString(-params+1).toChar();
+    cout << "Deleting: " << output << endl;
+    file_delete(output);
+    folder_delete(folder_part(output));
+    return 0;
+}
+
 
 void __makeTasks(
     string rule, string file, string target,
@@ -279,8 +289,15 @@ void __makeTasks(
             } else if(os->getTypeStr() == "function") {
                 t->type=SCRIPT;
             } else {
-                cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
-                     << "'" << os->getTypeStr() << "' was given instead." << endl;
+                if(cli->check("-w")) {
+                    // Whipe mode. Replace the emptyness right there with an actual thing.
+                    os->pushValueById(ruleObj->valueID);
+                    os->pushCFunction(os_target_clean, (void*)t);
+                    os->setProperty(-2, runScheme.c_str());
+                } else {
+                    cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
+                         << "'" << os->getTypeStr() << "' was given instead." << endl;
+                }
             }
 
             t->target = (Value::Object*)(*targets)[target];
@@ -438,8 +455,15 @@ void __makeTasks(
                 } else if(os->getTypeStr() == "function") {
                     t->type=SCRIPT;
                 } else {
-                    cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
-                         << "'" << os->getTypeStr() << "' was given instead." << endl;
+                    if(cli->check("-w")) {
+                        // Whipe mode. Replace the emptyness right there with an actual thing.
+                        os->pushValueById(ruleObj->valueID);
+                        os->pushCFunction(os_target_clean, (void*)t);
+                        os->setProperty(-2, runScheme.c_str());
+                    } else {
+                        cerr << "[IceTea]: Rule '"<< rule << "' must have it's '" << runScheme << "' property defined as function or array! "
+                                  << "'" << os->getTypeStr() << "' was given instead." << endl;
+                    }
                 }
 
                 t->target = (Value::Object*)(*targets)[target];
@@ -660,7 +684,11 @@ bool Transformer() {
             cerr << "Action '"<< *it <<"' does not exist!" << endl;
             return false;
         } else {
-            cout << "–– Running: " << *it << endl;
+            if(cli->check("-w"))
+                cout << "Cleaning: ";
+            else
+                cout << "Running: ";
+            cout << *it << endl;
             os->pushValueById(actions->valueID);
             os->pushString(it->c_str());
             os->getProperty(-2);
@@ -762,8 +790,15 @@ bool Transformer() {
                                 } else if(os->getTypeStr() == "function") {
                                     t->type=SCRIPT;
                                 } else {
-                                    cerr << "[IceTea]: Rule '"<< rule << "' must have it's build property defined as function or array! "
-                                         << "'" << os->getTypeStr() << "' was given instead." << endl;
+                                    if(cli->check("-w")) {
+                                        // Whipe mode. Replace the emptyness right there with an actual thing.
+                                        os->pushValueById(ruleObj->valueID);
+                                        os->pushCFunction(os_target_clean, (void*)t);
+                                        os->setProperty(-2, runScheme.c_str());
+                                    } else {
+                                        cerr << "[IceTea]: Rule '"<< rule << "' must have it's '" << runScheme << "' property defined as function or array! "
+                                                  << "'" << os->getTypeStr() << "' was given instead." << endl;
+                                    }
                                 }
                                 t->parent = NULL;
                                 t->isMaster = true;
@@ -813,15 +848,25 @@ void Run(void* threadData) {
         if(!tasks->remove(task)) break;
         if(task!=NULL) {
             bool canExecute=false;
-            for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
-                if(!file_exists( *it2 )) {
-                    // Put the task back in, we cant run it now.
-                    tasks->add(task);
-                    canExecute=false;
-                    break;
-                } else {
-                    canExecute=true;
+            if(!cli->check("-w")) {
+                for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
+                    if(!file_exists( *it2 )) {
+                        // Put the task back in, we cant run it now.
+                        if(cli->check("-v")) {
+                            s << "IceTea: " << *it2 << " does not exist!" << endl;
+                            p();
+                        }
+                        //tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
+                        tasks->add(task);
+                        canExecute=false;
+                        break;
+                    } else {
+                        canExecute=true;
+                    }
                 }
+            } else {
+                // We're clearing everything away.
+                canExecute=true;
             }
 
             if(canExecute) {
@@ -829,71 +874,63 @@ void Run(void* threadData) {
                 bool updateHash=false;
                 map<string,string> updateHashes;
                 for(list<string>::iterator at=task->input.begin(); at!=task->input.end(); ++at) {
-                    string cached = fc->get(*at, "sha2_files");
-                    string hex = file2sha2(*at);
-                    if(cached.empty()) {
-                        // The file is not in the cache, add it.
-                        if(hex.empty()) {
-                            s << "Error while building SHA2 sum of '" << *at << "'" << endl;
-                            p();
-                            tasks->stop();
-                            reallyRun = false;
-                            break;
-                        } else {
-                            fc->set(*at, hex, "sha2_files");
-                        }
-                    } else {
-                        if(
-                            (
-                                task->child != NULL
-                                && fc->get(task->child->output, "sha2_files") != file2sha2(task->child->output)
-                            ) || (
-                                task->child != NULL
-                                && updatelog.find(task->child->output) != updatelog.end()
-                            ) || (
-                                task->parent != NULL
-                                && updatelog.find(task->parent->output) != updatelog.end()
-                            )
-                        ) {
-                            reallyRun = true;
-                            updateHash = true;
-                            break;
-                        } else if(cached == hex && file_exists(task->output)) {
-                            // The file is up2date
-                            reallyRun = false;
-                            tlog[task->output]=task;
-                        } else {
-                            // It's not and we gotta do soemthing about it!
-                            updatelog[task->output]=task;
-                            reallyRun = true;
-                            updateHash=true;
-                            updateHashes[*at]=hex;
-                        }
-                    }
-                    fc->sync();
-                    if(updateHash) {
-                        if(task->parent != NULL) {
-                            if(task->parent->parent != NULL) {
-                                file_delete(task->parent->parent->output);
-                                fc->remove(task->parent->parent->output, "sha2_files");
-                                tasks->add(tlog[task->parent->parent->output]);
+                    if(!cli->check("-w")) {
+                        string cached = fc->get(*at, "sha2_files");
+                        string hex = file2sha2(*at);
+                        if(cached.empty()) {
+                            // The file is not in the cache, add it.
+                            if(hex.empty()) {
+                                s << "Error while building SHA2 sum of '" << *at << "'" << endl;
+                                p();
+                                tasks->stop();
+                                reallyRun = false;
+                                break;
+                            } else {
+                                fc->set(*at, hex, "sha2_files");
                             }
-                            file_delete(task->parent->output);
-                            fc->remove(task->parent->output, "sha2_files");
-                            tasks->add(tlog[task->parent->output]);
+                        } else {
+                            if(
+                                (
+                                    task->child != NULL
+                                    && fc->get(task->child->output, "sha2_files") != file2sha2(task->child->output)
+                                ) || (
+                                    task->child != NULL
+                                    && updatelog.find(task->child->output) != updatelog.end()
+                                ) || (
+                                    task->parent != NULL
+                                    && updatelog.find(task->parent->output) != updatelog.end()
+                                )
+                            ) {
+                                reallyRun = true;
+                                updateHash = true;
+                                break;
+                            } else if(cached == hex && file_exists(task->output)) {
+                                // The file is up2date
+                                reallyRun = false;
+                                tlog[task->output]=task;
+                            } else {
+                                // It's not and we gotta do soemthing about it!
+                                updatelog[task->output]=task;
+                                reallyRun = true;
+                                updateHash=true;
+                                updateHashes[*at]=hex;
+                            }
                         }
+                        fc->sync();
+                    } else {
+                        // We skip the caching stuff in whipe mode. So we only erase the cache.
+                        fc->remove(*at, "sha2_files");
+                        reallyRun=true;
                     }
                 }
 
                 // Sanity check
-                if(!reallyRun) {
-                    continue;
-                }
+                if(!reallyRun) continue;
 
                 // Do this test.
                 bool doHexCheck=false;
                 string outhex;
-                if(file_exists(task->output)) {
+                if(file_exists(task->output) && !cli->check("-w")) {
                     outhex = file2sha2(task->output);
                     doHexCheck=true;
                 }
@@ -911,16 +948,14 @@ void Run(void* threadData) {
                     s << task->output;
                 }
                 s << endl;
-                #ifdef IT_DEBUG
-                    s << "Run | OS' refcount: " << os->ref_count << endl;
-                #endif
                 p();
+
                 Run_choice:
                 if(task->type == SCRIPT) {
                     Locker* g = new Locker(OSMutex);
                     Value::Object* trule = (Value::Object*)(*rules)[task->ruleName];
                     os->pushValueById(trule->valueID);
-                    os->pushString(runScheme.c_str());
+                    os->pushString(runScheme.c_str()); // build, clean.
                     os->getProperty(-2);
                     os->pushValueById(trule->valueID);
                     os->newArray(task->input.size());
@@ -947,7 +982,7 @@ void Run(void* threadData) {
                         delete g;
                         goto Run_choice;
                     } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
-                        s << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::build" << endl;
+                        s << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::" << runScheme << endl;
                         s << "Function returned false." << endl;
                         p();
                         tasks->stop();
@@ -997,12 +1032,20 @@ void Run(void* threadData) {
                         fc->set(mt->first, mt->second, "sha2_files");
                     }
                     fc->sync();
+                    if(task->parent != NULL) {
+                        if(task->parent->parent != NULL) {
+                            file_delete(task->parent->parent->output);
+                            fc->remove(task->parent->parent->output, "sha2_files");
+                            tasks->add(task->parent->parent);
+                        }
+                        file_delete(task->parent->output);
+                        fc->remove(task->parent->output, "sha2_files");
+                        tasks->add(task->parent);
+                    }
                 }
                 if(doHexCheck && outhex == file2sha2(task->output)) {
                     s << task->output << " was left UNCHANGED." << endl;
                 }
-                task = NULL;
-                delete task;
             }
         }
     }
@@ -1076,7 +1119,7 @@ int main(int argc, const char** argv) {
 
     // Generate a pretty copyright.
     stringstream cpr;
-    cpr << "IceTea 0.0.1 by Ingwie Phoenix" << endl
+    cpr << "IceTea 0.1.0 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
         << "stlplus " << stlplus::version() << endl;
@@ -1172,6 +1215,7 @@ int main(int argc, const char** argv) {
         {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
         {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
         {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
+        {OS_TEXT("__cachefile"),   OS_TEXT(cacheFile.c_str())},
         {}
     };
     os->pushGlobals();
@@ -1179,9 +1223,9 @@ int main(int argc, const char** argv) {
     os->pop();
 
     if(cli->check("-g")) {
-        os->eval("DEBUG=true");
+        os->eval("_G.DEBUG=true");
     } else {
-        os->eval("DEBUG=false");
+        os->eval("_G.DEBUG=false");
     }
 
     // Wiping the source tree...
@@ -1313,7 +1357,7 @@ int main(int argc, const char** argv) {
 
         // Well that might happen.
         if(CurrentTaskCount == 0) {
-            cout << endl << "No task was run." << endl;
+            cout << endl << "No task had to be run." << endl;
         }
 
         // Its now save to delete the pool!

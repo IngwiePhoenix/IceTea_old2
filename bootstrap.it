@@ -1,3 +1,10 @@
+// A function to help us generate native rules.
+native = extends Object {
+    compile = function(input, output, targetName, target) {
+        var kind = "";
+    }
+}
+
 rule("cxx", "C++") {
     accepts: ["*.cpp", "*.cxx", "*.c++"],
     output: {
@@ -43,6 +50,26 @@ rule("c", "C") {
         detect.compiler("c");
     },
     build: function(input, output, targetName, target) {
+        // Now lets get serious.
+        var settings = target.settings;
+        var outDir = __outputdir;
+        var targetDir = pfs.join(outDir, "."..targetName);
+        var cmdl=[];
+        // Build the command
+        cmdl[] = detect.compiler("c");
+        cmdl[] = "-c";
+        cmdl[] = input.join(" ");
+        cmdl[] = "-o";
+        cmdl[] = output;
+        var cmd = cmdl.join(" ");
+        print "$ ${cmd}"
+
+        pfs.mkdir(targetDir);
+        if(pfs.dirWritable(targetDir)) {
+            return [cmd];
+        } else {
+            print "ERROR: Target dir is not writable!"
+        }
     }
 }
 
@@ -102,7 +129,4 @@ rule("exe", "Executable") {
     finalize: function(output) {
         //mv output -> output without .bin or .exe
     },
-    clean: function(output) {
-        //we must look for a non-shuffixed version of the file.
-    }
 }

@@ -3,3 +3,8 @@
 icetea
 .DS_Store
 out/*
+.cache.it
+*.o-stripped
+out/
+build_test/out/
+build_test/out/*

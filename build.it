@@ -12,7 +12,8 @@ target("IceTea_self", "exe") {
 }
 
 action("all") {
-    build: ["*"]
+    build: ["*"],
+    clean: ["*"]
 }
 
 action("dist"){||

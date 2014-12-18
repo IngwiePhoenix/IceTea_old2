@@ -2,13 +2,16 @@ rule("f2c", "File2C") {
     accepts: ["*.it"],
     output: {
         pattern: "*.c",
-        expected: "%o/%t.c"
+        expected: "%o/%t-%e.c"
     },
     prepare: function() {
-        if(!detect.tool("f2c")) {
+        var f2c_bin = pfs.join(__outputdir, "file2c");
+        if(pfs.fileExists(f2c_bin)) {
+            print detect.out .. "Using f2c: ${f2c_bin}"
+            @tool = f2c_bin;
+        } else if(!detect.tool("f2c") && !pfs.fileExists(f2c_bin)) {
             print detect.out .. "Building our own file2c binary.";
             var cmd=[];
-            var f2c_bin = pfs.join(__outputdir, "file2c");
             cmd[] = detect.compiler("c++");
             cmd[] = "misc/file2c.cpp";
             cmd[] = "-o";
@@ -34,25 +37,39 @@ rule("f2c", "File2C") {
         }
     },
     build: function(input, output, targetName, target) {
-        var cmd = "${@tool} ${input.join(' ')} ${output}";
-        var s,e,o = $(cmd);
-        if(s) {
-            pfs.mkdir(pfs.join(__outputdir, "."..targetName));
-            pfs.writeFile(o[1], output);
-        } else {
-            print "Could not run: ${cmd}";
-            return false;
+        print "${input} -> ${output}"
+        for(var _,inp in input) {
+            var cmdl = [];
+            cmdl[] = @tool;
+            cmdl[] = pfs.filename(inp);
+            cmdl[] = pfs.basename(inp.replace(".","_"));
+            var cmd = cmdl.join(" ");
+            var s,e,o = $(cmd);
+            if(s) {
+                pfs.writeFile(o[1], output);
+            } else {
+                print "Could not run: ${cmd}";
+                return false;
+            }
         }
     }
 }
 
+/*var newFiles = [];
 for(var i,v in pfs.glob("./", "*.it")) {
-    target(v.replace(".","_"), "f2c") {
+    var tname = pfs.filename(v).replace(".","_");
+    var ot = icetea.estimateRuleOutput("f2c", tname, v);
+    target(tname, "f2c") {
         input: [v]
     }
-}
+    print "Adding: ${ot}"
+    newfiles[] = ot;
+}*/
+
 target("printit", "exe") {
-    input: ["src/main.cpp", "out/*.c"]
+    input: [
+        "src/main.cpp"
+    ] + pfs.glob("./", "*.it")
 }
 
 action("all") {
