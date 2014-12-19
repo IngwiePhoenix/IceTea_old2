@@ -1,7 +1,116 @@
 // A function to help us generate native rules.
 native = extends Object {
-    compile = function(input, output, targetName, target) {
-        var kind = "";
+    compile = function(kind) {
+        return function(input, output, targetName, target) {
+            // Now lets get serious.
+            var key = detect.kind2key(kind);
+            var settings = target.settings;
+            var outDir = __outputdir;
+            var targetDir = pfs.join(outDir, "."..targetName);
+            var cmdl=[];
+
+            // Build the command
+            cmdl[] = detect.compiler(kind);
+
+            if(sys.type == "windows") {
+                cmdl[] = "/nologo";
+            }
+
+            if(typeOf(settings[key].warnings) == "array") {
+                for(var _,warning in settings[key].warnings) {
+                    // On windows, the user should know what he/she is passing...for now.
+                    // A generalization of warning flags would be cool. o.o
+                    cmdl[] = (sys.type == "unix" ? "-W" : "")..warning;
+                }
+            }
+
+            if(settings.native.warning_as_error == true) {
+                if(sys.type == "unix") {
+                    cmdl[] = "-Werror";
+                } else {
+                    cmdl[] = "/WX";
+                }
+            }
+
+            if(typeOf(settings[key].optimization) == "string") {
+                switch(settings[key].optimization) {
+                    case "none": cmdl[] = (sys.type=="unix"?"-O0":""); break;
+                    case "small": cmdl[] = (sys.type=="unix"?"-O1":"/O1"); break;
+                    case "medium": cmdl[] = (sys.type=="unix"?"-O2":"/O2"); break;
+                    case "max": cmdl[] = (sys.type=="unix"?"-O3":"/O3"); break;
+                    case "size": cmdl[] = (sys.type=="unix"?"-Os":"/Os"); break;
+                    default: cmdl[] = ""; break;
+                }
+            }
+
+            if(typeOf(settings.native.include_dirs) == "array") {
+                for(var _,ink in settings.native.include_dirs) {
+                    cmdl[] = (sys.type == "unix" ? "-I" : "/I")..ink;
+                }
+            }
+            if(typeOf(settings[key].include_dirs) == "array") {
+                for(var _,ink in settings[key].include_dirs) {
+                    cmdl[] = (sys.type == "unix" ? "-I" : "/I")..ink;
+                }
+            }
+
+            if(typeOf(settings.native.defines) == "array") {
+                for(var _,ink in settings.native.defines) {
+                    cmdl[] = (sys.type == "unix" ? "-D" : "/D")..ink;
+                }
+            }
+            if(typeOf(settings[key].defines) == "array") {
+                for(var _,ink in settings[key].defines) {
+                    cmdl[] = (sys.type == "unix" ? "-D" : "/D")..ink;
+                }
+            }
+
+            if(typeOf(settings[key].flags) == "array") {
+                cmdl[] = settings[key].flags.join(" ");
+            }
+
+            cmdl[] = (sys.type == "unix" ? "-c" : "/c");
+            cmdl[] = input.join(" ");
+            cmdl[] = (sys.type == "unix" ? "-o" : "/Fo");
+            cmdl[] = output;
+            var cmd = cmdl.join(" ");
+
+            pfs.mkdir(targetDir);
+            if(pfs.dirWritable(targetDir)) {
+                return [cmd];
+            } else {
+                print "ERROR: Target dir is not writable!"
+            }
+        }
+    },
+    link = function(kind) {
+        return function(input, output, targetName, target) {
+            var settings = target.settings;
+            var key = detect.kind2key(kind);
+            var LINK=[];
+
+            // I need a better way to use the linker... :/
+            LINK[] = detect.compiler(kind);
+            LINK[] = input.join(" ");
+            LINK[] = (sys.type == "unix" ? "-o" : "/Fe");
+            LINK[] = output;
+            for(var _,lib in target.settings.LINK.libraries) {
+                // Windows does not have a -l flag - instead you specify the libs yourself.
+                // ...i call a whaaaaat.
+                LINK[] = (sys.type == "unix" ? "-l"..lib : lib..".lib");
+            }
+            if(DEBUG) {
+                LINK[] = (sys.type == "unix" ? "-g" : "/Zi");
+            }
+            if(typeOf(settings.LINK.flags) == "array") {
+                if(sys.type == "windows") LINK[] = "/link";
+                for(var _,flag in settings.LINK.flags) {
+                    LINK[] = (sys.type == "unix" ? "-Wl," : "")..flag;
+                }
+            }
+            var cmd = LINK.join(" ");
+            return [cmd];
+        }
     }
 }
 
@@ -14,30 +123,7 @@ rule("cxx", "C++") {
     prepare: function() {
         detect.compiler("c++");
     },
-    build: function(input, output, targetName, target) {
-        // Now lets get serious.
-        var settings = target.settings;
-        var outDir = __outputdir;
-        var targetDir = pfs.join(outDir, "."..targetName);
-        var cmdl=[];
-        // Build the command
-        cmdl[] = detect.compiler("c++");
-        for(var _,warning in target.settings.CXX.warnings) {
-            cmdl[] = "-W"..warning;
-        }
-        cmdl[] = "-c";
-        cmdl[] = input.join(" ");
-        cmdl[] = "-o";
-        cmdl[] = output;
-        var cmd = cmdl.join(" ");
-
-        pfs.mkdir(targetDir);
-        if(pfs.dirWritable(targetDir)) {
-            return [cmd];
-        } else {
-            print "ERROR: Target dir is not writable!"
-        }
-    }
+    build: native.compile("c++")
 }
 
 rule("c", "C") {
@@ -49,28 +135,7 @@ rule("c", "C") {
     prepare: function() {
         detect.compiler("c");
     },
-    build: function(input, output, targetName, target) {
-        // Now lets get serious.
-        var settings = target.settings;
-        var outDir = __outputdir;
-        var targetDir = pfs.join(outDir, "."..targetName);
-        var cmdl=[];
-        // Build the command
-        cmdl[] = detect.compiler("c");
-        cmdl[] = "-c";
-        cmdl[] = input.join(" ");
-        cmdl[] = "-o";
-        cmdl[] = output;
-        var cmd = cmdl.join(" ");
-        print "$ ${cmd}"
-
-        pfs.mkdir(targetDir);
-        if(pfs.dirWritable(targetDir)) {
-            return [cmd];
-        } else {
-            print "ERROR: Target dir is not writable!"
-        }
-    }
+    build: native.compile("c")
 }
 
 rule("strip", "Strip") {
@@ -112,21 +177,7 @@ rule("exe", "Executable") {
         expected: (sys.type=="unix" ? "%o/%t":"%o/%t.exe")
     },
     prepare: function() {
-        // check for a compiler to use
+        detect.compiler("c++");
     },
-    build: function(input, output, targetName, target) {
-        var LINK=[];
-        LINK[] = detect.compiler("c++");
-        LINK[] = input.join(" ");
-        LINK[] = "-o";
-        LINK[] = output;
-        for(var _,lib in target.settings.LINK.libraries) {
-            LINK[] = "-l"..lib;
-        }
-        var cmd = LINK.join(" ");
-        return [cmd];
-    },
-    finalize: function(output) {
-        //mv output -> output without .bin or .exe
-    },
+    build: native.link("c++"),
 }

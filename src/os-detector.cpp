@@ -144,25 +144,6 @@ string have_func(const string func) {
     return s;
 }
 
-OS_FUNC(osd_head) {
-    stringstream st;
-    HEADER(st);
-    os->pushString(st.str().c_str());
-    return 1;
-}
-OS_FUNC(osd_out) {
-    stringstream st;
-    OUTPUT(st);
-    os->pushString(st.str().c_str());
-    return 1;
-}
-OS_FUNC(osd_footer) {
-    stringstream st;
-    FOOTER(st);
-    os->pushString(st.str().c_str());
-    return 1;
-}
-
 string find_tool(vector<string> cmds) {
     for(vector<string>::iterator it=cmds.begin(); it!=cmds.end(); ++it) {
         string tool = path_lookup(*it);
@@ -672,8 +653,6 @@ OS_FUNC(osd_hasWith) {}
 OS_FUNC(osd_withValue) {}
 OS_FUNC(osd_enable) {}
 OS_FUNC(osd_enabled) {}
-OS_FUNC(osd_tryBuild) {}
-OS_FUNC(osd_tryRun) {}
 OS_FUNC(osd_preprocess) {}
 OS_FUNC(osd_toolFlag) {}
 OS_FUNC(osd_transform) {}
@@ -686,6 +665,154 @@ OS_FUNC(osd_cache_file) {}
 OS_FUNC(osd_have_prefix) {}
 OS_FUNC(osd_havelib_prefix) {}
 */
+
+OS_FUNC(osd_tryBuild) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string source = os->toString(-params+0).toChar();
+    string kind = os->toString(-params+1).toChar();
+    string add="";
+    if(os->isString(-params+2))
+        add = os->toString(-params+2).toChar();
+    pair<bool,CommandResult> rt = run_task(source, kind, add, false);
+
+    // Convert the pair into two return values. its a bit different than $(...)
+    // but thats on purpose. This function is ment for "internal" use. Tests, etc.
+    os->pushBool(rt.first);
+    os->newObject();
+    os->newArray();
+    os->pushString(rt.second.streams[0].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->pushString(rt.second.streams[1].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->pushString(rt.second.streams[2].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->setProperty(-2, "streams");
+    os->pop();
+    os->pushNumber(rt.second.exit_code);
+    os->setProperty(-2, "exit_code");
+    os->pop();
+
+    return 2;
+}
+
+OS_FUNC(osd_tryRun) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string source = os->toString(-params+0).toChar();
+    string kind = os->toString(-params+1).toChar();
+    string add="";
+    if(os->isString(-params+2))
+        add = os->toString(-params+2).toChar();
+    pair<bool,CommandResult> rt = run_task(source, kind, add, true);
+    os->pushBool(rt.first);
+    os->newObject();
+    os->newArray();
+    os->pushString(rt.second.streams[0].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->pushString(rt.second.streams[1].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->pushString(rt.second.streams[2].c_str());
+    os->addProperty(-2);
+    os->pop(2);
+    os->setProperty(-2, "streams");
+    os->pop();
+    os->pushNumber(rt.second.exit_code);
+    os->setProperty(-2, "exit_code");
+    os->pop();
+    return 2;
+}
+
+OS_FUNC(osd_head) {
+    stringstream st;
+    HEADER(st);
+    os->pushString(st.str().c_str());
+    return 1;
+}
+OS_FUNC(osd_out) {
+    stringstream st;
+    OUTPUT(st);
+    os->pushString(st.str().c_str());
+    return 1;
+}
+OS_FUNC(osd_footer) {
+    stringstream st;
+    FOOTER(st);
+    os->pushString(st.str().c_str());
+    return 1;
+}
+
+OS_FUNC(osd_havelib) {
+    EXPECT_STRING(1)
+    os->pushString(
+        have_lib(os->toString(-params+0).toChar()).c_str()
+    );
+    return 1;
+}
+OS_FUNC(osd_havefunc) {
+    EXPECT_STRING(1)
+    os->pushString(
+        have_func(os->toString(-params+0).toChar()).c_str()
+    );
+    return 1;
+}
+OS_FUNC(osd_havetool) {
+    EXPECT_STRING(1)
+    os->pushString(
+        have_tool(os->toString(-params+0).toChar()).c_str()
+    );
+    return 1;
+}
+OS_FUNC(osd_haveheader) {
+    EXPECT_STRING(1)
+    os->pushString(
+        have_header(os->toString(-params+0).toChar()).c_str()
+    );
+    return 1;
+}
+
+OS_FUNC(osd_find_tool) {
+    if(os->isArray(-params+0)) {
+        int len = os->getLen();
+        vector<string> cmds;
+        for(int i=0; i<len; i++) {
+            os->pushNumber(i);
+            os->getProperty();
+            cmds.push_back(os->toString().toChar());
+            os->pop(2);
+        }
+        os->pushString(find_tool(cmds).c_str());
+    } else {
+        os->pushBool(false);
+    }
+    return 1;
+}
+
+OS_FUNC(osd_kind2key) {
+    EXPECT_STRING(1)
+    string kind = os->toString(-params+0).toChar();
+    os->pushString(kind2key(kind).c_str());
+    return 1;
+}
+
+OS_FUNC(osd_key2name) {
+    EXPECT_STRING(1)
+    string key = os->toString(-params+0).toChar();
+    os->pushString(key2name(key).c_str());
+    return 1;
+}
+
+OS_FUNC(osd_key2ext) {
+    EXPECT_STRING(1)
+    string key = os->toString(-params+0).toChar();
+    os->pushString(key2ext(key).c_str());
+    return 1;
+}
 
 OS_FUNC(osd_tool) {
     EXPECT_STRING(1)
@@ -741,6 +868,20 @@ bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
         {OS_TEXT("func"), osd_func},
         {OS_TEXT("libfunc"), osd_libfunc},
         {OS_TEXT("tool"), osd_tool},
+
+        // For your own tests
+        {OS_TEXT("tryRun"), osd_tryRun},
+        {OS_TEXT("tryBuild"), osd_tryBuild},
+
+        // Utilities
+        {OS_TEXT("have_lib"), osd_havelib},
+        {OS_TEXT("have_func"), osd_havefunc},
+        {OS_TEXT("have_header"), osd_haveheader},
+        {OS_TEXT("have_tool"), osd_havetool},
+        {OS_TEXT("find_tool"), osd_find_tool},
+        {OS_TEXT("kind2key"),  osd_kind2key},
+        {OS_TEXT("key2name"), osd_key2name},
+        {OS_TEXT("key2ext"), osd_key2ext},
         {}
     };
     os->getModule("detect");

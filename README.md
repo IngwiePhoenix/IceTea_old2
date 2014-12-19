@@ -10,10 +10,24 @@ But to top it all, what if you wanted to add a project into your own, i.e. a lib
 
 I think you can relate to at least one of those issues. And if you can't, then there are still even more reasons why you should check out IceTea.
 
+## Features
+Here is a short rundown of IceTea's features
+
+- *Turn-complete scripting language.* Uses common and extended syntax, allowing vor a very nice amoutn of syntactic shugar while maintaining a consistency across every single line of code.
+- *Configuring.* IceTea can configure your project (aka. your good old friend `config.h`). It can also export this configuration as JSON, so you can use it for more than just IceTea.
+- *Building.* IceTea is a build tool by itself. It works via a Rule-Task basis, similar to Ninja.
+- *Integration.* You can integrate IceTea as a stand-alone script interpreter into your existing build system, adding either configuration or build abilities to it - or ismply execute neat scripts without worrying for an underlying shell.
+- *Customizable.* You can use `bootstrap.it` to override the default rules and tell IceTea how you want things to be handled.
+- *Dynamic, yet static.* You can use statically listed or danymically generated input lists, allowing you to choose your prefered method.
+- *Dependencies.* You can have many targets that can depend on one another.
+- *Extensible.* By creating a local `.IceTea` folder and dropping files with the `.it` extension into it, they will become automatically loaded when IceTea starts, allowing any 3rd-party integration to be included. Because these fiels are sorted, you can use numbers to decide in which orders these extensions are loaded!
+- *Projects.* Keep your build organized and your files sorted properly. Projects allow you to sort targets into groups and effectively make your build cleaner.
+- *Multi-threaded.* IceTea runs on multiple cores to provide as much speed as it possibly can.
+
 ## It's as easy as opening a bottle of ice tea!
 ```javascript
 target("myProg", "exe") {
-    input: ["src/*.cpp"],
+    input: pfs.glob("src", "*.cpp"),
     settings: {
         native: {
             include_dirs: ["src/"]
@@ -28,7 +42,7 @@ But what if you wish to run a bit of configuration?
 
 ```javascript
 target("myLib", "shlib") {
-    input: ["lib/*.cxx"],
+    input: pfs.glob("lib", "*.cxx"),
     configure: function() {
         detect.header("stdio.h");
         detect.header("sys/dirent.h");
@@ -60,7 +74,7 @@ Now we take it a step further. Imagine you wish to have a conditional configurat
 
 ```javascript
 target("mySpecialLib", "lib") {
-    input: ["static_lib/*.c"],
+    input: pfs.glob("static_lib", "*.c"),
     prepare: function() {
         // We can add options to the help screen here!
         // When we do, its prefixed with our target's name, too.
@@ -93,7 +107,7 @@ In the above example, we use the `prepare()` method to prepare the rest of the t
 You dont even need to specify a wildcard for your paths. Imagine you have some test cases and want to build them all!
 
 ```javascript
-for(var _,testfile in fs.glob("test/*.cpp")) {
+for(var _,testfile in pfs.glob("test/", "*.cpp")) {
     var testname = fs.stripExtension( fs.basename(testfile) );
     target(testname, "exe") {
         input: [testfile],
@@ -157,14 +171,14 @@ But that was likely impossible. Some people wrote shims over existing build syst
 
 Ninja does not go into the above list, simply because its a pure build tool an dits only purpose is to read in generated Ninja files and act upon what they read.
 
-Therefore I created IceTea - well, still AM creating it. It runs off [ObjectScript](http://github.com/unitpoint/objectscript) for the most part, uses [ttvfs](https://github.com/fgenesis/ttvfs) for its filesystem management, a modified variant of [picosha2](https://github.com/okdshin/PicoSHA2) for hashing files in a cache. There is also my own `cli.h` that supports grouped arguments, whose idea was taken from another argument parser called `NBCL`.
+Therefore I created IceTea - well, still AM creating it. It runs off [ObjectScript](http://github.com/unitpoint/objectscript) for the most part, uses [STLPlus](https://stlplus.sourceforge.net) for its filesystem and subprocess management, a modified variant of [picosha2](https://github.com/okdshin/PicoSHA2) for hashing files in a cache. There is also my own `cli.h` that supports grouped arguments, whose idea was taken from another argument parser called `NBCL`.
 
 IceTea is ment to be compact (currently 900kb when built with `-O3`) and simple. I am not directly aiming for speed, but since you can see `TinyThreads++` in there, you probably guessed already that I want to run build jobs on multiple threads to speed up the build time. I think it's called parallel building...
 
 So far, so good. If you want to look into the code, go ahead. To build a test binary, just run:
 
 ```
-g++ -Wno-switch src/*.cpp -o icetea
+g++ -Wno-switch src/*.cpp -o icetea -lpthread
 ```
 
 and you are good to go.
@@ -243,10 +257,17 @@ This object is being used to check for various things on the host.
 | .set(name, value)        | Define a configuration value.                   |
 | .get(name)               | Get a configuration value.                      |
 | .working_dir(name)       | Set working dir for detector. Default: out/.detector.dir/ |
-| .cache_file(name)        | Set cache file. Default: out/.detector.cache    |
 | .have_prefix(str)        | Define the define-prefix. Default: HAVE_*       |
 | .havelib_prefix(str)     | Define the define-prefix for a lib. Default: HAVE_LIB* |
 | .havefunc_prefix(str)    | Define the define prefix for a function. Default: HAVE_* |
+| .have_func(f)            | Generate a header definition key for a function |
+| .have_lib(l)             | Same.                                           |
+| .have_header(h)          | Same.                                           |
+| .have_tool(t)            | Same.                                           |
+| .find_tool(tools)        | Check an array of tools for which exists.       |
+| .kind2key(k)             | Convert a kind to a key. I.e.: c++ -> CXX       |
+| .key2ext(k)              | Generate an extension.                          |
+| .key2name(k)             | Generate a proper name string.                  |
 
 #### Info to .transform(...), .write_header() and .write_json()
 Once called, it will DIRECTLY begin to transform. Set this at the very bottom!
@@ -257,13 +278,16 @@ When you `.transform()` a file, you can get values with `@NAME@`. The only speci
 #### Information to the `kind` value.
 When you supply the Kind attribute, the engine will place a temporary source file into the current folder and run it thru the casual rules. (The produced objects and alike are deleted afterwards.)
 
-#### Information on `type`
+#### Information on `type` aka. `kind`
 This is used to specify if we are looking for a specific component. It defaults to "C". The argument can be:
 
 - C
 - C++
 - OBJC
 - OBJC++
+- SWIFTC
+- JAVAC
+- CS (CSharp)
 
 A pluggable API might be available at a later point to add support for other languages/compilers.
 
@@ -308,7 +332,7 @@ Produces:
 
 Further, if you are making a library lookup, you can use the `.add_lib()` function to add it to your target.
 
-### fs: File System (ttvfs)
+### pfs: File System (STLPlus - "PlusFS")
 The Filesystem. Very important.
 
 | Method                   | Description                                     |
@@ -324,14 +348,8 @@ The Filesystem. Very important.
 | File.size                | Filesize                                        |
 | .getFileList(dir)        | Returns all FILES in a folder.                  |
 | .getDirList(dir)         | Returns all FOLDERS within a folder.            |
-| .glob(path)              | Return a list of files matching the pattern. *  |
+| .glob(dir, pattern)      | Return a list of files matching the pattern.    |
 | .move(from, to)          | Move a file or folder.                          |
-
-#### Info about .glob()
-Use only simple paths as only the file-part will be globbed.
-- `tests/*.cpp` Will work.
-- `tests/*/*.cpp` Will not work.
-- `tests/**/*.cpp` Won't work either.
 
 ### sha2: Hashing
 This is used internally and is also being exported.
@@ -523,10 +541,10 @@ $("#!/usr/bin/php -e ?", "print_r($_SERVER)");
 
 This is useful if you want to embed scripts from another language into your process. You simply need to have the typical hashbang (`#!`) infront of your command, and this function will automatically use this as a shell instead.
 
-Further, this function returns two things - an integer and an array. You can obtain both by doing:
+Further, this function returns three things - if the process was ran at all, an integer and an array. You can obtain both by doing:
 
 ```javascript
-var exitCode, output = $(...)
+var spawned, exitCode, output = $(...)
 ```
 
 The `exitCode` holds the exit code, whilst `output` holds an array with 1 to 2 whilst 1 is STDOUT and 2 is STDERR, just like you would expect in a normal terminal. This is useful if you are operating on command outputs. ObjectScript allows you to seach find and parse strings. For instance:
@@ -538,6 +556,14 @@ var ARCH, OEM, KERNEL = tripple[0], tripple[1], tripple[2];
 ```
 
 Useful, if you are cross-compiling.
+
+Alternatively, you can run a process in place of the current one and have it share the standart input, output and error. To do so, use `shell()`:
+
+```javascript
+shell "sudo apt-get update"
+```
+
+This will actually ask for the user's password and return to executing IceTea. Do not use this during task runs - this is prune to showcase unexpected behaviour...
 
 #### Project
 If you are working with multiple projects and wish to keep them organized in a way, you can do so by specifying a project. The current file will be treatened to be of this project. Any output will have a new subfolder with the project's name. For instance:

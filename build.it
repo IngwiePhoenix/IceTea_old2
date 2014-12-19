@@ -1,12 +1,26 @@
-target("IceTea_self", "exe") {
+target("IceTea", "exe") {
     input: pfs.glob("src", "*.cpp"),
     settings: {
-        include_dirs: ["src"],
         CXX: {
-            warnings: ["no-switch"]
+            include_dirs: ["src"],
+            warnings: ["no-switch"],
+            flags: (!DEBUG && sys.type == "unix" && @{
+                var s,e,o = $("uname");
+                if(s && e==0) return o[1].replace("\n","");
+            } == "Darwin" ? [
+                "-ffunction-sections",
+                "-fdata-sections",
+            ] : []),
+            optimization: "size"
         },
         LINK: {
-            libraries: ["pthread"]
+            libraries: ["pthread"],
+            flags: (!DEBUG && sys.type == "unix" && @{
+                var s,e,o = $("uname");
+                if(s && e==0) return o[1].replace("\n","");
+            } == "Darwin" ? [
+                "-dead_strip"
+            ] : []),
         }
     },
 }
@@ -16,10 +30,14 @@ action("all") {
     clean: ["*"]
 }
 
-action("dist"){||
+action("dist"){|scheme|
     print "Creating a distribution...";
     if(sys.which("tar") != "") {
         sys.cd(pfs.dirname(__FILE__));
-        shell "tar cvfz icetea.tar.gz icetea* README.md TODO.md bootstrap.it"
+        shell "tar cvfz icetea.tar.gz icetea* README.md TODO.md *.it"
     }
+}
+
+action("tests"){|scheme|
+    require "tests/run_tests"
 }

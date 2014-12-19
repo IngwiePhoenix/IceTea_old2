@@ -110,6 +110,7 @@ Filecache* fc;
 TaskQueue* tasks;
 string     runScheme("build");
 string     outputDir;
+bool       runTasks(true);
 // In order to call OS savely, we use this.
 static tthread::mutex OSMutex;
 static tthread::mutex ConfigMutex;
@@ -693,13 +694,18 @@ bool Transformer() {
             os->pushString(it->c_str());
             os->getProperty(-2);
             if(os->isFunction()) {
+                // A simple global to avoid the bottom and unneeded task info.
+                runTasks = false;
                 // We need to give users the IceTea.build function... FIXME
-                os->callF(0,0);
+                os->pushGlobals();
+                os->pushString(runScheme.c_str());
+                os->callFT(1,0);
                 if(os->isNumber()) {
                     result = os->toBool();
                 }
                 result = true;
             } else {
+                runTasks = true;
                 // Now we have to get the actual targets to run.
                 os->pop(2);
                 os->pushValueById(actions->valueID);
@@ -1119,7 +1125,7 @@ int main(int argc, const char** argv) {
 
     // Generate a pretty copyright.
     stringstream cpr;
-    cpr << "IceTea 0.1.0 by Ingwie Phoenix" << endl
+    cpr << "IceTea 0.1.1 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
         << "stlplus " << stlplus::version() << endl;
@@ -1356,7 +1362,7 @@ int main(int argc, const char** argv) {
         tasks->joinAll();
 
         // Well that might happen.
-        if(CurrentTaskCount == 0) {
+        if(runTasks && CurrentTaskCount == 0) {
             cout << endl << "No task had to be run." << endl;
         }
 
