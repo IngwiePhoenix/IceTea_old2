@@ -8,3 +8,4 @@ out/*
 out/
 build_test/out/
 build_test/out/*
+doc/

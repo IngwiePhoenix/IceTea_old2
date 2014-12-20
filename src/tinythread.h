@@ -25,7 +25,7 @@ freely, subject to the following restrictions:
 #define _TINYTHREAD_H_
 
 /// @file
-/// @mainpage TinyThread++ API Reference
+/// @page tinythread TinyThread++ API Reference
 ///
 /// @section intro_sec Introduction
 /// TinyThread++ is a minimal, portable implementation of basic threading

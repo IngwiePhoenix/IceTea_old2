@@ -32,7 +32,7 @@ native = extends Object {
                 }
             }
 
-            if(typeOf(settings[key].optimization) == "string") {
+            if(!DEBUG && typeOf(settings[key].optimization) == "string") {
                 switch(settings[key].optimization) {
                     case "none": cmdl[] = (sys.type=="unix"?"-O0":""); break;
                     case "small": cmdl[] = (sys.type=="unix"?"-O1":"/O1"); break;
@@ -69,12 +69,15 @@ native = extends Object {
                 cmdl[] = settings[key].flags.join(" ");
             }
 
+            if(DEBUG) {
+                cmdl[] = (sys.type == "unix" ? "-g" : "/Zi");
+            }
+
             cmdl[] = (sys.type == "unix" ? "-c" : "/c");
             cmdl[] = input.join(" ");
             cmdl[] = (sys.type == "unix" ? "-o" : "/Fo");
             cmdl[] = output;
             var cmd = cmdl.join(" ");
-
             pfs.mkdir(targetDir);
             if(pfs.dirWritable(targetDir)) {
                 return [cmd];
@@ -171,7 +174,7 @@ rule("strip", "Strip") {
 }
 
 rule("exe", "Executable") {
-    accepts: [(sys.type=="unix" ? "*.o-stripped":"*.obj")],
+    accepts: [(sys.type=="unix" ? (DEBUG?"*.o":"*.o-stripped"):"*.obj")],
     output: {
         pattern: (sys.type=="unix" ? "*":"*.exe"),
         expected: (sys.type=="unix" ? "%o/%t":"%o/%t.exe")

@@ -1,3 +1,16 @@
+/**
+    @file
+    @brief The main IceTea logic
+
+    This file contains and holds upon all the functions that translate targets,
+    actions, externals and rules into some logic. This is done by processing
+    the input using a single thread, and executing the tasks over a multiple of
+    threads (depending on the given hardware).
+
+    Only minor additions are made to the script environment, that contain simple
+    wrapper functions.
+*/
+
 #include <iostream>
 #include <fstream>
 #include <list>
@@ -43,82 +56,88 @@ using namespace ObjectScript;
 using namespace stlplus;
 using namespace picosha2;
 
-// IceTea stuff
-/*
-    This will store the targets. Structure is:
-    {
-        project: {name: {...}}
-    }
-    Currently its just name:data
-*/
+/// @section IceTea globals
+
+/// An ObjectScript object which holds all registered targets and externals.
 Value::Object* targets;
 
-/*
-    This holds the rules. Structure:
-    {
-        shortName: {...}
-    }
-*/
+/// An ObjectScript object which holds all registered rules.
 Value::Object* rules;
 
-// Actions. { name: {...} }
+/// An ObjectScript object which holds all registered actions.
 Value::Object* actions;
 
-// A task in C++ representation
-enum TaskType { SCRIPT, COMMAND };
-struct Task {
-    string ruleName;
-    string targetName;
-    string ruleDisplay;
-    list<string> input;
-    string output;
+/// What type of execution scheme is to be used within a task
+enum TaskType {
+    SCRIPT, ///< The task is to be run as a script.
+    COMMAND ///< The task is to be run using the given commands.
+};
 
-    TaskType type;
+/**
+    @brief An actual task that is executed within @ref Run
+
+    This structure is a (mostly) C++ structure, containing information about
+    a target and how it has to be built - i.e., commands or script statements.
+*/
+struct Task {
+    ///@{
+    string ruleName; ///< The rule's name.
+    string targetName; ///< The target's name.
+    string ruleDisplay; ///< How the rule should be displayed.
+    list<string> input; ///< A vector containing the input files for the task.
+    string output; ///< The output file.
+
+    TaskType type; ///< The type in which this task is ran.
     // [ cmd1, cmd2, ... ]
-    vector<string> commands;
+    vector<string> commands; ///< If `type==COMMAND`, then these are ran.
     // Rule.build: function(input, output, target)
     // The function is either called with only one input - or an input array. Thus access to the
     // target is given for settings - such as include dirs and alike.
-    //Value::Method* onBuild;
 
-    // The related target, pushed to the function.
-    Value::Object* target;
-
-    // Increased if target can not be built due to missing dependency.
-    int failureCounter;
+    Value::Object* target; ///< The ObjectScript representation of the target.
 
     // Iteration?
-    Task* parent;
-    Task* child;
+    Task* parent; ///< Parent task
+    Task* child; ///< Child task
 
-    // Always use this tasks output for display.
-    bool isMaster;
+    bool isMaster; ///< If true, then the output is to be displayed in the progress.
 
+    /**
+        @brief Brief initialization
+    */
     Task() : isMaster(false) {}
 
+    /**
+        @brief Destructs and cleans the task.
+    */
     ~Task() {
-        //if(onBuild!=NULL) delete onBuild;
         delete target;
     }
+    ///@}
 };
-typedef WorkQueue<Task*, OS*> TaskQueue;
+typedef WorkQueue<Task*, OS*> TaskQueue; ///< Typedef to instantiate the threadpool.
 
-// Other globals...
-OS*        os;
-CLI*       cli;
-Filecache* fc;
-TaskQueue* tasks;
-string     runScheme("build");
-string     outputDir;
-bool       runTasks(true);
+OS*        os; ///< Global ObjectScript instance.
+CLI*       cli; ///< Global Command Line Interface instance.
+Filecache* fc; ///< Global Filecache instance.
+TaskQueue* tasks; ///< Threadpool containing task runners and queue.
+string     runScheme = "build"; ///< The build scheme to go for. Build or Clean.
+string     outputDir; ///< The folder where output should be stored at.
+bool       runTasks = true; ///< A boolean that defines if tasks are being ran or not.
 // In order to call OS savely, we use this.
-static tthread::mutex OSMutex;
-static tthread::mutex ConfigMutex;
-typedef tthread::lock_guard<tthread::mutex> Locker;
+static tthread::mutex OSMutex; ///< A mutex to lock and unlock to gain access to ObjectScript.
+static tthread::mutex ConfigMutex; ///< A mutex used to halt execution of @ref Run
+typedef tthread::lock_guard<tthread::mutex> Locker; ///< Typedef for our locker class.
 
 // Tool functions
 int itCleanup();
 
+/**
+    @brief Checks if a rule exists.
+
+    @param ruleName The name of the rule to look for.
+    @returns A bool wether the rule was found or not.
+*/
 bool ruleExists(Value::String* ruleName) {
     os->pushValueById(ruleName->valueID);
     os->pushValueById(rules->valueID);
@@ -130,6 +149,10 @@ bool ruleExists(Value::String* ruleName) {
         return false;
     }
 }
+
+/**
+    @overload bool ruleExists(Value::String* ruleName)
+*/
 bool ruleExists(const string ruleName) {
     os->pushString(ruleName.c_str());
     os->pushValueById(rules->valueID);
@@ -142,6 +165,16 @@ bool ruleExists(const string ruleName) {
     }
     return false;
 }
+
+/**
+    @brief Checks if an action exists.
+
+    This is used to see if a specific action exists. A script may utilize
+    this to figure out if it has to create a certain action or not.
+
+    @param name The name of the action to look for.
+    @returns A bool wether the action exists or not.
+*/
 bool actionExists(const string name) {
     os->pushString(name.c_str());
     os->pushValueById(actions->valueID);
@@ -153,6 +186,17 @@ bool actionExists(const string name) {
         return false;
     }
 }
+
+/**
+    @brief Look for the existence of a target
+
+    This function is especially used during the @ref Transformer step. It looks
+    up the target and resolves dependencies. This function helps to check for
+    the availability of said target.
+
+    @param name The target to look for.
+    @returns A bool wether it exits or not.
+*/
 bool targetExists(const string name) {
     os->pushString(name.c_str());
     os->pushValueById(targets->valueID);
@@ -165,6 +209,17 @@ bool targetExists(const string name) {
     }
 }
 
+/**
+    @brief Estimate the output tht a rule may produce
+
+    During the task creation step, this is ued to compare input and output
+    to the target. It also can be used as a lean way to resolve a dependency.
+
+    @param rule The rule to be used.
+    @param target The target name to be used. The target does NOT need to exist!
+    @param file By default, this is empty. Part of output generation depends on the file.
+    @returns A string that represents the possible output.
+*/
 string estimateRuleOutput(string rule, string target, string file="") {
     os->pushString(rule.c_str());
     os->pushValueById(rules->valueID);
@@ -195,7 +250,16 @@ string estimateRuleOutput(string rule, string target, string file="") {
     return myExpected;
 }
 
-// When we whipe the output dir, we can use this in place of a non-existing clean method.
+/**
+    @brief A default method to be used when cleaning targets.
+
+    If we are in whipe mode, this is given to all those rules that dont have
+    a default `clean()` method.
+
+    It is very similar to the `build()` method.
+
+    @ref TargetBuild
+*/
 OS_FUNC(os_target_clean) {
     Task* t = (Task*)userData;
     string output = os->toString(-params+1).toChar();
@@ -205,7 +269,24 @@ OS_FUNC(os_target_clean) {
     return 0;
 }
 
+/**
+    @brief Create the actual tasks
 
+    This function contains a LOT of logic and represents the heartpiece of the
+    entire project. It looks up the rules and compares a file and other information
+    against its results. The finalized task is added to the @ref TaskQueue
+
+    This function also calls itself recursively and passes input trough referenced
+    objects.
+
+    @param rule The rule to be used in the current iteration.
+    @param file The file to be used for the current iteration.
+    @param target The target to iterate on.
+    @param[out] input The input to be returned to the parent call
+    @param[in,out] parent The @ref Task object to be passed as a parent.
+    @param[out] success A bool that will be set to true if the iteration was indeed a success. False if otherwise.
+    @param finalRule a boolean that is used to tell the __first__ iteration about it.
+*/
 void __makeTasks(
     string rule, string file, string target,
     string& input, Task*& parent, bool& success, bool finalRule=false
@@ -528,7 +609,12 @@ void __makeTasks(
     delete accepts;
 }
 
+/**
+    @brief The actual wrapper around @ref __makeTasks
 
+    This function simply returns what the actual @ref __makeTasks was giving back.
+    This is also called the 0th iteration. It receives its output as the last instance.
+*/
 string makeTasks(string rule, string file, string target, Task*& parent, bool& successor) {
     string tmp;
     // The first call ALWAYS results in the actual thing.
@@ -536,7 +622,7 @@ string makeTasks(string rule, string file, string target, Task*& parent, bool& s
     return tmp;
 }
 
-/* The task processors
+/** @section The task processors
    There are a few of them:
         - Initializer: If it exists, call init() on each target. Ommit this, if --help is used.
             * the init() function can add entries to the help screen. Important for configuration.
@@ -557,7 +643,11 @@ string makeTasks(string rule, string file, string target, Task*& parent, bool& s
             * If task relies on multiple files, decide what to do....needs try-and-error'ing here.
             * Process the task accordingly (run commands, request OS call)
 */
-// Processors
+/**
+    @brief Initializes all targets.
+    @returns If the iteration was successful.
+    @note This should actually change depending on specified actions...
+*/
 bool Initializer() {
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
@@ -608,6 +698,15 @@ bool Initializer() {
     }
     return true;
 }
+
+/**
+    @brief Configure all targets
+
+    This function calls the targets configure method in order to make them
+    ready for actual compilation.
+
+    @returns If the configuring was successful.
+*/
 bool Preprocessor() {
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
@@ -634,24 +733,6 @@ bool Preprocessor() {
             }
         }
 
-        // Now strech the input parameter.
-        // Wut. Deprecating. Targets must use pfs.glob
-        /*
-        Value::Array* input = (Value::Array*)(*val)["input"];
-        vector<string> fileList;
-        getFileListRec(input, fileList);
-        os->pushValueById(val->valueID);
-        int ojoff = os->getAbsoluteOffs(-1);
-        os->newArray(); // Overwrite the previous
-        int aroff = os->getAbsoluteOffs(-1);
-        for(vector<string>::iterator it=fileList.begin(); it!=fileList.end(); ++it) {
-            os->pushString((*it).c_str());
-            os->addProperty(aroff);
-        }
-        os->setProperty(ojoff, "input");
-        os->pop();
-        */
-
         // clean up
         delete key;
         delete val;
@@ -661,6 +742,20 @@ bool Preprocessor() {
     }
     return true;
 }
+
+/**
+    @brief Turn targets into a series of tasks
+
+    This function is mainly responsible for turning targets into tasks. It
+    takes note of the specified actions, or uses `all` as a default action.
+
+    `all` __must__ exist. It can not be omitted. Only if the user always
+    specifies a different task, thent his will not be required.
+
+    @returns If transformation was successful
+    @see Preprocess
+    @see Initializer
+*/
 bool Transformer() {
     // And now lets get serious.
     // We only must push "safe" targets into the queue...
@@ -835,9 +930,24 @@ bool Transformer() {
 
 // Because Run() is our thread function, it needs some depdendencies
 // The needed struct is above.
-int CurrentTaskCount=0;
-static map<string, Task*> tlog;
-static map<string, Task*> updatelog;
+int CurrentTaskCount=0; ///< The current task count.
+static map<string, Task*> tlog; ///< Used to log unhandled tasks.
+static map<string, Task*> updatelog; ///< Used to store updated tasks
+static map<string, bool> taskBuilt; ///< Currently unused. Maybe to store built targets.
+
+/**
+    @brief The task executor.
+
+    This function runs the tasks within the Task queue. It is being spawned by
+    the main function.
+
+    It's execution is halted untill @ref ConfigMutex is unlocked.
+
+    @param threadData An instance of @ref WorkQueue.
+    @returns Nothing.
+    @see OSMutex
+    @see WorkQueue
+*/
 void Run(void* threadData) {
     // We just wait untill we can aquire a lock.
     ConfigMutex.lock(); // Should wait here.
@@ -1057,7 +1167,23 @@ void Run(void* threadData) {
     }
 }
 
-// Handle errors properly.
+/**
+    @brief Handle the exception within ObjectScript and exit nicely.
+
+    This function is to print a proper error message and exit out of the application at last.
+
+    A usage might be
+
+    ~~~{.cpp}
+    os->eval("throw new Exception('o.o')");
+    if(terminator()) {
+        exit(itCleanup());
+    }
+    ~~~
+
+    @returns Wether to exit or not.
+    @see itCleanup
+*/
 inline bool terminator() {
     if(os->isExceptionSet()) {
         cerr << "--- Terminating ---" << endl;
@@ -1067,6 +1193,14 @@ inline bool terminator() {
     }
 }
 
+/**
+    @brief Clean the environment and prepare exiting.
+
+    This function cleans up the global variables, removes an emoty output
+    folder if needed and finally returns a proper exit code.
+
+    @returns An exit code. Can be used in `int main(int,char**)` or alike.
+*/
 int itCleanup() {
     // Do a proper cleanup if needed.
     folder_empty(outputDir) && folder_delete(outputDir);
@@ -1089,7 +1223,7 @@ int itCleanup() {
     return rtc;
 }
 
-// Minimals
+/// Wrapper around @ref estimateRuleOutput
 OS_FUNC(os_estimateRuleOutput) {
     EXPECT_STRING(1)
     EXPECT_STRING(2)
@@ -1100,6 +1234,17 @@ OS_FUNC(os_estimateRuleOutput) {
     os->pushString(estimateRuleOutput(rule,target,file).c_str());
     return 1;
 }
+
+/**
+    @brief Return the object of a target.
+
+    This function can be used to obtain a target's configuration object from
+    any place within the script.
+
+    @param name The name of the target
+    @returns An object that is associated with the target.
+    @note This is a script function, not C++.
+*/
 OS_FUNC(os_getTarget) {
     EXPECT_STRING(1)
     string target = os->toString(-params+0).toChar();
@@ -1113,6 +1258,12 @@ OS_FUNC(os_getTarget) {
     return 1;
 }
 
+
+/**
+    @brief The main logic
+
+    Everything that is cool happens in here.
+*/
 int main(int argc, const char** argv) {
     // Inner globals
     os = OS::create();

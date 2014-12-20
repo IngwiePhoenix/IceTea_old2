@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <iostream>
+#include <map>
 
 #include "minijson.h"
 #include "tinythread.h"
@@ -29,10 +30,6 @@ inline long _fc_fsize(FILE*& fh) {
 
 class Filecache {
     typedef tthread::lock_guard<tthread::mutex> _guard;
-public:
-    // Predefs...
-    inline bool sync();
-    inline bool reread();
 private:
     std::string filename;
     minijson::value v;
@@ -43,6 +40,21 @@ private:
         reread();
     }
 public:
+    // Predefs...
+    inline bool sync();
+    inline bool reread();
+    inline std::map<std::string,std::string> getMap(const std::string obj) {
+        using namespace std;
+        using namespace minijson;
+        _guard g(m);
+        map<string,string> res;
+        object ov = o[obj].get<object>();
+        for(object::iterator it=ov.begin(); it!=ov.end(); ++it) {
+            res[it->first] = it->second.get<string>();
+        }
+        return res;
+    }
+
     Filecache(const char* fname)      : filename(fname) { run(); }
     Filecache(const std::string fname): filename(fname) { run(); }
     ~Filecache() { sync(); }

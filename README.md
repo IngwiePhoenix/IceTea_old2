@@ -247,8 +247,8 @@ This object is being used to check for various things on the host.
 | .enabled(name)           | Check if --enable-NAME was given.               |
 | .tryBuild(kind, src)     | Try to compile source of kind (name of a rule)  |
 | .tryRun(kind, src)       | Try to run the source. Returns bool AND output. |
-| .preprocess(kind, src)   | Run src thru kind's preprocessor, if given.     |
-| .tool(name, confVar)     | Check if tool is available on the host.         |
+| .preprocess(src)         | Run src thru the C preprocessor, if given.      |
+| .tool(name, [confVar])   | Check if tool is available on the host.         |
 | .toolFlag(confVar, flag) | Test the tool within the confVar for a flag.    |
 | .transform(name)         | Transform `name.in` to `name`                   |
 | .transform(from, to)     | Like above but target and destination is given. |

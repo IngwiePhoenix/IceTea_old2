@@ -1,13 +1,17 @@
+function isDarwin() {
+    return @{
+        var s,e,o = $("uname");
+        if(s && e==0) return o[1].trim();
+    } == "Darwin";
+}
+
 target("IceTea", "exe") {
     input: pfs.glob("src", "*.cpp"),
     settings: {
         CXX: {
             include_dirs: ["src"],
             warnings: ["no-switch"],
-            flags: (!DEBUG && sys.type == "unix" && @{
-                var s,e,o = $("uname");
-                if(s && e==0) return o[1].replace("\n","");
-            } == "Darwin" ? [
+            flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
                 "-ffunction-sections",
                 "-fdata-sections",
             ] : []),
@@ -15,10 +19,7 @@ target("IceTea", "exe") {
         },
         LINK: {
             libraries: ["pthread"],
-            flags: (!DEBUG && sys.type == "unix" && @{
-                var s,e,o = $("uname");
-                if(s && e==0) return o[1].replace("\n","");
-            } == "Darwin" ? [
+            flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
                 "-dead_strip"
             ] : []),
         }

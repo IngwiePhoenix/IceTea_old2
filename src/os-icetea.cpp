@@ -32,9 +32,10 @@ extern Value::Object* actions;
     In order for it to work, we need 2 C functions and a struct.
     And also a few defines to tell which kind we want to use.
 */
-#define IT_TARGET 0x0
-#define IT_RULE 0x1
-#define IT_ACTION 0x2
+#define IT_TARGET   0
+#define IT_RULE     1
+#define IT_ACTION   2
+#define IT_EXTERNAL 3
 
 struct callInfo_t {
     string name;
@@ -46,6 +47,10 @@ OS_FUNC(shotgunner_2) {
     callInfo_t* ce = (callInfo_t*)userData;
     // Get this, before we loose control.
     int offset = os->getAbsoluteOffs(-params+0);
+    if(os->isObject(-params+0) && ce->type == IT_EXTERNAL) {
+        os->setException("Targets, Actions, Rules and Externals require objects as parameter.");
+        return 0;
+    }
     if(ce->type == IT_TARGET) {
         // Add to the parameter object...
         os->pushString(ce->rule.c_str());
@@ -55,9 +60,14 @@ OS_FUNC(shotgunner_2) {
         os->pushString(ce->rule.c_str());
         os->setProperty(offset, "display");
         os->pushValueById(rules->valueID);
-    } else {
+    } else if(ce->type == IT_ACTION) {
         // Assuming action, which doesnt need the 2nd param.
         os->pushValueById(actions->valueID);
+    } else if(ce->type == IT_EXTERNAL) {
+        // Its a slightly different object.
+        os->pushString("External");
+        os->setProperty(offset, "_");
+        os->pushValueById(targets->valueID);
     }
 
     //os->pushValueById(targets->valueID); // FIXME: Could be nicer. Value::* needs setter.
@@ -69,9 +79,14 @@ OS_FUNC(shotgunner_2) {
 
 OS_FUNC(shotgunner) {
     callInfo_t* ce = new callInfo_t;
+    ce->type = *((int*)(&userData)); // void* -> int* -> int ... please FIXME. Never.
     ce->name = string( os->toString(-params+0).toChar() );
-    ce->rule = string( os->toString(-params+1).toChar() );
-    ce->type = *((int*)(&userData)); // void* -> int* -> int ... please FIXME.
+    if(os->isString(-params+1) && ce->type == IT_EXTERNAL) {
+        os->setException("Do not supply two arguments to an external. One is required only.");
+        return 0;
+    } else {
+        if(ce->type != IT_EXTERNAL) ce->rule = string( os->toString(-params+1).toChar() );
+    }
     os->pushCFunction(shotgunner_2, (void*)ce);
     return 1;
 }
@@ -196,6 +211,9 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->setGlobal("rule");
     os->pushCFunction(shotgunner, (void*)IT_ACTION);
     os->setGlobal("action");
+    os->pushCFunction(shotgunner, (void*)IT_EXTERNAL);
+    os->setGlobal("external");
+
 
     // Exec
     os->pushCFunction(os_exec);
@@ -226,8 +244,7 @@ void initIceTeaExt(OS* os, CLI* cli) {
 
     // PFS, aka our FS module
     initializePFS(os);
-    // detect, cDetect in OS
-    // Configurables module
+
     // Misc
     initializeSYS(os);
     initializeConfigurable(os);

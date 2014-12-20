@@ -1,3 +1,12 @@
+/**
+    @file
+    @brief A header-only command line argument parsing library.
+
+    This small header contains only one class: @ref CLI
+
+    This class can handle command line options - long and short - as well as
+    setting and retriving default values.
+*/
 #ifndef CLI_H
 #define CLI_H
 
@@ -7,41 +16,66 @@
 #include <iostream>
 #include <sstream>
 
-/*
-    We basically overwrite NBCL::insert, NBCL::usage and add a function to print a group.
-*/
+/**
+    @brief Command Line Interface class.
 
+    This class is responsible for handling a command line.
+*/
 class CLI {
 private:
+    /**
+        @brief Information about an option
+
+        This struct simply holds information about an otpion, which is part
+        of the command line string that was given to @ref CLI 's constructor.
+    */
     struct Option {
-        // Name
-        std::string shortopt;
-        std::string longopt;
-        // Minimal argument description
-        std::string arg;
-        // Full desc
-        std::string desc;
-        // for core
-        bool optional;
-        bool present;
-        std::string value;
+        std::string shortopt; ///< Short option (I.e.: `-h`)
+        std::string longopt;  ///< Long option (I.e.: `--help`)
+        std::string arg; ///< Short argument description for this option
+        std::string desc; ///< Full description to be shown in the help view
+        bool optional; ///< For core
+        bool present; ///< For core
+        std::string value; ///< The value held by the option
     };
+    /// A list of options
     typedef std::vector<Option*> OptList;
+    /// Mapping groups and options along
     typedef std::map<std::string, OptList> OptGroups;
-    // [group] => (...args...)
+    /// Holds all groups with their options
     OptGroups ga;
+    /// Argument snot associated to any option
     std::vector<std::string> strayArgs;
+    /// A list to keep options in line.
     std::list<std::string> orderedOpts;
+    /// The original `argc`
     int argc;
+    /// The original `argv`
     const char** argv;
+    /// A copyright string for the top of the display
     std::string copyright;
+    /// For core.
     int leftLength;
+    /// For core.
     std::string lastGroup;
-    // Stray arg stuff
+    /// Short description for what the stray args are for.
     std::string strayArgsArg;
+    /// A longer descriptions for the stray args.
     std::string strayArgsDesc;
+    /// Wether the stray args are optional or not.
     bool strayArgsOptional;
 public:
+    /**
+        @brief Initialize the CLI object.
+
+        This constructor takes as input the original `argc` and `argv` and
+        an additional copyright string that it will print to the head of the
+        usage display.
+
+        @param _argc Argument count
+        @param _argv The argument array to parse
+        @param _copyright The copyright to be displayed.
+    */
     inline CLI(int _argc, const char** _argv, std::string _copyright="") {
         argc=_argc;
         argv=_argv;
@@ -52,6 +86,8 @@ public:
         leftLength=30;
         lastGroup="";
     }
+
+    /// Destructs @ref CLI and frees the memory.
     inline ~CLI() {
         for(OptGroups::iterator it=ga.begin(); it!=ga.end(); ++it) {
             for(unsigned int ot=0; ot<it->second.size(); ++ot) {
@@ -59,7 +95,26 @@ public:
             }
         }
     }
+
+    /// Set the width by which arguments are idendet.
     inline void setArgWidth(int len) { leftLength = len; }
+
+    /**
+        @brief Add an option.
+
+        This function inserts an option into the current group and saves the
+        given information.
+
+        @param shortopt The short option to be used. Empty to have none.
+        @param longopt The long option to be used. Empty to have none.
+        @param arg A short description what the option's value is for. I.e.: `<DIR>`
+        @param desc A description of the option.
+        @param optional if true, then this option will be displayed as an optional parameter.
+        @param defaultValue The value that should be present by default.
+
+        @note You need either shortopt or longopt - or both. But you can not leave both empty.
+        @note Only if you supplied arg, you will be able to pull a value.
+    */
     inline void insert(
         std::string shortopt, std::string longopt,
         std::string arg, std::string desc, bool optional=true, std::string defaultValue=""
@@ -81,16 +136,34 @@ public:
             orderedOpts.push_back("Options");
         }
     }
+
+    /// Set a new group.
+    /// @param name The group name
     inline void group(std::string name) {
         lastGroup=name;
         orderedOpts.push_back(name);
     }
+
+    /**
+        @brief Set the information for stray arguments
+
+        This will configure the stray arguments - similar to @ref insert.
+
+        @param arg The short argument description.
+        @param desc A proper description
+        @param opitonal Wether stray args are optional or not.
+    */
     inline void setStrayArgs(std::string arg, std::string desc, bool optional=true) {
         strayArgsDesc=desc;
         strayArgsArg=arg;
         strayArgsOptional=optional;
     }
+
+    /// Obtain all the stray args that were found.
+    /// @returns A vector of all stray args.
     std::vector<std::string> getStrayArgs() { return strayArgs; }
+
+    /// For core.
     std::pair<std::string, int> findOpt(std::string name) {
         for(OptGroups::iterator it=ga.begin(); it!=ga.end(); ++it) {
             OptList opl = it->second;
@@ -102,6 +175,8 @@ public:
         }
         return std::pair<std::string, int>("", -1);
     }
+
+    /// Tell the instance to parse the given argc and argv.
     inline bool parse() {
         // This has to be done to avoid multiples if we parse multiple times.
         strayArgs.clear();
@@ -129,6 +204,10 @@ public:
         }
         return true;
     }
+
+    /// Check if an option (by its short- or longopt) is given.
+    /// @param longopt A short OR longopt.
+    /// @returns True if it exists.
     inline bool check(std::string longopt) {
         std::pair<std::string,int> opt = findOpt(longopt);
         if (opt.second!=-1)
@@ -136,6 +215,10 @@ public:
         else
             return false;
     }
+
+    /// Get the value that is given to an option.
+    /// @param optname The option's name.
+    /// @returns The Value. Always a string.
     inline std::string value(std::string optname) {
         std::pair<std::string,int> opt = findOpt(optname);
         if (opt.second!=-1)
@@ -145,6 +228,7 @@ public:
     }
 
     // Now to the formatting
+    /// Print a usage screen.
     inline void usage() {
         std::stringstream myout;
         if(copyright!="") std::cout << copyright << std::endl;

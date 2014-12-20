@@ -50,7 +50,7 @@ struct compiler_t {
 };
 
 typedef map<string, compiler_t*> compiler_map_t;
-typedef map< string, compiler_map_t > compiler_list_t;
+typedef map<string, compiler_map_t > compiler_list_t;
 compiler_list_t compilers;
 void initCompilers() {
     // C compilers and their flags...
@@ -63,7 +63,7 @@ void initCompilers() {
     compilers["CXX"]["g++"]     = new compiler_t("-l %", "-I", "-c", "-o");
     compilers["CXX"]["clang++"] = new compiler_t("-l %", "-I", "-c", "-o");
     compilers["CXX"]["cl"]      = new compiler_t("/nologo", "%.lib", "/I", "/c", "/Fo");
-    compilers["CXX"]["clang-cl"]= new compiler_t("lib%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["clang-cl"]= new compiler_t("%.lib", "/I", "/c", "/Fo");
 
     // Objective-C
     compilers["OBJC"]["gcc"]     = new compiler_t("-l %", "-I", "-c", "-o");
@@ -84,6 +84,7 @@ string have_prefix("HAVE_");
 string havelib_prefix("HAVE_LIB");
 string havefunc_prefix("HAVE_");
 Filecache* cache;
+extern CLI* cli; // main.cpp
 
 string toUpper(const string str) {
     string s = str;
@@ -142,6 +143,34 @@ string have_func(const string func) {
     s.append(havefunc_prefix);
     s.append(toUpper(prefunc));
     return s;
+}
+
+string have_headerfunc(const string header, const string func) {
+    stringstream ss;
+    ss << have_prefix << func << "_in_" << header;
+    string key = ss.str();
+    // Basic
+    ReplaceStringInPlace(key, " ", "_");
+    ReplaceStringInPlace(key, ".", "_");
+    // For C++
+    ReplaceStringInPlace(key, ":", "_");
+    ReplaceStringInPlace(key, "<", "_");
+    ReplaceStringInPlace(key, ">", "_");
+    // ObjC/++
+    ReplaceStringInPlace(key, "[", "_");
+    ReplaceStringInPlace(key, "]", "_");
+    ReplaceStringInPlace(key, "+", "_");
+    ReplaceStringInPlace(key, "-", "_");
+
+    return toUpper(key);
+}
+
+// Ugly but efficient.
+string have_libfunc(const string lib, const string func) {
+    string nlib;
+    nlib.append("lib");
+    nlib.append(lib);
+    return have_headerfunc(nlib, func);
 }
 
 string find_tool(vector<string> cmds) {
@@ -321,7 +350,7 @@ pair<bool,CommandResult> run_task(const string source, const string kind, string
     return out;
 }
 
-OS_FUNC(osd_heder) {
+OS_FUNC(osd_header) {
     EXPECT_STRING(1)
     EXPECT_STRING(2)
     string kind = os->toString(-params+0).toChar();
@@ -641,32 +670,171 @@ OS_FUNC(osd_libfunc) {
     return 1;
 }
 
+
+OS_FUNC(osd_headerfunc) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    EXPECT_STRING(3)
+    string kind = os->toString(-params+0).toChar();
+    string header = os->toString(-params+1).toChar();
+    string func = os->toString(-params+2).toChar();
+    string name = key2name(kind2key(kind));
+    string funckey = have_func(func);
+    string hdrkey = have_header(header);
+    string hdrfunckey = have_headerfunc(header, func);
+    OUTPUT(cout) << "Checking for function " << func << " in " << name << " header <" << header << ">... ";
+
+    string has_hf = cache->get(hdrfunckey, "detector");
+    if(has_hf.empty()) {
+        // We need to perform the lookup.
+        stringstream source;
+        source << "#include <" << header << ">" << endl
+               << "int main(int argc, char** argv) {" << endl
+               << "    if(" << func << " != (void*)0) {" << endl
+               << "        return 0;" << endl
+               << "    } else {" << endl
+               << "        return 1;" << endl
+               << "    }" << endl
+               << "    return 2;" << endl
+               << "}" << endl;
+        pair<bool, CommandResult> comres = run_task(source.str(), kind);
+        if(!comres.second.spawned || !comres.first) {
+            cout << "No.";
+            if(cli->check("-v")) cout << " Compilation failed.";
+            cout << endl;
+            os->pushBool(false);
+        } else if(comres.second.exit_code==0) {
+            cout << "Yes" << endl;
+            cache->set(hdrfunckey, "1", "detector");
+            cache->set(funckey, "1", "detector");
+            cache->set(hdrkey, "1", "detector");
+            os->pushBool(true);
+        } else if(comres.second.exit_code==1) {
+            cout << "No" << endl;
+            cache->set(hdrkey, "0", "detector");
+            os->pushBool(false);
+        } else if(comres.second.exit_code==2) {
+            cout << "Unknown (Unexpected error returned)" << endl;
+            os->pushNull();
+        }
+    } else {
+        if(has_hf == "1") {
+            // Appearently it is in the cache, which means its defined!
+            cout << "Yes";
+            os->pushBool(true);
+        } else {
+            // It's 0...undefined.
+            cout << "No";
+            os->pushBool(false);
+        }
+        cout << " (Cached)" << endl;
+    }
+    cache->sync();
+    return 1;
+}
 /*
-OS_FUNC(osd_headerfunc) {}
 OS_FUNC(osd_checkfunc) {}
+
 OS_FUNC(osd_add_lib) {}
 OS_FUNC(osd_add_libfunc) {}
 OS_FUNC(osd_add_headerfunc) {}
 OS_FUNC(osd_add_checkfunc) {}
-OS_FUNC(osd_with) {}
-OS_FUNC(osd_hasWith) {}
-OS_FUNC(osd_withValue) {}
-OS_FUNC(osd_enable) {}
-OS_FUNC(osd_enabled) {}
+
 OS_FUNC(osd_preprocess) {}
-OS_FUNC(osd_toolFlag) {}
 OS_FUNC(osd_transform) {}
-OS_FUNC(osd_write_header) {}
-OS_FUNC(osd_write_json) {}
-OS_FUNC(osd_set) {}
-OS_FUNC(osd_get) {}
+
 OS_FUNC(osd_working_dir) {}
 OS_FUNC(osd_cache_file) {}
 OS_FUNC(osd_have_prefix) {}
 OS_FUNC(osd_havelib_prefix) {}
 */
 
-OS_FUNC(osd_tryBuild) {
+//OS_FUNC(osd_write_header) {}
+//OS_FUNC(osd_write_json) {}
+
+
+void CleanString(string& str) {
+    ReplaceStringInPlace(str, " ", "_");
+    ReplaceStringInPlace(str, ".", "_");
+    ReplaceStringInPlace(str, "+", "_");
+    ReplaceStringInPlace(str, "{", "_");
+    ReplaceStringInPlace(str, "}", "_");
+    ReplaceStringInPlace(str, ":", "_");
+}
+
+OS_FUNC(osd_set) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string key = os->toString(-params+0).toChar();
+    string val = os->toString(-params+1).toChar();
+    CleanString(key);
+    CleanString(val);
+    cache->set(key, val, "detector");
+    return 0;
+}
+OS_FUNC(osd_get) {
+    EXPECT_STRING(1)
+    string key = os->toString(-params+0).toChar();
+    CleanString(key);
+    os->pushString(cache->get(key, "detector").c_str());
+    return 1;
+}
+
+OS_FUNC(osd_with) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    EXPECT_STRING(3)
+    string name;
+    name.append("--with-");
+    name.append(os->toString(-params+0).toChar());
+    string desc = os->toString(-params+1).toChar();
+    string arg = os->toString(-params+2).toChar();
+    string def;
+    if(os->isString(-params+3)) {
+        def = os->toString(-params+3).toChar();
+    } else {
+        def = "on";
+    }
+    cli->insert("", name, arg, desc, true, def);
+    return 0;
+}
+OS_FUNC(osd_hasWith) {
+    EXPECT_STRING(1)
+    string name;
+    name.append("--with-");
+    name.append(os->toString(-params+0).toChar());
+    os->pushBool(cli->check(name));
+    return 1;
+}
+OS_FUNC(osd_withValue) {
+    EXPECT_STRING(1)
+    string name;
+    name.append("--with-");
+    name.append(os->toString(-params+0).toChar());
+    os->pushString(cli->value(name).c_str());
+    return 1;
+}
+OS_FUNC(osd_enable) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string name;
+    name.append("--enable-");
+    name.append(os->toString(-params+0).toChar());
+    string desc = os->toString(-params+1).toChar();
+    cli->insert("", name, "", desc);
+    return 1;
+}
+OS_FUNC(osd_enabled) {
+    EXPECT_STRING(1)
+    string name;
+    name.append("--enable-");
+    name.append(os->toString(-params+0).toChar());
+    os->pushBool(cli->check(name));
+    return 1;
+}
+
+
+int osd_tryTask(OS* os, int params, bool run) {
     EXPECT_STRING(1)
     EXPECT_STRING(2)
     string source = os->toString(-params+0).toChar();
@@ -674,7 +842,7 @@ OS_FUNC(osd_tryBuild) {
     string add="";
     if(os->isString(-params+2))
         add = os->toString(-params+2).toChar();
-    pair<bool,CommandResult> rt = run_task(source, kind, add, false);
+    pair<bool,CommandResult> rt = run_task(source, kind, add, run);
 
     // Convert the pair into two return values. its a bit different than $(...)
     // but thats on purpose. This function is ment for "internal" use. Tests, etc.
@@ -700,32 +868,10 @@ OS_FUNC(osd_tryBuild) {
 }
 
 OS_FUNC(osd_tryRun) {
-    EXPECT_STRING(1)
-    EXPECT_STRING(2)
-    string source = os->toString(-params+0).toChar();
-    string kind = os->toString(-params+1).toChar();
-    string add="";
-    if(os->isString(-params+2))
-        add = os->toString(-params+2).toChar();
-    pair<bool,CommandResult> rt = run_task(source, kind, add, true);
-    os->pushBool(rt.first);
-    os->newObject();
-    os->newArray();
-    os->pushString(rt.second.streams[0].c_str());
-    os->addProperty(-2);
-    os->pop(2);
-    os->pushString(rt.second.streams[1].c_str());
-    os->addProperty(-2);
-    os->pop(2);
-    os->pushString(rt.second.streams[2].c_str());
-    os->addProperty(-2);
-    os->pop(2);
-    os->setProperty(-2, "streams");
-    os->pop();
-    os->pushNumber(rt.second.exit_code);
-    os->setProperty(-2, "exit_code");
-    os->pop();
-    return 2;
+    return osd_tryTask(os, params, true);
+}
+OS_FUNC(osd_tryBuild) {
+    return osd_tryTask(os, params, false);
 }
 
 OS_FUNC(osd_head) {
@@ -817,7 +963,12 @@ OS_FUNC(osd_key2ext) {
 OS_FUNC(osd_tool) {
     EXPECT_STRING(1)
     string tool = os->toString().toChar();
-    string toolkey = have_tool(tool);
+    string toolkey;
+    if(os->isString(-params+1)) {
+        toolkey = os->toString(-params+1).toChar();
+    } else {
+        toolkey = have_tool(tool);
+    }
     string cached = cache->get(toolkey, "detector");
     static map<string,bool> toolsfound;
     bool doPrint=true;
@@ -852,8 +1003,78 @@ OS_FUNC(osd_tool) {
     return 2;
 }
 
+OS_FUNC(osd_toolFlag) {
+    EXPECT_STRING(1)
+    EXPECT_STRING(2)
+    string confVar = os->toString(-params+0).toChar();
+    string flag = os->toString(-params+1).toChar();
+    string cmd;
+    string tool = cache->get(confVar, "detector");
+    if(!tool.empty()) {
+        cmd.append(tool);
+        cmd.append(" ");
+        cmd.append(flag);
+        CommandResult res = it_cmd(cmd, vector<string>());
+        os->pushBool(res.spawned);
+        os->pushNumber(res.exit_code);
+    } else {
+        // Should I throw an exception?
+        os->pushBool(false);
+        os->pushNull();
+    }
+    return 2;
+}
 
-bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
+// Cache objects
+OS_FUNC(osc_set) {
+    int _this = os->getAbsoluteOffs(-params-1);
+    EXPECT_STRING(1)
+    string key = os->toString(-params+0).toChar();
+    string val = os->toString(-params+1).toChar();
+    os->getProperty(_this, "cache_name", false);
+    string obj = os->toString().toChar();
+
+    // Fast-escape value
+    ReplaceStringInPlace(val, "\"", "\\\"");
+
+    cache->set(key, val, obj);
+    return 0;
+}
+OS_FUNC(osc_get) {
+    int _this = os->getAbsoluteOffs(-params-1);
+    EXPECT_STRING(1)
+    string key = os->toString().toChar();
+    os->getProperty(_this, "cache_name", false);
+    string obj = os->toString().toChar();
+    os->pushString(cache->get(key, obj).c_str());
+    return 1;
+}
+OS_FUNC(osc_del) {
+    int _this = os->getAbsoluteOffs(-params-1);
+    EXPECT_STRING(1)
+    string key = os->toString().toChar();
+    os->getProperty(_this, "cache_name", false);
+    string obj = os->toString().toChar();
+    os->pushBool(cache->remove(key, obj));
+    return 1;
+}
+OS_FUNC(osc_sync) {
+    os->pushBool(cache->sync());
+    return 1;
+}
+OS_FUNC(osc_new) {
+    // __construct(name)
+    EXPECT_STRING(1)
+    string name = os->toString(-params+0).toChar();
+    int _this = os->getAbsoluteOffs(-params-1);
+    os->pushString(name.c_str());
+    os->setProperty(_this, "cache_name", false);
+    os->pushStackValue(_this);
+    return 1;
+}
+
+
+bool initializeDetector(OS* os, Filecache* _cache, CLI* _cli) {
     initCompilers();
     cache = _cache;
     OS::FuncDef dtFuncs[] = {
@@ -862,16 +1083,29 @@ bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
         {OS_TEXT("__get@out"), osd_out},
         {OS_TEXT("__get@footer"), osd_footer},
         // Actual methods
-        {OS_TEXT("header"), osd_heder},
+        {OS_TEXT("header"), osd_header},
         {OS_TEXT("lib"), osd_lib},
         {OS_TEXT("compiler"), osd_compiler},
         {OS_TEXT("func"), osd_func},
         {OS_TEXT("libfunc"), osd_libfunc},
+        {OS_TEXT("headerfunc"), osd_headerfunc},
         {OS_TEXT("tool"), osd_tool},
+        {OS_TEXT("toolFlag"), osd_toolFlag},
 
         // For your own tests
         {OS_TEXT("tryRun"), osd_tryRun},
         {OS_TEXT("tryBuild"), osd_tryBuild},
+
+        // Flags
+        {OS_TEXT("enable"), osd_enable},
+        {OS_TEXT("enabled"), osd_enabled},
+        {OS_TEXT("with"), osd_with},
+        {OS_TEXT("hasWith"), osd_hasWith},
+        {OS_TEXT("withValue"), osd_withValue},
+
+        // Inner cache
+        {OS_TEXT("set"), osd_set},
+        {OS_TEXT("get"), osd_get},
 
         // Utilities
         {OS_TEXT("have_lib"), osd_havelib},
@@ -888,15 +1122,20 @@ bool initializeDetector(OS* os, Filecache* _cache, CLI* cli) {
     os->setFuncs(dtFuncs);
     os->pop();
 
-    /*
     OS::FuncDef chFuncs[] = {
-        {OS_FUNC("__set"), osc_set},
-        {OS_FUNC("__get"), osc_get},
-        {OS_TEXT("sync"), osc_sync}
+        {OS_TEXT("__construct"), osc_new},
+        {OS_TEXT("__get"), osc_get},
+        {OS_TEXT("__del"), osc_del},
+        {OS_TEXT("__set"), osc_set},
+        {OS_TEXT("sync"), osc_sync},
+        {}
     };
     os->getModule("cache");
-    os->setFuncs(chFuncs);
+    int cmid = os->getAbsoluteOffs(-1);
+    os->setFuncs(chFuncs, false);
+    os->pushBool(true);
+    os->setProperty(cmid, "__instantiable", false);
     os->pop();
-    */
+
     return true;
 }

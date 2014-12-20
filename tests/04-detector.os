@@ -31,7 +31,8 @@ detect.libfunc("libpthread", "pthread_create");
 detect.libfunc("pthread", "pthread_create");
 
 // Functions in headers
-
+detect.headerfunc("c", "stdio.h", "printf");
+detect.headerfunc("c", "objc/objc.h","objc_msgSend");
 
 // Functions in both
 
