@@ -31,6 +31,7 @@
 #include "os-exec.h"
 #include "os-pfs.h"
 #include "os-std.h"
+#include "os-stacker.h"
 
 // FS access
 #include "file_system.hpp"
@@ -700,36 +701,99 @@ bool Initializer() {
 }
 
 /**
-    @brief Configure all targets
+    @brief Configure all targets and resolve dependencies
 
     This function calls the targets configure method in order to make them
     ready for actual compilation.
 
+    It also looks for an existing `need` property and if it exists, grabs the
+    other target's configure methods and runs them first. It then combines
+    the `exports` property with the local `settings` property, if it exists.
+
     @returns If the configuring was successful.
 */
 bool Preprocessor() {
+    // Used to track configured targets.
+    static map<string,bool> cfgd;
     os->pushValueById(targets->valueID);
     os->getProperty(-1, "keys"); // triggers the getKeys method.
     Value::Array keys(os);
     for(int i=0; i<keys.length(); i++) {
         Value::String* key = (Value::String*)keys[i];
         Value::Object* val = (Value::Object*)(*targets)[(*key)];
+        if(cfgd.find((*key)) != cfgd.end()) {
+            // We have configured this already.
+            continue;
+        }
+        cfgd[(*key)]=true;
         os->pushValueById(val->valueID);
         os->pushString("configure");
         if(os->in(-1, -2)) {
-            os->popString();
-            os->getProperty("configure");
+            os->getProperty();
             if(os->isFunction()) {
-                Value::Method mt(os, val, "configure");
-                mt(0,1);
+                if(cli->check("-v")) {
+                    cout << "(As self)" << endl;
+                }
+                os->callTF(0,1);
                 if(os->toBool() == false) {
                     cerr << "We have a false!" << endl;
                     // Configure returned false. So we quickly drop out.
                     return false;
                 }
+                os->pop(2); // mixed, function
             } else {
                 //cerr << "[IceTea]: The configure() method in " << key << "is not a function! Found "
                 //     << os->getTypeStr().toChar() << " instead.";
+            }
+        }
+        os->pop(); // string
+
+        // Now resolve dependencies, if any
+        os->pushString("needs");
+        os->getProperty();
+        if(!os->isNull()) {
+            // That thing actually exists!
+            if(os->isArray()) {
+                int nlen = os->getLen();
+                int offs = os->getAbsoluteOffs(-1);
+                for(int e=0; e<nlen; e++) {
+                    os->pushNumber(e);
+                    os->getProperty();
+                    string tname = os->popString().toChar();
+                    Value::Object* tobj = (Value::Object*)(*targets)[tname];
+
+                    os->pushValueById(tobj->valueID);
+                    os->pushString("configure");
+                    if(os->in(-1,-2)) {
+                        os->getProperty();
+                        if(os->isFunction() && cfgd.find(tname) == cfgd.end()) {
+                            cfgd[tname]=true;
+                            if(cli->check("-v")) {
+                                cout << "(As dependency)" << endl;
+                            }
+                            os->callTF(0,1);
+                            if(!os->toBool()) {
+                                cout << "Dependency target '" << tname << "' returned false." << endl;
+                                return false;
+                            }
+                            os->pop();
+                        }
+                        os->pop();
+                    }
+                    os->pop();
+
+                    os->pushString("exports");
+                    os->getProperty();
+                    int exoff = os->getAbsoluteOffs(-1);
+                    if(os->isObject()) {
+                        os->pushValueById(val->valueID);
+                        os->getProperty(-1, "__add"); // Thanks to os-std
+                        os->pushStackValue(exoff);
+                        os->callTF(1,0);
+                        os->pop(3);
+                    }
+                    os->pop(2);
+                }
             }
         }
 

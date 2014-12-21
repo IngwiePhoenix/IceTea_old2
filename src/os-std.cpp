@@ -1,4 +1,13 @@
+/**
+    @file
+    @brief ObjectScript standart library extension
+
+    This file contains a minimal extension that adds useful methods to objects and arrays
+    and offers functions for general use.
+*/
+
 #include <iostream>
+#include <vector>
 
 #include "objectscript.h"
 #include "os-std.h"
@@ -9,6 +18,7 @@
 using namespace std;
 using namespace ObjectScript;
 
+/// The array `+` operator.
 OS_FUNC(array_add) {
     int _this = os->getAbsoluteOffs(-params-1);
     if(os->isString(-params+0) || os->isNumber(-params+0) || os->isNull(-params+0)) {
@@ -26,6 +36,69 @@ OS_FUNC(array_add) {
     } else if(os->isObject(-params+0)) {
         os->setException("Don't know how to handle array+object...");
         return 0;
+    }
+    os->pushStackValue(_this);
+    return 1;
+}
+
+/// The Object `+` operator
+OS_FUNC(object_add) {
+    // This is by far more complicated...
+    int _this = os->getAbsoluteOffs(-params-1);
+    int _arg = os->getAbsoluteOffs(-params+0);
+    if(os->isNull() || os->isString() || os->isNumber() || os->isArray()) {
+        // Add this to the end of the object.
+        os->addProperty(_this);
+    } else {
+        // This is an object. So we have to do this...
+        os->getProperty(_arg, "keys");
+        vector<string> keys;
+        int len = os->getLen();
+        for(int i=0; i<len; i++) {
+            os->pushNumber(i);
+            os->getProperty();
+            keys.push_back(os->toString().toChar());
+            os->pop();
+        }
+        for(vector<string>::iterator it=keys.begin(); it!=keys.end(); ++it) {
+            os->getProperty(_arg, it->c_str());
+            int poff = os->getAbsoluteOffs(-1);
+            if(os->isNull() || os->isNumber()) {
+                // We are only going to replace the original value.
+                os->setProperty(_this, it->c_str());
+                os->pop(2);
+            } else if(os->isString()) {
+                // Oha. concat the string.
+                os->pushStackValue(_this);
+                os->pushString(it->c_str());
+                if(!os->in(-1,-2)) {
+                    // Value does not exist, create it.
+                    os->pop(2);
+                    os->setProperty(_this, it->c_str());
+                } else {
+                    // The string exists, so we gonna concat it.
+                    string str = os->toString().toChar();
+                    os->pop(2); // string, index
+                    str.append(os->toString().toChar());
+                    os->pushString(str.c_str());
+                    os->setProperty(_this, it->c_str());
+                }
+            } else if(os->isArray() || os->isObject()) {
+                // Conveniently, the Array.__add method will solve this easily.
+                // But we want to have the array be the right-hand operator here.
+                os->getProperty(_this, it->c_str());
+                int voff = os->getValueId(-1);
+                os->pop();
+                // Now set _arg to be the value
+                os->setProperty(_this, it->c_str());
+                os->getProperty(_this, it->c_str());
+                os->getProperty("__add");
+                os->getProperty(_this, it->c_str());
+                os->pushValueById(voff);
+                os->callFT(1,1);
+                os->pop(3);
+            }
+        }
     }
     os->pushStackValue(_this);
     return 1;
@@ -55,6 +128,11 @@ void initializeStdlib(OS* os) {
 
     os->getGlobalObject("Array");
     os->pushCFunction(array_add);
+    os->setProperty(-2, "__add");
+    os->pop();
+
+    os->getGlobalObject("Object");
+    os->pushCFunction(object_add);
     os->setProperty(-2, "__add");
     os->pop();
 }
