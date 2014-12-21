@@ -55,6 +55,7 @@ OS_FUNC(object_add) {
         vector<string> keys;
         int len = os->getLen();
         for(int i=0; i<len; i++) {
+            os->getProperty(_arg, "keys");
             os->pushNumber(i);
             os->getProperty();
             keys.push_back(os->toString().toChar());
@@ -66,7 +67,7 @@ OS_FUNC(object_add) {
             if(os->isNull() || os->isNumber()) {
                 // We are only going to replace the original value.
                 os->setProperty(_this, it->c_str());
-                os->pop(2);
+                //os->pop(2);
             } else if(os->isString()) {
                 // Oha. concat the string.
                 os->pushStackValue(_this);
@@ -76,12 +77,17 @@ OS_FUNC(object_add) {
                     os->pop(2);
                     os->setProperty(_this, it->c_str());
                 } else {
+                    os->pop(2);
                     // The string exists, so we gonna concat it.
-                    string str = os->toString().toChar();
-                    os->pop(2); // string, index
-                    str.append(os->toString().toChar());
-                    os->pushString(str.c_str());
+                    string val = os->toString().toChar();
+                    string res;
+                    os->pop();
+                    os->getProperty(_this, it->c_str());
+                    res.append(os->popString().toChar());
+                    res.append(val);
+                    os->pushString(res.c_str());
                     os->setProperty(_this, it->c_str());
+                    os->pop();
                 }
             } else if(os->isArray() || os->isObject()) {
                 // Conveniently, the Array.__add method will solve this easily.
@@ -95,8 +101,13 @@ OS_FUNC(object_add) {
                 os->getProperty("__add");
                 os->getProperty(_this, it->c_str());
                 os->pushValueById(voff);
-                os->callFT(1,1);
-                os->pop(3);
+                if(os->isNull()) {
+                    // The array that should be combined with...doesnt really contain.
+                    os->pop(2);
+                } else {
+                    os->callFT(1,1);
+                    os->pop(3);
+                }
             }
         }
     }

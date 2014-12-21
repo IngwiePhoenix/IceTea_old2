@@ -21,6 +21,25 @@ test.num   = 9;
 test       + {num:3};
 print test;
 
+print "\n----- Complex Object.__add"
+var person = {
+    name: "Ingwie",
+    age: 20,
+    hobbies: ["dj", "coding"],
+    coding: {
+        languages: ["c++", "php"]
+    }
+};
+print person;
+person + {
+    name: " Phoenix",
+    hobbies: ["yugioh"],
+    coding: {
+        tools: ["llvm"]
+    }
+};
+print person;
+
 print "\n----- Exiting using die()"
 print "I will be seen"
 abort("ded\n")
