@@ -16,9 +16,8 @@ bool IceTeaProcess::callback() {
 }
 
 // This is the actual command function.
-CommandResult it_cmd(const string _cmd, vector<string> replaces) {
+CommandResult it_cmd(string cmd, vector<string> replaces) {
     CommandResult res;
-    string cmd(_cmd);
 
     // Now to convert it into a real command string.
     if(!replaces.empty()) {

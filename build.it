@@ -10,7 +10,11 @@ target("IceTea", "exe") {
     settings: {
         CXX: {
             include_dirs: ["src"],
-            warnings: ["no-switch"],
+            warnings: (sys.type == "unix" ? [
+                "no-switch"
+            ] : [
+                // None
+            ]),
             flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
                 "-ffunction-sections",
                 "-fdata-sections",
@@ -18,7 +22,11 @@ target("IceTea", "exe") {
             optimization: (DEBUG ? "none":"size")
         },
         LINK: {
-            libraries: ["pthread"],
+            libraries: (sys.type == "unix" ? [
+                "pthread"
+            ] : [
+                // None?
+            ]),
             flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
                 "-dead_strip"
             ] : []),

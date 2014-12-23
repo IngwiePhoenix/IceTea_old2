@@ -37,7 +37,7 @@ OS_FUNC(os_sys_osType) {
         || defined(PREDEF_PLATFORM_BSD) \
         || defined(PREDEF_OS_MACOSX)
     os->pushString("unix");
-    #elif defined(PREDEF_PLATFORM_WINDOWS)
+    #elif defined(PREDEF_PLATFORM_WIN32)
     os->pushString("windows");
     #else
     os->pushString("not supported");
@@ -52,7 +52,7 @@ OS_FUNC(os_sys_dirSep) {
         || defined(PREDEF_PLATFORM_BSD) \
         || defined(PREDEF_OS_MACOSX)
     os->pushString("/");
-    #elif defined(PREDEF_PLATFORM_WINDOWS)
+    #elif defined(PREDEF_PLATFORM_WIN32)
     os->pushString("\\");
     #else
     os->pushString("not supported");
@@ -67,7 +67,7 @@ OS_FUNC(os_sys_osName) {
     os->pushString("Mac OS X");
     #elif defined(PREDEF_OS_LINUX)
     os->pushString("GNU/Linux");
-    #elif defined(PREDEF_PLATFORM_WINDOWS)
+    #elif defined(PREDEF_PLATFORM_WIN32)
     os->pushString("Microsoft Windows");
     #else
     os->setException("The name of your OS was not defined. File an issue to get it fixed.");

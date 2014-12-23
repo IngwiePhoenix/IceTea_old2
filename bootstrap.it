@@ -10,10 +10,10 @@ native = extends Object {
             var cmdl=[];
 
             // Build the command
-            cmdl[] = detect.compiler(kind);
+            cmdl[] = '"'..detect.compiler(kind)..'"';
 
             if(sys.type == 'windows') {
-                cmdl[] = '/nologo';
+                cmdl[] = '/nologo /EHsc';
             }
 
             if(typeOf(settings[key].warnings) == 'array') {
@@ -75,8 +75,7 @@ native = extends Object {
 
             cmdl[] = (sys.type == 'unix' ? '-c' : '/c');
             cmdl[] = input.join(' ');
-            cmdl[] = (sys.type == 'unix' ? '-o' : '/Fo');
-            cmdl[] = output;
+            cmdl[] = (sys.type == 'unix' ? '-o' : '/Fo')..output;
             var cmd = cmdl.join(' ');
             pfs.mkdir(targetDir);
             if(pfs.dirWritable(targetDir)) {
@@ -93,10 +92,12 @@ native = extends Object {
             var LINK=[];
 
             // I need a better way to use the linker... :/
-            LINK[] = detect.compiler(kind);
+            LINK[] = '"'..detect.compiler(kind)..'"';
+            if(sys.type == "windows") {
+                LINK[] = "/nologo";
+            }
             LINK[] = input.join(' ');
-            LINK[] = (sys.type == 'unix' ? '-o' : '/Fe');
-            LINK[] = output;
+            LINK[] = (sys.type == 'unix' ? '-o' : '/Fe')..output;
             for(var _,lib in target.settings.LINK.libraries) {
                 // Windows does not have a -l flag - instead you specify the libs yourself.
                 // ...i call a whaaaaat.

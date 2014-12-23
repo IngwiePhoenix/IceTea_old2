@@ -49,22 +49,16 @@
 #include "util.h"
 #include "stlplus_version.hpp"
 #include "filecache.hpp"
+#include "getMemorySize.h"
 
 // Because I have to
 #ifdef __APPLE__
 #include <execinfo.h>
 #include <signal.h>
+#include "stacktrace.h"
 void handler(int sig) {
-  void *array[10];
-  size_t size;
-
-  // get void*'s for all entries on the stack
-  size = backtrace(array, 10);
-
   // print out all the frames to stderr
-  fprintf(stderr, "Error: signal %d:\n", sig);
-  backtrace_symbols_fd(array, size, STDERR_FILENO);
-  exit(1);
+  cerr << Backtrace() << endl;
 }
 #endif
 
@@ -1151,11 +1145,14 @@ void Run(void* threadData) {
                 Run_choice:
                 if(task->type == SCRIPT) {
                     Locker* g = new Locker(OSMutex);
-                    Value::Object* trule = (Value::Object*)(*rules)[task->ruleName];
-                    os->pushValueById(trule->valueID);
+                    //Value::Object* trule = (Value::Object*)(*rules)[task->ruleName];
+                    os->pushValueById(rules->valueID);
+                    os->getProperty(task->ruleName.c_str());
                     os->pushString(runScheme.c_str()); // build, clean.
                     os->getProperty(-2);
-                    os->pushValueById(trule->valueID);
+                    //os->pushValueById(trule->valueID);
+                    os->pushValueById(rules->valueID);
+                    os->getProperty(task->ruleName.c_str());
                     os->newArray(task->input.size());
                     for(list<string>::iterator it=task->input.begin(); it!=task->input.end(); ++it) {
                         os->pushString(it->c_str());
@@ -1191,24 +1188,25 @@ void Run(void* threadData) {
                 } else {
                     vector<string>::iterator it = task->commands.begin();
                     for(; it!=task->commands.end(); ++it) {
-                        CommandResult rc = it_cmd(*it, vector<string>());
+                        string cmdstr = *it;
+                        CommandResult rc = it_cmd(cmdstr, vector<string>());
                         if(rc.exit_code != 0) {
-                            s << "FAILED: " << *it << endl;
+                            s << "FAILED: " << cmdstr << endl;
                             s << "Program exited with status: " << rc.exit_code << endl;
                             tasks->stop();
                             cancel=true;
                         } else if(rc.p->error()) {
-                            s << "FAILED: " << *it << endl;
+                            s << "FAILED: " << cmdstr << endl;
                             s << "Reason: " << rc.p->error_text() << endl;
                             tasks->stop();
                             cancel=true;
                         } else if(!rc.spawned) {
-                            s << "FAILED: " << *it << endl;
+                            s << "FAILED: " << cmdstr << endl;
                             s << "Subprocess could not be started." << endl;
                             tasks->stop();
                             cancel=true;
                         }
-                        if(rc.streams[1].length() > 0) {
+                        if(cli->check("-v") && rc.streams[1].length() > 0) {
                             string sout;
                             stringstream ssout(rc.streams[1]);
                             while(getline(ssout, sout).good()) {
@@ -1350,6 +1348,7 @@ int main(int argc, const char** argv) {
     // Just for debugging
     #ifdef __APPLE__
     signal(SIGSEGV, handler);
+    signal(SIGABRT, handler);
     #endif
     // Inner globals
     os = OS::create();
