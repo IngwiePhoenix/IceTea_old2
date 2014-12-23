@@ -6,83 +6,83 @@ native = extends Object {
             var key = detect.kind2key(kind);
             var settings = target.settings;
             var outDir = __outputdir;
-            var targetDir = pfs.join(outDir, "."..targetName);
+            var targetDir = pfs.join(outDir, '.'..targetName);
             var cmdl=[];
 
             // Build the command
             cmdl[] = detect.compiler(kind);
 
-            if(sys.type == "windows") {
-                cmdl[] = "/nologo";
+            if(sys.type == 'windows') {
+                cmdl[] = '/nologo';
             }
 
-            if(typeOf(settings[key].warnings) == "array") {
+            if(typeOf(settings[key].warnings) == 'array') {
                 for(var _,warning in settings[key].warnings) {
                     // On windows, the user should know what he/she is passing...for now.
                     // A generalization of warning flags would be cool. o.o
-                    cmdl[] = (sys.type == "unix" ? "-W" : "")..warning;
+                    cmdl[] = (sys.type == 'unix' ? '-W' : '')..warning;
                 }
             }
 
             if(settings.native.warning_as_error == true) {
-                if(sys.type == "unix") {
-                    cmdl[] = "-Werror";
+                if(sys.type == 'unix') {
+                    cmdl[] = '-Werror';
                 } else {
-                    cmdl[] = "/WX";
+                    cmdl[] = '/WX';
                 }
             }
 
-            if(!DEBUG && typeOf(settings[key].optimization) == "string") {
+            if(!DEBUG && typeOf(settings[key].optimization) == 'string') {
                 switch(settings[key].optimization) {
-                    case "none": cmdl[] = (sys.type=="unix"?"-O0":""); break;
-                    case "small": cmdl[] = (sys.type=="unix"?"-O1":"/O1"); break;
-                    case "medium": cmdl[] = (sys.type=="unix"?"-O2":"/O2"); break;
-                    case "max": cmdl[] = (sys.type=="unix"?"-O3":"/O3"); break;
-                    case "size": cmdl[] = (sys.type=="unix"?"-Os":"/Os"); break;
-                    default: cmdl[] = ""; break;
+                    case 'none': cmdl[] = (sys.type=='unix'?'-O0':''); break;
+                    case 'small': cmdl[] = (sys.type=='unix'?'-O1':'/O1'); break;
+                    case 'medium': cmdl[] = (sys.type=='unix'?'-O2':'/O2'); break;
+                    case 'max': cmdl[] = (sys.type=='unix'?'-O3':'/O3'); break;
+                    case 'size': cmdl[] = (sys.type=='unix'?'-Os':'/Os'); break;
+                    default: cmdl[] = ''; break;
                 }
             }
 
-            if(typeOf(settings.native.include_dirs) == "array") {
+            if(typeOf(settings.native.include_dirs) == 'array') {
                 for(var _,ink in settings.native.include_dirs) {
-                    cmdl[] = (sys.type == "unix" ? "-I" : "/I")..ink;
+                    cmdl[] = (sys.type == 'unix' ? '-I' : '/I')..ink;
                 }
             }
-            if(typeOf(settings[key].include_dirs) == "array") {
+            if(typeOf(settings[key].include_dirs) == 'array') {
                 for(var _,ink in settings[key].include_dirs) {
-                    cmdl[] = (sys.type == "unix" ? "-I" : "/I")..ink;
+                    cmdl[] = (sys.type == 'unix' ? '-I' : '/I')..ink;
                 }
             }
 
-            if(typeOf(settings.native.defines) == "array") {
+            if(typeOf(settings.native.defines) == 'array') {
                 for(var _,ink in settings.native.defines) {
-                    cmdl[] = (sys.type == "unix" ? "-D" : "/D")..ink;
+                    cmdl[] = (sys.type == 'unix' ? '-D' : '/D')..ink;
                 }
             }
-            if(typeOf(settings[key].defines) == "array") {
+            if(typeOf(settings[key].defines) == 'array') {
                 for(var _,ink in settings[key].defines) {
-                    cmdl[] = (sys.type == "unix" ? "-D" : "/D")..ink;
+                    cmdl[] = (sys.type == 'unix' ? '-D' : '/D')..ink;
                 }
             }
 
-            if(typeOf(settings[key].flags) == "array") {
-                cmdl[] = settings[key].flags.join(" ");
+            if(typeOf(settings[key].flags) == 'array') {
+                cmdl[] = settings[key].flags.join(' ');
             }
 
             if(DEBUG) {
-                cmdl[] = (sys.type == "unix" ? "-g" : "/Zi");
+                cmdl[] = (sys.type == 'unix' ? '-g' : '/Zi');
             }
 
-            cmdl[] = (sys.type == "unix" ? "-c" : "/c");
-            cmdl[] = input.join(" ");
-            cmdl[] = (sys.type == "unix" ? "-o" : "/Fo");
+            cmdl[] = (sys.type == 'unix' ? '-c' : '/c');
+            cmdl[] = input.join(' ');
+            cmdl[] = (sys.type == 'unix' ? '-o' : '/Fo');
             cmdl[] = output;
-            var cmd = cmdl.join(" ");
+            var cmd = cmdl.join(' ');
             pfs.mkdir(targetDir);
             if(pfs.dirWritable(targetDir)) {
                 return [cmd];
             } else {
-                print "ERROR: Target dir is not writable!"
+                print 'ERROR: Target dir is not writable!'
             }
         }
     },
@@ -94,93 +94,89 @@ native = extends Object {
 
             // I need a better way to use the linker... :/
             LINK[] = detect.compiler(kind);
-            LINK[] = input.join(" ");
-            LINK[] = (sys.type == "unix" ? "-o" : "/Fe");
+            LINK[] = input.join(' ');
+            LINK[] = (sys.type == 'unix' ? '-o' : '/Fe');
             LINK[] = output;
             for(var _,lib in target.settings.LINK.libraries) {
                 // Windows does not have a -l flag - instead you specify the libs yourself.
                 // ...i call a whaaaaat.
-                LINK[] = (sys.type == "unix" ? "-l"..lib : lib..".lib");
+                LINK[] = (sys.type == 'unix' ? '-l'..lib : lib..'.lib');
             }
             if(DEBUG) {
-                LINK[] = (sys.type == "unix" ? "-g" : "/Zi");
+                LINK[] = (sys.type == 'unix' ? '-g' : '/Zi');
             }
-            if(typeOf(settings.LINK.flags) == "array") {
-                if(sys.type == "windows") LINK[] = "/link";
+            if(typeOf(settings.LINK.flags) == 'array') {
+                if(sys.type == 'windows') LINK[] = '/link';
                 for(var _,flag in settings.LINK.flags) {
-                    LINK[] = (sys.type == "unix" ? "-Wl," : "")..flag;
+                    LINK[] = (sys.type == 'unix' ? '-Wl,' : '')..flag;
                 }
             }
-            var cmd = LINK.join(" ");
+            var cmd = LINK.join(' ');
             return [cmd];
         }
     }
 }
 
-rule("cxx", "C++") {
-    accepts: ["*.cpp", "*.cxx", "*.c++"],
+rule('cxx', 'C++') {
+    accepts: ['*.cpp', '*.cxx', '*.c++'],
     output: {
-        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
-        expected: (sys.type=="unix" ? "%o/.%t/%e.o":"%o/.%t/%e.obj")
+        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
+        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
     },
     prepare: function() {
-        detect.compiler("c++");
+        detect.compiler('c++');
     },
-    build: native.compile("c++")
+    build: native.compile('c++')
 }
 
-rule("c", "C") {
-    accepts: ["*.c", "*.C"],
+rule('c', 'C') {
+    accepts: ['*.c', '*.C'],
     output: {
-        pattern: (sys.type=="unix" ? "*.o":"*.obj"),
-        expected: (sys.type=="unix" ? "%o/.%t/%e.o":"%o/.%t/%e.obj")
+        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
+        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
     },
     prepare: function() {
-        detect.compiler("c");
+        detect.compiler('c');
     },
-    build: native.compile("c")
+    build: native.compile('c')
 }
 
-rule("strip", "Strip") {
-    accepts: ["*.o"],
+rule('strip', 'Strip') {
+    accepts: ['*.o'],
     output: {
-        pattern: "*.o-stripped",
-        expected: "%o/.%t/%e.o-stripped"
+        pattern: '*.o-stripped',
+        expected: '%o/.%t/%e.o-stripped'
     },
     prepare: function() {
         // We have to see how we gonna minify this thing.
-        if(detect.tool("upx"))
-            @tool = "upx IN -o OUT";
+        if(detect.tool('upx'))
+            @tool = 'upx IN -o OUT';
         else {
-            if(sys.type == "unix") {
-                @tool = "cp IN OUT";
+            if(sys.type == 'unix') {
+                @tool = 'cp IN OUT';
             } else {
-                @tool = "copy IN OUT";
+                @tool = 'copy IN OUT';
             }
         }
     },
     build: function(input, output, targetName, target) {
-        var dirstr = "out/."..targetName;
-        var inlist=[];
-        for(var i,v in input) {
-            inlist[i] = "'"..input[i].."' ";
-        }
-        var instr = inlist.join(" ");
+        var dirstr = 'out/.'..targetName;
+        var instr = input.join(' ');
         var cmd = @tool;
-        cmd = cmd.replace("IN", "${instr}");
-        cmd = cmd.replace("OUT", "'${output}'");
+        cmd = cmd.replace('IN', instr);
+        cmd = cmd.replace('OUT', output);
         return [cmd];
     }
 }
 
-rule("exe", "Executable") {
-    accepts: [(sys.type=="unix" ? (DEBUG?"*.o":"*.o-stripped"):"*.obj")],
+rule('exe', 'Executable') {
+    accepts: [(sys.type=='unix' ? (DEBUG?'*.o':'*.o-stripped'):'*.obj')],
     output: {
-        pattern: (sys.type=="unix" ? "*":"*.exe"),
-        expected: (sys.type=="unix" ? "%o/%t":"%o/%t.exe")
+        pattern: (sys.type=='unix' ? '*':'*.exe'),
+        expected: (sys.type=='unix' ? '%o/%t':'%o/%t.exe')
     },
     prepare: function() {
-        detect.compiler("c++");
+        detect.compiler('c++');
     },
-    build: native.link("c++"),
+    build: native.link('c++'),
 }

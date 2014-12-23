@@ -47,7 +47,7 @@ public:
         using namespace std;
         using namespace minijson;
         _guard g(m);
-        map<string,string> res;
+        map<std::string,std::string> res;
         object ov = o[obj].get<object>();
         for(object::iterator it=ov.begin(); it!=ov.end(); ++it) {
             res[it->first] = it->second.get<string>();

@@ -6,8 +6,8 @@ using namespace ObjectScript;
 using namespace stlplus;
 
 bool IceTeaProcess::callback() {
-    while(read_stdout(stdout) != -1) continue;
-    while(read_stderr(stderr) != -1) continue;
+    while(read_stdout(_stdout) != -1) continue;
+    while(read_stderr(_stderr) != -1) continue;
     if(error()) {
         return false;
     } else {
@@ -43,8 +43,8 @@ CommandResult it_cmd(const string _cmd, vector<string> replaces) {
     res.spawned = runner->spawn(cmd, false, true, true);
     // Prepare return
     res.exit_code = runner->exit_status();
-    res.streams[1] = runner->stdout;
-    res.streams[2] = runner->stderr;
+    res.streams[1] = runner->_stdout;
+    res.streams[2] = runner->_stderr;
     res.p = runner;
 
     return res;

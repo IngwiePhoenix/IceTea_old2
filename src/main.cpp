@@ -51,6 +51,7 @@
 #include "filecache.hpp"
 
 // Because I have to
+#ifdef __APPLE__
 #include <execinfo.h>
 #include <signal.h>
 void handler(int sig) {
@@ -65,6 +66,7 @@ void handler(int sig) {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   exit(1);
 }
+#endif
 
 // Namespaces!
 using namespace std;

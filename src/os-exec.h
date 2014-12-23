@@ -11,8 +11,8 @@
 
 // This is a minimal interface...
 struct IceTeaProcess: public stlplus::subprocess {
-    std::string stdout;
-    std::string stderr;
+    std::string _stdout;
+    std::string _stderr;
     bool callback();
 };
 
