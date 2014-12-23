@@ -49,35 +49,35 @@ struct compiler_t {
     compiler_t() {}
 };
 
-typedef map<string, compiler_t*> compiler_map_t;
+typedef map<string, compiler_t> compiler_map_t;
 typedef map<string, compiler_map_t > compiler_list_t;
 compiler_list_t compilers;
 void initCompilers() {
     // C compilers and their flags...
-    compilers["CC"]["gcc"]      = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["CC"]["clang"]    = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["CC"]["cl"]       = new compiler_t("/nologo", "lib%.lib", "/I", "/c", "/Fo");
-    compilers["CXX"]["clang-cl"]= new compiler_t("%.lib", "/I", "/c", "/Fo");
+    compilers["CC"]["gcc"] =      compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CC"]["clang"]    = compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CC"]["cl"]       = compiler_t("/nologo", "lib%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["clang-cl"]= compiler_t("%.lib", "/I", "/c", "/Fo");
 
     // C++ compilers
-    compilers["CXX"]["g++"]     = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["CXX"]["clang++"] = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["CXX"]["cl"]      = new compiler_t("/nologo", "%.lib", "/I", "/c", "/Fo");
-    compilers["CXX"]["clang-cl"]= new compiler_t("%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["g++"]     = compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CXX"]["clang++"] = compiler_t("-l %", "-I", "-c", "-o");
+    compilers["CXX"]["cl"]      = compiler_t("/nologo", "%.lib", "/I", "/c", "/Fo");
+    compilers["CXX"]["clang-cl"]= compiler_t("%.lib", "/I", "/c", "/Fo");
 
     // Objective-C
-    compilers["OBJC"]["gcc"]     = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["OBJC"]["clangcc"] = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJC"]["gcc"]     = compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJC"]["clangcc"] = compiler_t("-l %", "-I", "-c", "-o");
 
     // Objective-C++
-    compilers["OBJCXX"]["g++"]     = new compiler_t("-l %", "-I", "-c", "-o");
-    compilers["OBJCXX"]["clang++"] = new compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJCXX"]["g++"]     = compiler_t("-l %", "-I", "-c", "-o");
+    compilers["OBJCXX"]["clang++"] = compiler_t("-l %", "-I", "-c", "-o");
 
     // Java
-    compilers["JAVAC"]["javac"] = new compiler_t();
+    compilers["JAVAC"]["javac"] =    compiler_t();
 
     // Swift
-    compilers["SWIFTC"]["swiftc"] = new compiler_t();
+    compilers["SWIFTC"]["swiftc"] =  compiler_t();
 }
 
 string have_prefix("HAVE_");
@@ -590,10 +590,10 @@ OS_FUNC(osd_libfunc) {
         }
         string LDFLAGS;
         string libdl = (wildcard("*\\cl.exe", tool) ? "Kernel32" : "dl");
-        LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", libdl));
+        LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)].libflag, "%", libdl));
         if(runSecond) {
             LDFLAGS.append(" ");
-            LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)]->libflag, "%", libname));
+            LDFLAGS.append(ReplaceString(compilers["CC"][filename_part(tool)].libflag, "%", libname));
         }
         string compcode = (runSecond==false ? code1 : code2);
         pair<bool,CommandResult> pcom = run_task(compcode, "c", LDFLAGS, true);

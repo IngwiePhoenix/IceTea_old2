@@ -15,7 +15,7 @@ target("IceTea", "exe") {
                 "-ffunction-sections",
                 "-fdata-sections",
             ] : []),
-            optimization: "size"
+            optimization: (DEBUG ? "none":"size")
         },
         LINK: {
             libraries: ["pthread"],
