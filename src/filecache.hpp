@@ -50,7 +50,7 @@ public:
         map<std::string,std::string> res;
         object ov = o[obj].get<object>();
         for(object::iterator it=ov.begin(); it!=ov.end(); ++it) {
-            res[it->first] = it->second.get<string>();
+            res[it->first] = it->second.get<minijson::string>();
         }
         return res;
     }
@@ -87,9 +87,9 @@ public:
         #endif
         if(obj == "") {
             if(o.find(key) == o.end())
-                return string("");
+                return std::string("");
             else
-                return o[key].get<string>();
+                return o[key].get<minijson::string>();
         } else {
             if(o.find(obj) != o.end()) {
                 #ifdef DEBUG
@@ -105,7 +105,7 @@ public:
                     #ifdef DEBUG
                     std::cerr << "Filecache: " << key << " was found." << std::endl;
                     #endif
-                    return o2[key].get<string>();
+                    return o2[key].get<minijson::string>();
                 }
             } else {
                 #ifdef DEBUG
