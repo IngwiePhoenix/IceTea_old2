@@ -1410,8 +1410,8 @@ int main(int argc, const char** argv) {
     cli->parse();
 
     // Fetching values...
-    const char* bootstrapit = cli->value("-b").c_str();
-    const char* buildit = cli->value("-f").c_str();
+    string bootstrapit = cli->value("-b");
+    string buildit = cli->value("-f");
     outputDir = cli->value("-d");
 
     // Output folder
@@ -1455,8 +1455,8 @@ int main(int argc, const char** argv) {
 
     // Generic
     OS::StringDef strs[] = {
-        {OS_TEXT("__buildit"),     OS_TEXT(buildit)},
-        {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit)},
+        {OS_TEXT("__buildit"),     OS_TEXT(buildit.c_str())},
+        {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit.c_str())},
         {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
         {OS_TEXT("__cachefile"),   OS_TEXT(cacheFile.c_str())},
         {}
@@ -1478,7 +1478,7 @@ int main(int argc, const char** argv) {
 
     // Run the script to populate the global objects.
     if(file_exists(bootstrapit)) {
-        os->require(bootstrapit);
+        os->require(bootstrapit.c_str());
         if(terminator()) return itCleanup();
     } else {
         // We'd have to load one from memory...+
@@ -1486,7 +1486,7 @@ int main(int argc, const char** argv) {
              << "was not found." << endl;
     }
     if(file_exists(buildit)) {
-        os->require(buildit);
+        os->require(buildit.c_str());
         if(terminator()) return itCleanup();
     } else {
         if(!cli->check("--os") && !cli->check("--os-exec")) {
