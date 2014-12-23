@@ -1347,7 +1347,10 @@ OS_FUNC(os_getTarget) {
     Everything that is cool happens in here.
 */
 int main(int argc, const char** argv) {
-     signal(SIGSEGV, handler);
+    // Just for debugging
+    #ifdef __APPLE__
+    signal(SIGSEGV, handler);
+    #endif
     // Inner globals
     os = OS::create();
 
