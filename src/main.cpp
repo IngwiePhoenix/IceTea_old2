@@ -1004,9 +1004,10 @@ bool Transformer() {
 // Because Run() is our thread function, it needs some depdendencies
 // The needed struct is above.
 int CurrentTaskCount=0; ///< The current task count.
-static map<string, Task*> tlog; ///< Used to log unhandled tasks.
-static map<string, Task*> updatelog; ///< Used to store updated tasks
-static map<string, bool> taskBuilt; ///< Currently unused. Maybe to store built targets.
+map<string, Task*> tlog; ///< Used to log unhandled tasks.
+map<string, Task*> updatelog; ///< Used to store updated tasks
+map<string, bool> taskBuilt; ///< Currently unused. Maybe to store built targets.
+tthread::mutex listMutex; ///< Prevent all threads from simultanous access to the above.
 
 /**
     @brief The task executor.
@@ -1064,7 +1065,9 @@ void Run(void* threadData) {
                 map<string,string> updateHashes;
                 for(list<string>::iterator at=task->input.begin(); at!=task->input.end(); ++at) {
                     if(!cli->check("-w")) {
+                        listMutex.lock();
                         string cached = fc->get(*at, "sha2_files");
+                        listMutex.unlock();
                         string hex = file2sha2(*at);
                         if(cached.empty()) {
                             // The file is not in the cache, add it.
@@ -1075,9 +1078,12 @@ void Run(void* threadData) {
                                 reallyRun = false;
                                 break;
                             } else {
+                                listMutex.lock();
                                 fc->set(*at, hex, "sha2_files");
+                                listMutex.unlock();
                             }
                         } else {
+                            listMutex.lock();
                             if(
                                 (
                                     task->child != NULL
@@ -1092,6 +1098,7 @@ void Run(void* threadData) {
                             ) {
                                 reallyRun = true;
                                 updateHash = true;
+                                listMutex.unlock();
                                 break;
                             } else if(cached == hex && file_exists(task->output)) {
                                 // The file is up2date
@@ -1104,6 +1111,7 @@ void Run(void* threadData) {
                                 updateHash=true;
                                 updateHashes[*at]=hex;
                             }
+                            listMutex.unlock();
                         }
                         fc->sync();
                     } else {
@@ -1186,11 +1194,9 @@ void Run(void* threadData) {
                     vector<string>::iterator it = task->commands.begin();
                     for(; it!=task->commands.end(); ++it) {
                         string cmdstr(*it);
-                        s << "$ " << cmdstr << endl; p();
                         if(cmdstr.empty()) {
-                            s << "NNNOOOOPPPPEEEEE" << endl;
-                            p();
-                            continue;
+                            // The command string points to invalid memory, it seems...
+                            break;
                         }
                         CommandResult rc = it_cmd(cmdstr, vector<string>());
                         if(rc.exit_code != 0) {
@@ -1227,18 +1233,24 @@ void Run(void* threadData) {
                     }
                 }
                 if(updateHash) {
+                    listMutex.lock();
                     for(map<string,string>::iterator mt=updateHashes.begin(); mt!=updateHashes.end(); ++mt) {
                         fc->set(mt->first, mt->second, "sha2_files");
                     }
+                    listMutex.unlock();
                     fc->sync();
                     if(task->parent != NULL) {
                         if(task->parent->parent != NULL) {
                             file_delete(task->parent->parent->output);
-                            fc->remove(task->parent->parent->output, "sha2_files");
                             tasks->add(task->parent->parent);
+                            listMutex.lock();
+                            fc->remove(task->parent->parent->output, "sha2_files");
+                            listMutex.unlock();
                         }
-                        file_delete(task->parent->output);
+                        listMutex.lock();
                         fc->remove(task->parent->output, "sha2_files");
+                        listMutex.unlock();
+                        file_delete(task->parent->output);
                         tasks->add(task->parent);
                     }
                 }
@@ -1364,7 +1376,7 @@ int main(int argc, const char** argv) {
 
     // Generate a pretty copyright.
     stringstream cpr;
-    cpr << "IceTea 0.1.1 by Ingwie Phoenix" << endl
+    cpr << "IceTea 0.1.2 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
         << "stlplus " << stlplus::version() << endl;
