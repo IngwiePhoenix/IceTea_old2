@@ -16,13 +16,14 @@ bool IceTeaProcess::callback() {
 }
 
 // This is the actual command function.
-CommandResult it_cmd(string cmd, vector<string> replaces) {
+CommandResult it_cmd(const string& _cmd, const vector<string>& replaces) {
     CommandResult res;
+    string cmd = _cmd;
 
     // Now to convert it into a real command string.
     if(!replaces.empty()) {
         stringstream strm;
-        vector<string>::iterator it=replaces.begin();
+        vector<string>::const_iterator it=replaces.begin();
         for (int i=0; i < cmd.length(); i++) {
             if(cmd[i] != '?') {
                 strm << cmd[i];

@@ -1135,7 +1135,7 @@ namespace stlplus
     if (m_child_out == -1) return -1;
     int buffer_size = 256;
     char* tmp = new char[buffer_size];
-    int bytes = read(m_child_out, tmp, buffer_size);
+    size_t bytes = read(m_child_out, tmp, buffer_size);
     if (bytes == -1)
     {
       set_error(errno);

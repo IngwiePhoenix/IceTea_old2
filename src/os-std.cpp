@@ -63,7 +63,6 @@ OS_FUNC(object_add) {
         }
         for(vector<string>::iterator it=keys.begin(); it!=keys.end(); ++it) {
             os->getProperty(_arg, it->c_str());
-            int poff = os->getAbsoluteOffs(-1);
             if(os->isNull() || os->isNumber()) {
                 // We are only going to replace the original value.
                 os->setProperty(_this, it->c_str());

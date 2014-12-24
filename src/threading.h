@@ -114,7 +114,7 @@ public:
 
     inline int size() {
         tthread::lock_guard<tthread::mutex> guard(mutex);
-        int size = queue.size();
+        int size = (int)queue.size();
         return size;
     }
     inline int countAll() {

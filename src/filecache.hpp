@@ -160,11 +160,11 @@ inline bool Filecache::sync() {
     _fc_fopen(fh, filename.c_str(), "wb");
     v = o;
     std::string vstr = v.str();
-    int size = vstr.size();
+    size_t size = vstr.size();
     #ifdef DEBUG
     std::cerr << "Going to write " << size << " bytes with content: " << vstr << std::endl;
     #endif
-    int res = fwrite(vstr.c_str(), 1, size, fh);
+    size_t res = fwrite(vstr.c_str(), 1, size, fh);
     fclose(fh);
     return (res==0?true:false);
 }

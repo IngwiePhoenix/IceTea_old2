@@ -274,7 +274,6 @@ string estimateRuleOutput(string rule, string target, string file="") {
     @ref TargetBuild
 */
 OS_FUNC(os_target_clean) {
-    Task* t = (Task*)userData;
     string output = os->toString(-params+1).toChar();
     cout << "Deleting: " << output << endl;
     file_delete(output);
@@ -419,7 +418,6 @@ void __makeTasks(
             - The "final" rule's output pattern
             - The actual rule's output pattern
         */
-        Value::Object* outputObj = (Value::Object*)(*ruleObj)["output"];
         os->pushValueById(rules->valueID);
         os->getProperty(-1, "keys");
         Value::Array* ruleNames = new Value::Array(os);
@@ -767,7 +765,6 @@ bool Preprocessor() {
             // That thing actually exists!
             if(os->isArray()) {
                 int nlen = os->getLen();
-                int offs = os->getAbsoluteOffs(-1);
                 for(int e=0; e<nlen; e++) {
                     os->pushNumber(e);
                     os->getProperty();
@@ -1188,7 +1185,13 @@ void Run(void* threadData) {
                 } else {
                     vector<string>::iterator it = task->commands.begin();
                     for(; it!=task->commands.end(); ++it) {
-                        string cmdstr = *it;
+                        string cmdstr(*it);
+                        s << "$ " << cmdstr << endl; p();
+                        if(cmdstr.empty()) {
+                            s << "NNNOOOOPPPPEEEEE" << endl;
+                            p();
+                            continue;
+                        }
                         CommandResult rc = it_cmd(cmdstr, vector<string>());
                         if(rc.exit_code != 0) {
                             s << "FAILED: " << cmdstr << endl;
