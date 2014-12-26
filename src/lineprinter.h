@@ -13,8 +13,9 @@ public:
     LinePrinter(std::stringstream* str) : stream(str) {}
     void operator()() {
         tthread::lock_guard<tthread::mutex> guard(m);
-        cout << stream->str() << flush;
-        stream->clear();
+        string out(stream->str());
+        cout << out << flush;
+        //stream->clear();
         stream->str("");
     }
 };

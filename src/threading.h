@@ -12,14 +12,21 @@
 using namespace std;
 using namespace tthread;
 
-/*
-    This is a work queue worker class inspired via: http://vichargrave.com/multithreaded-work-queue-in-c/
-    Basically, I am exchanging all pthread calls with tthread. o.o
+/**
+    @file
+    @brief A Threadpool based on Tinythreads++
 */
 
-// Just a short typedef...
+/// The function to be run across threads.
 typedef void (*ThreadFunction)(void*);
 
+/**
+    @brief The actual thread pool
+
+    This class requires one template argument and has a second, optional one.
+
+    It is based off TinyThreads++. Upon instantiation, all the threads will be started.
+*/
 template<typename T, typename ST=void*> class WorkQueue {
 private:
     vector<tthread::thread*> threads;
@@ -76,7 +83,7 @@ public:
         // Just a stub to wait for the data list to flail out again.
         while(size() != 0 && stillGoing()) {
             cond.notify_all();
-            //tthread::this_thread::sleep_for(tthread::chrono::milliseconds(5));
+            //tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
         }
     }
     inline void stop() {
@@ -91,6 +98,14 @@ public:
     // Add item to list's end.
     inline void add(T item) {
         tthread::lock_guard<tthread::mutex> guard(mutex);
+        bool canAdd=true;
+        // Equality check.
+        for(typename list<T>::iterator it=queue.begin(); it!=queue.end(); ++it) {
+            if(*it == item) {
+                // Remove the item so it can be put back on top.
+                queue.erase(it);
+            }
+        }
         queue.push_back(item);
         itemsEverAdded++;
         cond.notify_all();

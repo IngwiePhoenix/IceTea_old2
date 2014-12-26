@@ -86,14 +86,26 @@ enum TaskType {
     COMMAND ///< The task is to be run using the given commands.
 };
 
+typedef tthread::lock_guard<tthread::mutex> Locker; ///< Typedef for our locker class.
+
 /**
     @brief An actual task that is executed within @ref Run
 
     This structure is a (mostly) C++ structure, containing information about
     a target and how it has to be built - i.e., commands or script statements.
 */
-struct Task {
+class Task {
     ///@{
+private:
+    bool _isMaster; ///< If true, then the output is to be displayed in the progress.
+    bool _isBuilt; ///< If the target was already built or not.
+    bool _shouldUpdate; ///< Should be set on targets whose build must be forced.
+    bool _isProcessing; ///< A "target lock"
+    tthread::mutex m; ///< Class-local mutex to control access to the task.
+    tthread::mutex tm; ///< Task mutex
+    tthread::thread::id myID; ///< thread id
+
+public:
     string ruleName; ///< The rule's name.
     string targetName; ///< The target's name.
     string ruleDisplay; ///< How the rule should be displayed.
@@ -113,12 +125,15 @@ struct Task {
     Task* parent; ///< Parent task
     Task* child; ///< Child task
 
-    bool isMaster; ///< If true, then the output is to be displayed in the progress.
 
     /**
         @brief Brief initialization
     */
-    Task() : isMaster(false) {}
+    Task() {
+        _isBuilt = false;
+        _isMaster = false;
+        _isProcessing = false;
+    }
 
     /**
         @brief Destructs and cleans the task.
@@ -126,9 +141,51 @@ struct Task {
     ~Task() {
         delete target;
     }
+
+    /// Getter and setters
+    bool isBuilt() {
+        Locker g(m);
+        return _isBuilt;
+    }
+    bool isBuilt(bool b) {
+        Locker g(m);
+        _isBuilt = b;
+        return b;
+    }
+    bool shouldUpdate() {
+        Locker g(m);
+        return _shouldUpdate;
+    }
+    bool shouldUpdate(bool b) {
+        Locker g(m);
+        _shouldUpdate = b;
+        return b;
+    }
+    bool isMaster() {
+        Locker g(m);
+        return _isMaster;
+    }
+    bool isMaster(bool b) {
+        Locker g(m);
+        _isMaster = b;
+        return b;
+    }
+    bool isProcessing() {
+        Locker g(m);
+        return _isProcessing;
+    }
+    bool isProcessing(bool b) {
+        Locker g(m);
+        _isProcessing = b;
+        return b;
+    }
+    void lock() { tm.lock(); }
+    void unlock() { tm.unlock(); }
+    bool try_lock() { return tm.try_lock(); }
     ///@}
 };
 typedef WorkQueue<Task*, OS*> TaskQueue; ///< Typedef to instantiate the threadpool.
+typedef list<string> StrList;
 
 OS*        os; ///< Global ObjectScript instance.
 CLI*       cli; ///< Global Command Line Interface instance.
@@ -140,7 +197,9 @@ bool       runTasks = true; ///< A boolean that defines if tasks are being ran o
 // In order to call OS savely, we use this.
 static tthread::mutex OSMutex; ///< A mutex to lock and unlock to gain access to ObjectScript.
 static tthread::mutex ConfigMutex; ///< A mutex used to halt execution of @ref Run
-typedef tthread::lock_guard<tthread::mutex> Locker; ///< Typedef for our locker class.
+// Printing
+stringstream tout; ///< Output for the @ref LinePrinter
+LinePrinter print(&tout); ///< LinePrinter instance
 
 // Tool functions
 int itCleanup();
@@ -274,10 +333,13 @@ string estimateRuleOutput(string rule, string target, string file="") {
     @ref TargetBuild
 */
 OS_FUNC(os_target_clean) {
-    string output = os->toString(-params+1).toChar();
-    cout << "Deleting: " << output << endl;
-    file_delete(output);
-    folder_delete(folder_part(output));
+    Task* t = (Task*)userData;
+    //if(is_present(output)) {
+        tout << "Deleting: " << t->output << endl;
+        print();
+        file_delete(t->output);
+        folder_delete(folder_part(t->output));
+    //}
     return 0;
 }
 
@@ -401,6 +463,7 @@ void __makeTasks(
             t->parent = parent;
             parent->child = t;
 
+            print();
             tasks->add(t);
 
             // We send the output of this task back to the parent call.
@@ -529,40 +592,6 @@ void __makeTasks(
                 string _ruleName = (*ruleName);
                 delete t_rd;
 
-                Task* t = new Task;
-                t->ruleName = _ruleName;
-                t->targetName = target;
-                t->ruleDisplay = display;
-                t->output = theExpected;
-
-                os->pushValueById(currRule->valueID);
-                os->getProperty(-1, runScheme.c_str());
-                if(os->getTypeStr() == "array") {
-                    t->type=COMMAND;
-                    int objlen = os->getLen();
-                    for(int k=0; k<objlen; k++) {
-                        os->pushNumber(k);
-                        os->getProperty();
-                        t->commands.push_back( os->toString().toChar() );
-                    }
-                } else if(os->getTypeStr() == "function") {
-                    t->type=SCRIPT;
-                } else {
-                    if(cli->check("-w")) {
-                        // Whipe mode. Replace the emptyness right there with an actual thing.
-                        os->pushValueById(ruleObj->valueID);
-                        os->pushCFunction(os_target_clean, (void*)t);
-                        os->setProperty(-2, runScheme.c_str());
-                    } else {
-                        cerr << "[IceTea]: Rule '"<< rule << "' must have it's '" << runScheme << "' property defined as function or array! "
-                                  << "'" << os->getTypeStr() << "' was given instead." << endl;
-                    }
-                }
-
-                t->target = (Value::Object*)(*targets)[target];
-                parent->child = t;
-                t->parent = parent;
-
                 if(currentIsBase) {
                     // The file we have, and the rule we found, make up for a base.
                     // In this case, recall ourself. The above, first check will pass
@@ -586,19 +615,47 @@ void __makeTasks(
                         a new task with the "returned" output.
                         Beyond that, we return the expected output, as well.
                     */
+                    Task* t = new Task;
                     string newInput;
                     __makeTasks((*ruleName), file, target, newInput, t, success);
-                    //cout << (*ruleName) << ": Current is CHILD -- " << file << endl;
-                    //cout << rule << "@" << (*ruleName) << ": " << newInput << " | " << myExpected << endl;
 
                     // If the newInput we got is empty, then we probably should skip this rule.
                     if(newInput.empty()) {
-                        //cout << "Oh gosh, its empty." << endl;
                         continue;
                     }
 
-                    //cout << (*ruleName) << ": adding with > " << newInput << endl;
+                    t->ruleName = _ruleName;
+                    t->targetName = target;
+                    t->ruleDisplay = display;
+                    t->output = theExpected;
 
+                    os->pushValueById(currRule->valueID);
+                    os->getProperty(-1, runScheme.c_str());
+                    if(os->getTypeStr() == "array") {
+                        t->type=COMMAND;
+                        int objlen = os->getLen();
+                        for(int k=0; k<objlen; k++) {
+                            os->pushNumber(k);
+                            os->getProperty();
+                            t->commands.push_back( os->toString().toChar() );
+                        }
+                    } else if(os->getTypeStr() == "function") {
+                        t->type=SCRIPT;
+                    } else {
+                        if(cli->check("-w")) {
+                            // Whipe mode. Replace the emptyness right there with an actual thing.
+                            os->pushValueById(ruleObj->valueID);
+                            os->pushCFunction(os_target_clean, (void*)t);
+                            os->setProperty(-2, runScheme.c_str());
+                        } else {
+                            cerr << "[IceTea]: Rule '"<< rule << "' must have it's '" << runScheme << "' property defined as function or array! "
+                                      << "'" << os->getTypeStr() << "' was given instead." << endl;
+                        }
+                    }
+
+                    t->target = (Value::Object*)(*targets)[target];
+                    parent->child = t;
+                    t->parent = parent;
                     t->input.push_back(newInput);
                     tasks->add(t);
                     input = theExpected;
@@ -925,10 +982,6 @@ bool Transformer() {
                                     bool successor=true;
                                     // Now we need to resolve the rules.
                                     // We have rule, file and target name.
-                                    #ifdef IT_DEBUG
-                                        cerr << "Before makeTaks: " << os->ref_count << endl;
-                                        cerr << "makeTasks(" << rule << ", "<< file << ", "<< target <<", ...)" << endl;
-                                    #endif
                                     string partialInput = makeTasks(rule, file, target, t, successor);
                                     if(partialInput == file) {
                                         t->output = estimateRuleOutput(rule, target, file);
@@ -946,9 +999,6 @@ bool Transformer() {
                                     }
                                     delete v_file;
                                 }
-                                #ifdef IT_DEBUG
-                                    cerr << "after MakeTasks: " << os->ref_count << endl;
-                                #endif
 
                                 // Fill in the rest...
                                 // Find out what type the rule is. A function, or an array of commands?
@@ -975,12 +1025,8 @@ bool Transformer() {
                                     }
                                 }
                                 t->parent = NULL;
-                                t->isMaster = true;
+                                t->isMaster(true);
                                 tasks->add(t);
-
-                                #ifdef IT_DEBUG
-                                    cerr << "Transformer, after | OS' refcount: " << os->ref_count << endl;
-                                #endif
 
                                 // One thing we forgot.
                                 if(__tname == target) break;
@@ -1003,11 +1049,44 @@ bool Transformer() {
 
 // Because Run() is our thread function, it needs some depdendencies
 // The needed struct is above.
-int CurrentTaskCount=0; ///< The current task count.
-map<string, Task*> tlog; ///< Used to log unhandled tasks.
-map<string, Task*> updatelog; ///< Used to store updated tasks
-map<string, bool> taskBuilt; ///< Currently unused. Maybe to store built targets.
-tthread::mutex listMutex; ///< Prevent all threads from simultanous access to the above.
+static int CurrentTaskCount=0; ///< The current task count.
+static map<string, Task*> tlog; ///< Used to log unhandled tasks.
+static map<string, Task*> updatelog; ///< Used to store updated tasks
+static map<string, bool> taskBuilt; ///< Currently unused. Maybe to store built targets.
+static tthread::mutex listMutex; ///< Prevent all threads from simultanous access to the above.
+
+/**
+    @brief Used to avoid duplicates
+
+    Searches and prohibits duplicates
+*/
+void addToMap(map<string,Task*>& target, string key, Task* val) {
+    map<string,Task*>::iterator it = target.begin();
+    bool found=false;
+    for(; it!=target.end(); ++it) {
+        if(it->first == key) found = true;
+    }
+    if(!found) {
+        target[key]=val;
+    }
+}
+
+/**
+    @brief Print a task message
+
+    This function is used to properly print the progress message for the task.
+*/
+void taskPrinter(Task* task) {
+    tout << "[#" << CurrentTaskCount << "] "
+         << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
+    if(task->input.size() == 1 && !task->isMaster()) {
+        tout << task->input.front();
+    } else {
+        tout << task->output;
+    }
+    tout << endl;
+    print();
+}
 
 /**
     @brief The task executor.
@@ -1027,6 +1106,251 @@ void Run(void* threadData) {
     ConfigMutex.lock(); // Should wait here.
     ConfigMutex.unlock();
 
+    TaskQueue* tasks = (TaskQueue*)threadData;
+    Task* task;
+
+    while(!tasks->hasToStop()) {
+        if(tasks->remove(task) && task != NULL) {
+            if(!task->isBuilt() || task->shouldUpdate()) {
+                if(task->isProcessing()) {
+                    // Another thread is using this.
+                    tasks->add(task);
+                    continue;
+                }
+                // o.o a dangouers goto.
+                Run__build:
+
+                // Snag it!
+                // FIXME for osme reason, this doesnt work. It deadlocks.
+                //if(!task->try_lock()) {
+                //    // Nope.
+                //    tasks->add(task);
+                //    continue;
+                //} else {
+                //    task->lock();
+                //}
+                task->isProcessing(true);
+
+                // Check if our files are available
+                bool doCheck=true;
+                if(!cli->check("-w")) {
+                    for(StrList::iterator it = task->input.begin(); it!=task->input.end(); ++it) {
+                        if(!is_present(*it)) {
+                            // O-lala.
+                            if(task->child != NULL) {
+                                // do tests against the child
+                                if(task->child->output == *it) {
+                                    if(!task->child->isBuilt()) {
+                                        tasks->add(task->child);
+                                    }
+                                }
+                            }
+                            if(!task->isBuilt()) tasks->add(task);
+                            doCheck=false;
+                            break;
+                        }
+                    }
+                } else {
+                    // We are in cleanage mode.
+                    doCheck = true;
+                }
+
+                // We can not continue from within a for loop.
+                if(!doCheck) continue;
+
+                // Do we actually have to build?
+                bool doBuild=false;
+                bool invokeParent = false;
+                #ifdef IT_DEBUG
+                tout << task->output << " ";
+                #endif
+                if(cli->check("-w")) {
+                    // Clean, cleaner, cleanest.
+                    doBuild = true;
+                } else if(!is_present(task->output)) {
+                    doBuild = true;
+                    #ifdef IT_DEBUG
+                    tout << "Hit: !is_present" << endl;
+                    print();
+                    #endif
+                } else if(task->shouldUpdate()) {
+                    // Well of course, thats why we're here.
+                    doBuild = true;
+                    #ifdef IT_DEBUG
+                    tout << "Hit: shouldupdate" << endl;
+                    print();
+                    #endif
+                } else if(task->child != NULL && task->child->shouldUpdate()) {
+                    doBuild = true;
+                    #ifdef IT_DEBUG
+                    tout << "Hit: child update" << endl;
+                    print();
+                    #endif
+                } else {
+                    listMutex.lock();
+                    string cached = fc->get(task->output, "sha2_files");
+                    listMutex.unlock();
+                    if(cached.empty()) {
+                        // Output is not present in the cache.
+                        doBuild = true;
+                        #ifdef IT_DEBUG
+                        tout << "Hit: cache if" << endl;
+                        print();
+                        #endif
+                    } else {
+                        #ifdef IT_DEBUG
+                        tout << "Hit: cache else" << endl;
+                        print();
+                        #endif
+                        if(cached != file2sha2(task->output)) doBuild=true;
+                        for(StrList::iterator nt=task->input.begin(); nt!=task->input.end(); ++nt) {
+                            string fhex = file2sha2(*nt);
+                            string chex = fc->get(*nt, "sha2_files");
+                            if(fhex!=chex) {
+                                doBuild = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if(doBuild) {
+                    // The parent will very likely want to update.
+                    if(task->parent != NULL) invokeParent = true;
+
+                    // Im totally NOT abusing this mutex....no....never.
+                    listMutex.lock();
+                    CurrentTaskCount++;
+                    taskPrinter(task);
+                    listMutex.unlock();
+                    // ...ever.
+
+                    // Its buildtime.
+                    bool buildSuccess = false;
+                    Run_choice:
+                    if(task->type == SCRIPT) {
+                        Locker* g = new Locker(OSMutex);
+                        os->pushValueById(rules->valueID);
+                        os->getProperty(task->ruleName.c_str());
+                        os->pushString(runScheme.c_str()); // build, clean.
+                        os->getProperty(-2);
+                        os->pushValueById(rules->valueID);
+                        os->getProperty(task->ruleName.c_str());
+                        os->newArray(task->input.size());
+                        for(StrList::iterator st=task->input.begin(); st!=task->input.end(); ++st) {
+                            os->pushString(st->c_str());
+                            os->addProperty(-2);
+                        }
+                        os->pushString(task->output.c_str());
+                        os->pushString(task->targetName.c_str());
+                        os->pushValueById(task->target->valueID);
+                        os->callFT(4,1);
+                        if(os->isArray()) {
+                            // We got a set of commands to run.
+                            // Switch the type, we're gonna go backwards!
+                            task->type = COMMAND;
+                            int alen=os->getLen();
+                            for(int l=0; l<alen; l++) {
+                                os->pushNumber(l);
+                                os->getProperty(-2);
+                                string prop = os->toString().toChar();
+                                os->pop(2);
+                                task->commands.push_back( prop );
+                            }
+                            delete g;
+                            goto Run_choice;
+                        } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
+                            tout << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::" << runScheme << endl;
+                            tout << "Function returned false." << endl;
+                            print();
+                            tasks->stop();
+                        } else {
+                            // We assume a success.
+                            buildSuccess = true;
+                        }
+                        os->pop();
+                        delete g;
+                    } else {
+                        vector<string>::iterator it = task->commands.begin();
+                        for(; it!=task->commands.end(); ++it) {
+                            string cmdstr(*it);
+                            if(cmdstr.empty() || cmdstr.c_str() == NULL) {
+                                // The command string points to invalid memory, it seems...
+                                //break;
+                            }
+                            CommandResult rc = it_cmd(cmdstr, vector<string>());
+                            if(rc.exit_code != 0) {
+                                tout << "FAILED: " << cmdstr << endl;
+                                tout << "Program exited with status: " << rc.exit_code << endl;
+                                tasks->stop();
+                            } else if(rc.p->error()) {
+                                tout << "FAILED: " << cmdstr << endl;
+                                tout << "Reason: " << rc.p->error_text() << endl;
+                                tasks->stop();
+                            } else if(!rc.spawned) {
+                                tout << "FAILED: " << cmdstr << endl;
+                                tout << "Subprocess could not be started." << endl;
+                                tasks->stop();
+                            } else {
+                                // We believe its a success.
+                                buildSuccess = true;
+                            }
+                            if(cli->check("-v") && rc.streams[1].length() > 0) {
+                                string sout;
+                                stringstream ssout(rc.streams[1]);
+                                while(getline(ssout, sout).good()) {
+                                    tout << "| " << sout << endl;
+                                }
+                            }
+                            if(rc.streams[2].length() > 0) {
+                                string serr;
+                                stringstream sserr(rc.streams[2]);
+                                while(getline(sserr, serr).good()) {
+                                    tout << "> " << serr << endl;
+                                }
+                            }
+                            print();
+                        }
+                    }
+                    if(buildSuccess && !cli->check("-w")) {
+                        bool doGoto=false;
+                        task->isBuilt(true);
+                        task->shouldUpdate(false);
+                        string hash = file2sha2(task->output);
+                        fc->set(task->output, hash, "sha2_files");
+                        // Dont forget to save the inputs.
+                        for(StrList::iterator gt=task->input.begin(); gt!=task->input.end(); ++gt) {
+                            fc->set(*gt, file2sha2(*gt), "sha2_files");
+                        }
+                        if(invokeParent && task->parent != NULL) {
+                            task->parent->shouldUpdate(true);
+                            task->parent->isBuilt(false); // i call spoof.
+                            tasks->add(task->parent);
+                            task->unlock();
+                            task = task->parent;
+                            #ifdef IT_DEBUG
+                            tout << "Invoked parent for " << task->output << endl;
+                            print();
+                            #endif
+                            doGoto = true;
+                        }
+                        fc->sync();
+                        if(doGoto) goto Run__build;
+                    }
+                }
+                task->isProcessing(false);
+                //task->unlock();
+            }
+        }
+    }
+}
+
+// Scrapping the old version. I guess I need a rewrite just like I did with
+// __maketasks().
+/*void Run(void* threadData) {
+    // We just wait untill we can aquire a lock.
+    ConfigMutex.lock(); // Should wait here.
+    ConfigMutex.unlock();
+
     stringstream s;
     LinePrinter p(&s);
     TaskQueue* tasks = (TaskQueue*)threadData;
@@ -1037,7 +1361,14 @@ void Run(void* threadData) {
         if(cancel) break;
         if(!tasks->remove(task)) break;
         if(task!=NULL) {
-            bool canExecute=false;
+            // Loop locals
+            bool canExecute=true;
+            bool updateHash=false;
+            bool reallyRun=true;
+            bool doHexCheck=false;
+            map<string,string> updateHashes;
+            string outhex;
+
             if(!cli->check("-w")) {
                 for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
                     if(!file_exists( *it2 )) {
@@ -1049,6 +1380,8 @@ void Run(void* threadData) {
                         //tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
                         tasks->add(task);
                         canExecute=false;
+                        //if(task->child != NULL && task->child->output == *it2)
+                        //    tasks->add(task->child);
                         break;
                     } else {
                         canExecute=true;
@@ -1059,10 +1392,8 @@ void Run(void* threadData) {
                 canExecute=true;
             }
 
+
             if(canExecute) {
-                bool reallyRun=true;
-                bool updateHash=false;
-                map<string,string> updateHashes;
                 for(list<string>::iterator at=task->input.begin(); at!=task->input.end(); ++at) {
                     if(!cli->check("-w")) {
                         listMutex.lock();
@@ -1094,7 +1425,7 @@ void Run(void* threadData) {
                                 ) || (
                                     task->parent != NULL
                                     && updatelog.find(task->parent->output) != updatelog.end()
-                                )
+                                ) || updatelog.find(task->output) != updatelog.end()
                             ) {
                                 reallyRun = true;
                                 updateHash = true;
@@ -1103,10 +1434,10 @@ void Run(void* threadData) {
                             } else if(cached == hex && file_exists(task->output)) {
                                 // The file is up2date
                                 reallyRun = false;
-                                tlog[task->output]=task;
+                                addToMap(tlog, task->output, task);
                             } else {
                                 // It's not and we gotta do soemthing about it!
-                                updatelog[task->output]=task;
+                                addToMap(updatelog, task->output, task);
                                 reallyRun = true;
                                 updateHash=true;
                                 updateHashes[*at]=hex;
@@ -1125,8 +1456,6 @@ void Run(void* threadData) {
                 if(!reallyRun) continue;
 
                 // Do this test.
-                bool doHexCheck=false;
-                string outhex;
                 if(file_exists(task->output) && !cli->check("-w")) {
                     outhex = file2sha2(task->output);
                     doHexCheck=true;
@@ -1194,11 +1523,17 @@ void Run(void* threadData) {
                     vector<string>::iterator it = task->commands.begin();
                     for(; it!=task->commands.end(); ++it) {
                         string cmdstr(*it);
-                        if(cmdstr.empty()) {
+                        if(cmdstr.empty() || cmdstr.c_str() == NULL) {
                             // The command string points to invalid memory, it seems...
                             break;
                         }
-                        CommandResult rc = it_cmd(cmdstr, vector<string>());
+                        CommandResult rc;
+                        try{
+                            rc = it_cmd(cmdstr, vector<string>());
+                        } catch(...) {
+                            cout << "seg 3 -- EXCEPTING IN: " << tthread::this_thread::get_id() << endl;
+                            //std::terminate();
+                        }
                         if(rc.exit_code != 0) {
                             s << "FAILED: " << cmdstr << endl;
                             s << "Program exited with status: " << rc.exit_code << endl;
@@ -1241,16 +1576,21 @@ void Run(void* threadData) {
                     fc->sync();
                     if(task->parent != NULL) {
                         if(task->parent->parent != NULL) {
-                            file_delete(task->parent->parent->output);
+                            //file_delete(task->parent->parent->output);
                             tasks->add(task->parent->parent);
                             listMutex.lock();
                             fc->remove(task->parent->parent->output, "sha2_files");
+                            //std::map<string,Task*>::iterator ent = updatelog.find(task->parent->parent->output);
+                            //if(ent != updatelog.end()) updatelog.erase(ent);
                             listMutex.unlock();
                         }
                         listMutex.lock();
+                        //std::map<string,Task*>::iterator ent = updatelog.find(task->parent->output);
+                        //if(ent != updatelog.end()) updatelog.erase(ent);
                         fc->remove(task->parent->output, "sha2_files");
+                        addToMap(updatelog, task->parent->output, task->parent);
                         listMutex.unlock();
-                        file_delete(task->parent->output);
+                        //file_delete(task->parent->output);
                         tasks->add(task->parent);
                     }
                 }
@@ -1260,7 +1600,7 @@ void Run(void* threadData) {
             }
         }
     }
-}
+}*/
 
 /**
     @brief Handle the exception within ObjectScript and exit nicely.
@@ -1443,11 +1783,6 @@ int main(int argc, const char** argv) {
         return itCleanup();
     }
 
-#ifdef IT_DEBUG
-    cerr << "DEBUG: Before InitIceTeaExt()" << endl;
-    cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
-#endif
-
     // Initialize ObjectScript with our stuff.
     initIceTeaExt(os, cli);
     initializeDetector(os, fc, cli);
@@ -1547,18 +1882,8 @@ int main(int argc, const char** argv) {
         cli->usage();
         return itCleanup();
     } else {
-        #ifdef IT_DEBUG
-            cerr << "Before Preprocessor..." << endl;
-            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
-        #endif
-
         // Run configure and strech inputs
         if(!Preprocessor()) return itCleanup();
-
-        #ifdef IT_DEBUG
-            cerr << "After Preprocessor..." << endl;
-            cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
-        #endif
 
         // We do this after we configure, since now all the filenames are streched.
         if(cli->check("--print-targets")) {
@@ -1593,9 +1918,6 @@ int main(int argc, const char** argv) {
         tmp << cli->value("-j");
         tmp >> thrs;
         // Now that we have the thread amount value, lets make it happen.
-        #ifdef IT_DEBUG
-            cerr << "Initializing with " << thrs << " threads." << endl;
-        #endif
         tasks = new TaskQueue(thrs, Run, os);
 
         // Now, we've got a waiting task runner there, we ned to feed it one by one.
@@ -1608,7 +1930,9 @@ int main(int argc, const char** argv) {
         } else {
             // Run untill the list is empty... and then stop all threads.
             tasks->drain();
+            tasks->stop();
         }
+
         // Make sure all threads come together first.
         tasks->joinAll();
 
@@ -1616,15 +1940,7 @@ int main(int argc, const char** argv) {
         if(runTasks && CurrentTaskCount == 0) {
             cout << endl << "No task had to be run." << endl;
         }
-
-        // Its now save to delete the pool!
-        return itCleanup();
     }
-
-    #ifdef IT_DEBUG
-        cerr << "After everything..." << endl;
-        cerr << "ObjectScript: ref count -> " << os->ref_count << endl;
-    #endif
 
     return itCleanup();
 }
