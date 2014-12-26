@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		327284FD1A4D79DE0079997E /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284CA1A4D79DE0079997E /* main.cpp */; };
+		327284FE1A4D79DE0079997E /* os-exec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284CC1A4D79DE0079997E /* os-exec.cpp */; };
+		327284FF1A4D79DE0079997E /* subprocesses.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284CE1A4D79DE0079997E /* subprocesses.cpp */; };
+		327285001A4D79DE0079997E /* os-detector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284CF1A4D79DE0079997E /* os-detector.cpp */; };
+		327285011A4D79DE0079997E /* os-std.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284D11A4D79DE0079997E /* os-std.cpp */; };
+		327285021A4D79DE0079997E /* os-sys.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284D41A4D79DE0079997E /* os-sys.cpp */; };
+		327285031A4D79DE0079997E /* os-icetea.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284D71A4D79DE0079997E /* os-icetea.cpp */; };
+		327285041A4D79DE0079997E /* os-pfs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284D81A4D79DE0079997E /* os-pfs.cpp */; };
+		327285051A4D79DE0079997E /* util.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284DB1A4D79DE0079997E /* util.cpp */; };
+		327285061A4D79DE0079997E /* os-configurable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284DF1A4D79DE0079997E /* os-configurable.cpp */; };
+		327285071A4D79DE0079997E /* stlplus_version.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284E31A4D79DE0079997E /* stlplus_version.cpp */; };
+		327285081A4D79DE0079997E /* dprintf.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284E41A4D79DE0079997E /* dprintf.cpp */; };
+		327285091A4D79DE0079997E /* file_system.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284E61A4D79DE0079997E /* file_system.cpp */; };
+		3272850A1A4D79DE0079997E /* portability_fixes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284E81A4D79DE0079997E /* portability_fixes.cpp */; };
+		3272850B1A4D79DE0079997E /* wildcard.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284EC1A4D79DE0079997E /* wildcard.cpp */; };
+		3272850C1A4D79DE0079997E /* objectscript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284EF1A4D79DE0079997E /* objectscript.cpp */; };
+		3272850D1A4D79DE0079997E /* os-heap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284F41A4D79DE0079997E /* os-heap.cpp */; };
+		3272850E1A4D79DE0079997E /* os-value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284F71A4D79DE0079997E /* os-value.cpp */; };
+		3272850F1A4D79DE0079997E /* tinythread.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 327284FC1A4D79DE0079997E /* tinythread.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		3238F4DA1A4D79970036168A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		3238F4DC1A4D79970036168A /* IceTea */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = IceTea; sourceTree = BUILT_PRODUCTS_DIR; };
+		327284C91A4D79DE0079997E /* threading.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = threading.h; path = ../src/threading.h; sourceTree = "<group>"; };
+		327284CA1A4D79DE0079997E /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../src/main.cpp; sourceTree = "<group>"; };
+		327284CB1A4D79DE0079997E /* lineprinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = lineprinter.h; path = ../src/lineprinter.h; sourceTree = "<group>"; };
+		327284CC1A4D79DE0079997E /* os-exec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-exec.cpp"; path = "../src/os-exec.cpp"; sourceTree = "<group>"; };
+		327284CD1A4D79DE0079997E /* os-exec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-exec.h"; path = "../src/os-exec.h"; sourceTree = "<group>"; };
+		327284CE1A4D79DE0079997E /* subprocesses.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = subprocesses.cpp; path = ../src/subprocesses.cpp; sourceTree = "<group>"; };
+		327284CF1A4D79DE0079997E /* os-detector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-detector.cpp"; path = "../src/os-detector.cpp"; sourceTree = "<group>"; };
+		327284D01A4D79DE0079997E /* filecache.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = filecache.hpp; path = ../src/filecache.hpp; sourceTree = "<group>"; };
+		327284D11A4D79DE0079997E /* os-std.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-std.cpp"; path = "../src/os-std.cpp"; sourceTree = "<group>"; };
+		327284D21A4D79DE0079997E /* stacktrace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = stacktrace.h; path = ../src/stacktrace.h; sourceTree = "<group>"; };
+		327284D31A4D79DE0079997E /* getMemorySize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = getMemorySize.h; path = ../src/getMemorySize.h; sourceTree = "<group>"; };
+		327284D41A4D79DE0079997E /* os-sys.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-sys.cpp"; path = "../src/os-sys.cpp"; sourceTree = "<group>"; };
+		327284D51A4D79DE0079997E /* cli.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cli.h; path = ../src/cli.h; sourceTree = "<group>"; };
+		327284D61A4D79DE0079997E /* tinythread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tinythread.h; path = ../src/tinythread.h; sourceTree = "<group>"; };
+		327284D71A4D79DE0079997E /* os-icetea.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-icetea.cpp"; path = "../src/os-icetea.cpp"; sourceTree = "<group>"; };
+		327284D81A4D79DE0079997E /* os-pfs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-pfs.cpp"; path = "../src/os-pfs.cpp"; sourceTree = "<group>"; };
+		327284D91A4D79DE0079997E /* os-std.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-std.h"; path = "../src/os-std.h"; sourceTree = "<group>"; };
+		327284DA1A4D79DE0079997E /* os-pfs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-pfs.h"; path = "../src/os-pfs.h"; sourceTree = "<group>"; };
+		327284DB1A4D79DE0079997E /* util.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = util.cpp; path = ../src/util.cpp; sourceTree = "<group>"; };
+		327284DC1A4D79DE0079997E /* util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = util.h; path = ../src/util.h; sourceTree = "<group>"; };
+		327284DD1A4D79DE0079997E /* os-detector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-detector.h"; path = "../src/os-detector.h"; sourceTree = "<group>"; };
+		327284DE1A4D79DE0079997E /* minijson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = minijson.h; path = ../src/minijson.h; sourceTree = "<group>"; };
+		327284DF1A4D79DE0079997E /* os-configurable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-configurable.cpp"; path = "../src/os-configurable.cpp"; sourceTree = "<group>"; };
+		327284E01A4D79DE0079997E /* os-stacker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-stacker.h"; path = "../src/os-stacker.h"; sourceTree = "<group>"; };
+		327284E11A4D79DE0079997E /* os-configurable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-configurable.h"; path = "../src/os-configurable.h"; sourceTree = "<group>"; };
+		327284E21A4D79DE0079997E /* os-sys.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-sys.h"; path = "../src/os-sys.h"; sourceTree = "<group>"; };
+		327284E31A4D79DE0079997E /* stlplus_version.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = stlplus_version.cpp; path = ../src/stlplus_version.cpp; sourceTree = "<group>"; };
+		327284E41A4D79DE0079997E /* dprintf.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = dprintf.cpp; path = ../src/dprintf.cpp; sourceTree = "<group>"; };
+		327284E51A4D79DE0079997E /* dprintf.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = dprintf.hpp; path = ../src/dprintf.hpp; sourceTree = "<group>"; };
+		327284E61A4D79DE0079997E /* file_system.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file_system.cpp; path = ../src/file_system.cpp; sourceTree = "<group>"; };
+		327284E71A4D79DE0079997E /* file_system.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = file_system.hpp; path = ../src/file_system.hpp; sourceTree = "<group>"; };
+		327284E81A4D79DE0079997E /* portability_fixes.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = portability_fixes.cpp; path = ../src/portability_fixes.cpp; sourceTree = "<group>"; };
+		327284E91A4D79DE0079997E /* portability_fixes.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = portability_fixes.hpp; path = ../src/portability_fixes.hpp; sourceTree = "<group>"; };
+		327284EA1A4D79DE0079997E /* stlplus_version.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = stlplus_version.hpp; path = ../src/stlplus_version.hpp; sourceTree = "<group>"; };
+		327284EB1A4D79DE0079997E /* subprocesses.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = subprocesses.hpp; path = ../src/subprocesses.hpp; sourceTree = "<group>"; };
+		327284EC1A4D79DE0079997E /* wildcard.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = wildcard.cpp; path = ../src/wildcard.cpp; sourceTree = "<group>"; };
+		327284ED1A4D79DE0079997E /* wildcard.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = wildcard.hpp; path = ../src/wildcard.hpp; sourceTree = "<group>"; };
+		327284EE1A4D79DE0079997E /* objectscript.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = objectscript.h; path = ../src/objectscript.h; sourceTree = "<group>"; };
+		327284EF1A4D79DE0079997E /* objectscript.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = objectscript.cpp; path = ../src/objectscript.cpp; sourceTree = "<group>"; };
+		327284F01A4D79DE0079997E /* os-binder-arg-cc-functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-binder-arg-cc-functions.h"; path = "../src/os-binder-arg-cc-functions.h"; sourceTree = "<group>"; };
+		327284F11A4D79DE0079997E /* os-binder-cc-functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-binder-cc-functions.h"; path = "../src/os-binder-cc-functions.h"; sourceTree = "<group>"; };
+		327284F21A4D79DE0079997E /* os-binder-function.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-binder-function.h"; path = "../src/os-binder-function.h"; sourceTree = "<group>"; };
+		327284F31A4D79DE0079997E /* os-binder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-binder.h"; path = "../src/os-binder.h"; sourceTree = "<group>"; };
+		327284F41A4D79DE0079997E /* os-heap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-heap.cpp"; path = "../src/os-heap.cpp"; sourceTree = "<group>"; };
+		327284F51A4D79DE0079997E /* os-heap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-heap.h"; path = "../src/os-heap.h"; sourceTree = "<group>"; };
+		327284F61A4D79DE0079997E /* os-icetea.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-icetea.h"; path = "../src/os-icetea.h"; sourceTree = "<group>"; };
+		327284F71A4D79DE0079997E /* os-value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = "os-value.cpp"; path = "../src/os-value.cpp"; sourceTree = "<group>"; };
+		327284F81A4D79DE0079997E /* os-value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "os-value.h"; path = "../src/os-value.h"; sourceTree = "<group>"; };
+		327284F91A4D79DE0079997E /* picosha2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = picosha2.h; path = ../src/picosha2.h; sourceTree = "<group>"; };
+		327284FA1A4D79DE0079997E /* fast_mutex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fast_mutex.h; path = ../src/fast_mutex.h; sourceTree = "<group>"; };
+		327284FB1A4D79DE0079997E /* predef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = predef.h; path = ../src/predef.h; sourceTree = "<group>"; };
+		327284FC1A4D79DE0079997E /* tinythread.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = tinythread.cpp; path = ../src/tinythread.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3238F4D91A4D79970036168A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3238F4D31A4D79970036168A = {
+			isa = PBXGroup;
+			children = (
+				327284C91A4D79DE0079997E /* threading.h */,
+				327284CA1A4D79DE0079997E /* main.cpp */,
+				327284CB1A4D79DE0079997E /* lineprinter.h */,
+				327284CC1A4D79DE0079997E /* os-exec.cpp */,
+				327284CD1A4D79DE0079997E /* os-exec.h */,
+				327284CE1A4D79DE0079997E /* subprocesses.cpp */,
+				327284CF1A4D79DE0079997E /* os-detector.cpp */,
+				327284D01A4D79DE0079997E /* filecache.hpp */,
+				327284D11A4D79DE0079997E /* os-std.cpp */,
+				327284D21A4D79DE0079997E /* stacktrace.h */,
+				327284D31A4D79DE0079997E /* getMemorySize.h */,
+				327284D41A4D79DE0079997E /* os-sys.cpp */,
+				327284D51A4D79DE0079997E /* cli.h */,
+				327284D61A4D79DE0079997E /* tinythread.h */,
+				327284D71A4D79DE0079997E /* os-icetea.cpp */,
+				327284D81A4D79DE0079997E /* os-pfs.cpp */,
+				327284D91A4D79DE0079997E /* os-std.h */,
+				327284DA1A4D79DE0079997E /* os-pfs.h */,
+				327284DB1A4D79DE0079997E /* util.cpp */,
+				327284DC1A4D79DE0079997E /* util.h */,
+				327284DD1A4D79DE0079997E /* os-detector.h */,
+				327284DE1A4D79DE0079997E /* minijson.h */,
+				327284DF1A4D79DE0079997E /* os-configurable.cpp */,
+				327284E01A4D79DE0079997E /* os-stacker.h */,
+				327284E11A4D79DE0079997E /* os-configurable.h */,
+				327284E21A4D79DE0079997E /* os-sys.h */,
+				327284E31A4D79DE0079997E /* stlplus_version.cpp */,
+				327284E41A4D79DE0079997E /* dprintf.cpp */,
+				327284E51A4D79DE0079997E /* dprintf.hpp */,
+				327284E61A4D79DE0079997E /* file_system.cpp */,
+				327284E71A4D79DE0079997E /* file_system.hpp */,
+				327284E81A4D79DE0079997E /* portability_fixes.cpp */,
+				327284E91A4D79DE0079997E /* portability_fixes.hpp */,
+				327284EA1A4D79DE0079997E /* stlplus_version.hpp */,
+				327284EB1A4D79DE0079997E /* subprocesses.hpp */,
+				327284EC1A4D79DE0079997E /* wildcard.cpp */,
+				327284ED1A4D79DE0079997E /* wildcard.hpp */,
+				327284EE1A4D79DE0079997E /* objectscript.h */,
+				327284EF1A4D79DE0079997E /* objectscript.cpp */,
+				327284F01A4D79DE0079997E /* os-binder-arg-cc-functions.h */,
+				327284F11A4D79DE0079997E /* os-binder-cc-functions.h */,
+				327284F21A4D79DE0079997E /* os-binder-function.h */,
+				327284F31A4D79DE0079997E /* os-binder.h */,
+				327284F41A4D79DE0079997E /* os-heap.cpp */,
+				327284F51A4D79DE0079997E /* os-heap.h */,
+				327284F61A4D79DE0079997E /* os-icetea.h */,
+				327284F71A4D79DE0079997E /* os-value.cpp */,
+				327284F81A4D79DE0079997E /* os-value.h */,
+				327284F91A4D79DE0079997E /* picosha2.h */,
+				327284FA1A4D79DE0079997E /* fast_mutex.h */,
+				327284FB1A4D79DE0079997E /* predef.h */,
+				327284FC1A4D79DE0079997E /* tinythread.cpp */,
+				3238F4DD1A4D79970036168A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3238F4DD1A4D79970036168A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3238F4DC1A4D79970036168A /* IceTea */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3238F4DB1A4D79970036168A /* IceTea */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3238F4E31A4D79970036168A /* Build configuration list for PBXNativeTarget "IceTea" */;
+			buildPhases = (
+				3238F4D81A4D79970036168A /* Sources */,
+				3238F4D91A4D79970036168A /* Frameworks */,
+				3238F4DA1A4D79970036168A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = IceTea;
+			productName = IceTea;
+			productReference = 3238F4DC1A4D79970036168A /* IceTea */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3238F4D41A4D79970036168A /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0610;
+				ORGANIZATIONNAME = "Ingwie Phoenix";
+				TargetAttributes = {
+					3238F4DB1A4D79970036168A = {
+						CreatedOnToolsVersion = 6.1;
+					};
+				};
+			};
+			buildConfigurationList = 3238F4D71A4D79970036168A /* Build configuration list for PBXProject "IceTea" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 3238F4D31A4D79970036168A;
+			productRefGroup = 3238F4DD1A4D79970036168A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3238F4DB1A4D79970036168A /* IceTea */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3238F4D81A4D79970036168A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				327285011A4D79DE0079997E /* os-std.cpp in Sources */,
+				327285031A4D79DE0079997E /* os-icetea.cpp in Sources */,
+				327285051A4D79DE0079997E /* util.cpp in Sources */,
+				3272850F1A4D79DE0079997E /* tinythread.cpp in Sources */,
+				327285081A4D79DE0079997E /* dprintf.cpp in Sources */,
+				3272850D1A4D79DE0079997E /* os-heap.cpp in Sources */,
+				327285091A4D79DE0079997E /* file_system.cpp in Sources */,
+				327284FE1A4D79DE0079997E /* os-exec.cpp in Sources */,
+				327285041A4D79DE0079997E /* os-pfs.cpp in Sources */,
+				3272850A1A4D79DE0079997E /* portability_fixes.cpp in Sources */,
+				327285001A4D79DE0079997E /* os-detector.cpp in Sources */,
+				327285061A4D79DE0079997E /* os-configurable.cpp in Sources */,
+				327284FD1A4D79DE0079997E /* main.cpp in Sources */,
+				3272850B1A4D79DE0079997E /* wildcard.cpp in Sources */,
+				3272850E1A4D79DE0079997E /* os-value.cpp in Sources */,
+				327284FF1A4D79DE0079997E /* subprocesses.cpp in Sources */,
+				3272850C1A4D79DE0079997E /* objectscript.cpp in Sources */,
+				327285021A4D79DE0079997E /* os-sys.cpp in Sources */,
+				327285071A4D79DE0079997E /* stlplus_version.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3238F4E11A4D79970036168A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		3238F4E21A4D79970036168A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		3238F4E41A4D79970036168A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		3238F4E51A4D79970036168A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3238F4D71A4D79970036168A /* Build configuration list for PBXProject "IceTea" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3238F4E11A4D79970036168A /* Debug */,
+				3238F4E21A4D79970036168A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3238F4E31A4D79970036168A /* Build configuration list for PBXNativeTarget "IceTea" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3238F4E41A4D79970036168A /* Debug */,
+				3238F4E51A4D79970036168A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3238F4D41A4D79970036168A /* Project object */;
+}

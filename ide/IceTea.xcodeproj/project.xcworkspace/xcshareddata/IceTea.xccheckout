@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>E73D20A3-665A-4EBE-B389-6172C0F0C9F9</string>
+	<key>IDESourceControlProjectName</key>
+	<string>IceTea</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>F762A7D9C6BBC9B66CE16BED222567A9518B7EB4</key>
+		<string>https://github.com/IngwiePhoenix/IceTea.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>ide/IceTea.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>F762A7D9C6BBC9B66CE16BED222567A9518B7EB4</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/IngwiePhoenix/IceTea.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>F762A7D9C6BBC9B66CE16BED222567A9518B7EB4</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>F762A7D9C6BBC9B66CE16BED222567A9518B7EB4</string>
+			<key>IDESourceControlWCCName</key>
+			<string>IceTea</string>
+		</dict>
+	</array>
+</dict>
+</plist>
