@@ -854,6 +854,13 @@ bool Preprocessor() {
                     int exoff = os->getAbsoluteOffs(-1);
                     if(os->isObject()) {
                         os->pushValueById(val->valueID);
+                        //os->pushString("settings");
+                        os->getProperty(-2);
+                        /*if(!os->isObject()) {
+                            os->newObject();
+                            os->pushString("settings");
+                            os->setProperty(-3);
+                        }*/
                         os->getProperty(-1, "__add"); // Thanks to os-std
                         os->pushStackValue(exoff);
                         os->callTF(1,0);
@@ -912,9 +919,9 @@ bool Transformer() {
             return false;
         } else {
             if(cli->check("-w"))
-                cout << "Cleaning: ";
+                cout << "* Cleaning: ";
             else
-                cout << "Running: ";
+                cout << "* Running: ";
             cout << *it << endl;
             os->pushValueById(actions->valueID);
             os->pushString(it->c_str());
@@ -1325,7 +1332,7 @@ void Run(void* threadData) {
                         if(invokeParent && task->parent != NULL) {
                             task->parent->shouldUpdate(true);
                             task->parent->isBuilt(false); // i call spoof.
-                            tasks->add(task->parent);
+                            //tasks->add(task->parent);
                             task->unlock();
                             task = task->parent;
                             #ifdef IT_DEBUG
@@ -1344,264 +1351,6 @@ void Run(void* threadData) {
         }
     }
 }
-
-// Scrapping the old version. I guess I need a rewrite just like I did with
-// __maketasks().
-/*void Run(void* threadData) {
-    // We just wait untill we can aquire a lock.
-    ConfigMutex.lock(); // Should wait here.
-    ConfigMutex.unlock();
-
-    stringstream s;
-    LinePrinter p(&s);
-    TaskQueue* tasks = (TaskQueue*)threadData;
-    Task* task;
-    bool cancel=false;
-
-    while(!tasks->hasToStop()) {
-        if(cancel) break;
-        if(!tasks->remove(task)) break;
-        if(task!=NULL) {
-            // Loop locals
-            bool canExecute=true;
-            bool updateHash=false;
-            bool reallyRun=true;
-            bool doHexCheck=false;
-            map<string,string> updateHashes;
-            string outhex;
-
-            if(!cli->check("-w")) {
-                for(list<string>::iterator it2=task->input.begin(); it2!=task->input.end(); ++it2) {
-                    if(!file_exists( *it2 )) {
-                        // Put the task back in, we cant run it now.
-                        if(cli->check("-v")) {
-                            s << "IceTea: " << *it2 << " does not exist!" << endl;
-                            p();
-                        }
-                        //tthread::this_thread::sleep_for(tthread::chrono::seconds(1));
-                        tasks->add(task);
-                        canExecute=false;
-                        //if(task->child != NULL && task->child->output == *it2)
-                        //    tasks->add(task->child);
-                        break;
-                    } else {
-                        canExecute=true;
-                    }
-                }
-            } else {
-                // We're clearing everything away.
-                canExecute=true;
-            }
-
-
-            if(canExecute) {
-                for(list<string>::iterator at=task->input.begin(); at!=task->input.end(); ++at) {
-                    if(!cli->check("-w")) {
-                        listMutex.lock();
-                        string cached = fc->get(*at, "sha2_files");
-                        listMutex.unlock();
-                        string hex = file2sha2(*at);
-                        if(cached.empty()) {
-                            // The file is not in the cache, add it.
-                            if(hex.empty()) {
-                                s << "Error while building SHA2 sum of '" << *at << "'" << endl;
-                                p();
-                                tasks->stop();
-                                reallyRun = false;
-                                break;
-                            } else {
-                                listMutex.lock();
-                                fc->set(*at, hex, "sha2_files");
-                                listMutex.unlock();
-                            }
-                        } else {
-                            listMutex.lock();
-                            if(
-                                (
-                                    task->child != NULL
-                                    && fc->get(task->child->output, "sha2_files") != file2sha2(task->child->output)
-                                ) || (
-                                    task->child != NULL
-                                    && updatelog.find(task->child->output) != updatelog.end()
-                                ) || (
-                                    task->parent != NULL
-                                    && updatelog.find(task->parent->output) != updatelog.end()
-                                ) || updatelog.find(task->output) != updatelog.end()
-                            ) {
-                                reallyRun = true;
-                                updateHash = true;
-                                listMutex.unlock();
-                                break;
-                            } else if(cached == hex && file_exists(task->output)) {
-                                // The file is up2date
-                                reallyRun = false;
-                                addToMap(tlog, task->output, task);
-                            } else {
-                                // It's not and we gotta do soemthing about it!
-                                addToMap(updatelog, task->output, task);
-                                reallyRun = true;
-                                updateHash=true;
-                                updateHashes[*at]=hex;
-                            }
-                            listMutex.unlock();
-                        }
-                        fc->sync();
-                    } else {
-                        // We skip the caching stuff in whipe mode. So we only erase the cache.
-                        fc->remove(*at, "sha2_files");
-                        reallyRun=true;
-                    }
-                }
-
-                // Sanity check
-                if(!reallyRun) continue;
-
-                // Do this test.
-                if(file_exists(task->output) && !cli->check("-w")) {
-                    outhex = file2sha2(task->output);
-                    doHexCheck=true;
-                }
-
-                CurrentTaskCount++;
-                s << "[#" << CurrentTaskCount;
-                if(cli->check("-v")) {
-                    s << " | Remaining: " << tasks->size();
-                }
-                s << "]";
-                s << " " << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
-                if(task->input.size() == 1 && !task->isMaster) {
-                    s << task->input.front();
-                } else {
-                    s << task->output;
-                }
-                s << endl;
-                p();
-
-                Run_choice:
-                if(task->type == SCRIPT) {
-                    Locker* g = new Locker(OSMutex);
-                    //Value::Object* trule = (Value::Object*)(*rules)[task->ruleName];
-                    os->pushValueById(rules->valueID);
-                    os->getProperty(task->ruleName.c_str());
-                    os->pushString(runScheme.c_str()); // build, clean.
-                    os->getProperty(-2);
-                    //os->pushValueById(trule->valueID);
-                    os->pushValueById(rules->valueID);
-                    os->getProperty(task->ruleName.c_str());
-                    os->newArray(task->input.size());
-                    for(list<string>::iterator it=task->input.begin(); it!=task->input.end(); ++it) {
-                        os->pushString(it->c_str());
-                        os->addProperty(-2);
-                    }
-                    os->pushString(task->output.c_str());
-                    os->pushString(task->targetName.c_str());
-                    os->pushValueById(task->target->valueID);
-                    os->callFT(4,1);
-                    if(os->isArray()) {
-                        // We got a set of commands to run.
-                        // Switch the type, we're gonna go backwards!
-                        task->type = COMMAND;
-                        int alen=os->getLen();
-                        for(int l=0; l<alen; l++) {
-                            os->pushNumber(l);
-                            os->getProperty(-2);
-                            string prop = os->toString().toChar();
-                            os->pop(2);
-                            task->commands.push_back( prop );
-                        }
-                        delete g;
-                        goto Run_choice;
-                    } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
-                        s << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::" << runScheme << endl;
-                        s << "Function returned false." << endl;
-                        p();
-                        tasks->stop();
-                        cancel=true;
-                    }
-                    os->pop();
-                    delete g;
-                } else {
-                    vector<string>::iterator it = task->commands.begin();
-                    for(; it!=task->commands.end(); ++it) {
-                        string cmdstr(*it);
-                        if(cmdstr.empty() || cmdstr.c_str() == NULL) {
-                            // The command string points to invalid memory, it seems...
-                            break;
-                        }
-                        CommandResult rc;
-                        try{
-                            rc = it_cmd(cmdstr, vector<string>());
-                        } catch(...) {
-                            cout << "seg 3 -- EXCEPTING IN: " << tthread::this_thread::get_id() << endl;
-                            //std::terminate();
-                        }
-                        if(rc.exit_code != 0) {
-                            s << "FAILED: " << cmdstr << endl;
-                            s << "Program exited with status: " << rc.exit_code << endl;
-                            tasks->stop();
-                            cancel=true;
-                        } else if(rc.p->error()) {
-                            s << "FAILED: " << cmdstr << endl;
-                            s << "Reason: " << rc.p->error_text() << endl;
-                            tasks->stop();
-                            cancel=true;
-                        } else if(!rc.spawned) {
-                            s << "FAILED: " << cmdstr << endl;
-                            s << "Subprocess could not be started." << endl;
-                            tasks->stop();
-                            cancel=true;
-                        }
-                        if(cli->check("-v") && rc.streams[1].length() > 0) {
-                            string sout;
-                            stringstream ssout(rc.streams[1]);
-                            while(getline(ssout, sout).good()) {
-                                s << "| " << sout << endl;
-                            }
-                        }
-                        if(rc.streams[2].length() > 0) {
-                            string serr;
-                            stringstream sserr(rc.streams[2]);
-                            while(getline(sserr, serr).good()) {
-                                s << "> " << serr << endl;
-                            }
-                        }
-                        p();
-                    }
-                }
-                if(updateHash) {
-                    listMutex.lock();
-                    for(map<string,string>::iterator mt=updateHashes.begin(); mt!=updateHashes.end(); ++mt) {
-                        fc->set(mt->first, mt->second, "sha2_files");
-                    }
-                    listMutex.unlock();
-                    fc->sync();
-                    if(task->parent != NULL) {
-                        if(task->parent->parent != NULL) {
-                            //file_delete(task->parent->parent->output);
-                            tasks->add(task->parent->parent);
-                            listMutex.lock();
-                            fc->remove(task->parent->parent->output, "sha2_files");
-                            //std::map<string,Task*>::iterator ent = updatelog.find(task->parent->parent->output);
-                            //if(ent != updatelog.end()) updatelog.erase(ent);
-                            listMutex.unlock();
-                        }
-                        listMutex.lock();
-                        //std::map<string,Task*>::iterator ent = updatelog.find(task->parent->output);
-                        //if(ent != updatelog.end()) updatelog.erase(ent);
-                        fc->remove(task->parent->output, "sha2_files");
-                        addToMap(updatelog, task->parent->output, task->parent);
-                        listMutex.unlock();
-                        //file_delete(task->parent->output);
-                        tasks->add(task->parent);
-                    }
-                }
-                if(doHexCheck && outhex == file2sha2(task->output)) {
-                    s << task->output << " was left UNCHANGED." << endl;
-                }
-            }
-        }
-    }
-}*/
 
 /**
     @brief Handle the exception within ObjectScript and exit nicely.
@@ -1721,7 +1470,7 @@ int main(int argc, const char** argv) {
 
     // Generate a pretty copyright.
     stringstream cpr;
-    cpr << "IceTea 0.1.2 by Ingwie Phoenix" << endl
+    cpr << "IceTea 0.1.3 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
         << "stlplus " << stlplus::version() << endl;
@@ -1772,6 +1521,11 @@ int main(int argc, const char** argv) {
     string bootstrapit = cli->value("-b");
     string buildit = cli->value("-f");
     outputDir = cli->value("-d");
+
+    const char* env_boot = getenv("ICETEA_BOOTSTRAP");
+    if(env_boot != NULL) {
+        bootstrapit = env_boot;
+    }
 
     // Output folder
     folder_create(outputDir);

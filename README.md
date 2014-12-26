@@ -13,16 +13,16 @@ I think you can relate to at least one of those issues. And if you can't, then t
 ## Features
 Here is a short rundown of IceTea's features
 
-- *Turn-complete scripting language.* Uses common and extended syntax, allowing vor a very nice amoutn of syntactic shugar while maintaining a consistency across every single line of code.
-- *Configuring.* IceTea can configure your project (aka. your good old friend `config.h`). It can also export this configuration as JSON, so you can use it for more than just IceTea.
-- *Building.* IceTea is a build tool by itself. It works via a Rule-Task basis, similar to Ninja.
-- *Integration.* You can integrate IceTea as a stand-alone script interpreter into your existing build system, adding either configuration or build abilities to it - or ismply execute neat scripts without worrying for an underlying shell.
-- *Customizable.* You can use `bootstrap.it` to override the default rules and tell IceTea how you want things to be handled.
-- *Dynamic, yet static.* You can use statically listed or danymically generated input lists, allowing you to choose your prefered method.
-- *Dependencies.* You can have many targets that can depend on one another.
-- *Extensible.* By creating a local `.IceTea` folder and dropping files with the `.it` extension into it, they will become automatically loaded when IceTea starts, allowing any 3rd-party integration to be included. Because these fiels are sorted, you can use numbers to decide in which orders these extensions are loaded!
-- *Projects.* Keep your build organized and your files sorted properly. Projects allow you to sort targets into groups and effectively make your build cleaner.
-- *Multi-threaded.* IceTea runs on multiple cores to provide as much speed as it possibly can.
+- __Turn-complete scripting language.__ Uses common and extended syntax, allowing vor a very nice amoutn of syntactic shugar while maintaining a consistency across every single line of code.
+- __Configuring.__ IceTea can configure your project (aka. your good old friend `config.h`). It can also export this configuration as JSON, so you can use it for more than just IceTea.
+- __Building.__ IceTea is a build tool by itself. It works via a Rule-Task basis, similar to Ninja.
+- __Integration.__ You can integrate IceTea as a stand-alone script interpreter into your existing build system, adding either configuration or build abilities to it - or ismply execute neat scripts without worrying for an underlying shell.
+- __Customizable.__ You can use `bootstrap.it` to override the default rules and tell IceTea how you want things to be handled.
+- __Dynamic, yet static.__ You can use statically listed or danymically generated input lists, allowing you to choose your prefered method.
+- __Dependencies.__ You can have many targets that can depend on one another.
+- __Extensible.__ By creating a local `.IceTea` folder and dropping files with the `.it` extension into it, they will become automatically loaded when IceTea starts, allowing any 3rd-party integration to be included. Because these fiels are sorted, you can use numbers to decide in which orders these extensions are loaded!
+- __Projects.__ Keep your build organized and your files sorted properly. Projects allow you to sort targets into groups and effectively make your build cleaner.
+- __Multi-threaded.__ IceTea runs on multiple cores to provide as much speed as it possibly can.
 
 ## It's as easy as opening a bottle of ice tea!
 ```javascript
@@ -49,8 +49,9 @@ target("myLib", "shlib") {
         detect.stdc_headers(); // Checks for all standart C headers.
         detect.set("MY_NAME", "Value"); // @MY_NAME@ -> Value
         detect.lib("z");
-        // Check and add the library to @settings.native.libraries
-        detect.add_lib("curl");
+        if(detect.lib("curl")) {
+            @settings.LINK.libraries[]="curl";
+        }
         detect.func("popen"); // Check if we have popen() by default.
 
         // *.in -> *. Basically, config.h.in becomes config.h
@@ -108,7 +109,7 @@ You dont even need to specify a wildcard for your paths. Imagine you have some t
 
 ```javascript
 for(var _,testfile in pfs.glob("test/", "*.cpp")) {
-    var testname = fs.stripExtension( fs.basename(testfile) );
+    var testname = pfs.basename( testfile );
     target(testname, "exe") {
         input: [testfile],
         // Get a dependency and add it's exports to this target.
@@ -184,21 +185,21 @@ g++ -Wno-switch src/*.cpp -o icetea -lpthread
 and you are good to go.
 
 
-## Tiny benchmark
+## Tiny benchmark from OS X
 I did this rather randomly, but I really like the result of it!
 
 ```
 # Compiling IceTea itself using standart command line
 $ time g++ src/*.cpp -o icetea -Wno-switch
-real    0m5.395s
-user    0m4.998s
-sys     0m0.379s
+real    0m9.872s
+user    0m9.030s
+sys     0m0.663s
 
 # …and then using itself.
 $ time ./icetea
-real    0m1.779s
-user    0m8.201s
-sys     0m0.872s
+real    0m3.780s
+user    0m16.721s
+sys     0m1.864s
 ```
 
 ## API
@@ -236,10 +237,6 @@ This object is being used to check for various things on the host.
 | .libfunc(lib, name)      | Check if a function is in a library.            |
 | .headerfunc(tp, hdr, nm) | Check if a function is in a specific header.    |
 | .checkfunc(t, l, h, n)   | Check for function in header AND library.       |
-| .add_lib(name)           | Call `.lib()` and if found, add to target.      |
-| .add_libfunc(...)        | Same as above.                                  |
-| .add_headerfunc(...)     | Again, the same.                                |
-| .add_checkfunc(...)      | Checks for header, lib and function and add lib |
 | .with(name, desc, arg)   | Add a --with-NAME flag.                         |
 | .hasWith(name)           | Check if --with-NAME was given.                 |
 | .withValue(name)         | Get the --with-NAME value.                      |
@@ -312,6 +309,7 @@ This also goes for tools. A full example would be:
 var haveDirent =
     detector.header("dirent.h")
     || detector.header("sys/dirent.h");
+if(!haveDirent)
 
 detector.libfunc("socket", "connect");
 detector.libfunc("curl", "connect");
@@ -400,7 +398,11 @@ rule("myrule", "My custom rule") {
         pattern: "*.omy",
         expected: "%t.omy"
     },
-    build: ["omytool ${INPUT} -o ${OUTPUT}"]
+    build: function(inout, output, targetName, target) {
+        var INPUT = input.join(' ');
+        var OUTPUT = output;
+        return ["omytool ${INPUT} -o ${OUTPUT}"]
+    }
 }
 ```
 
@@ -415,10 +417,10 @@ A rule needs to have the following fields:
         - *%e*: File extension
         - *%f*: The actual input file
 * `build`: This can either ben array OR a function. The definitions are:
-    - *Array*: Each shell command is run alone but one after another. You have these variables:
-        - `INPUT`: String version of your input. If it was an array, it got turned into a space-separated string.
-        - `OUTPUT`: The expected output.
-        - `TARGET`: The target's name.
+    - *Array*: Each shell command is run alone but one after another. You have these environment variables:
+        - `IT_INPUT`: String version of your input. If it was an array, it got turned into a space-separated string.
+        - `IT_OUTPUT`: The expected output.
+        - `IT_TARGET`: The target's name.
     - *Function*: The function will be ran within the queue, but only one at a time due to OS not being multi-threaded. Your function receives these arguments:
         - `input`: The input. Always an array.
         - `output`: The expected output.
@@ -441,7 +443,7 @@ A target is what is needed at the very foundation to build a project - its the i
 
 ```javascript
 target("foo", "lib") {
-    input: ["src/*.c"],
+    input: ["src/main.c"] + pfs.glob("lib", "*.c"),
     settings: {
         native: {
             include_dirs: ["src"]
@@ -611,6 +613,3 @@ This is useful if you want to extend IceTea with a similar design as itself. Ano
 function static_lib(name) { return target(name, "lib"); }
 static_lib("foo") { /*...*/ }
 ```
-
-#### IceTea
-Only within `build.it`, you can use this function. It acts as a setup function that allows you to tell IceTea how to display things, where to put output files and alike.
