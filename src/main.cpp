@@ -1838,6 +1838,16 @@ int main(int argc, const char** argv) {
             string full = create_filespec(".IceTea", *it);
             os->require(full.c_str());
         }
+        // Also make require aware of this new path.
+        os->pushGlobals();
+        os->pushString("require");
+        os->getProperty(-2);
+        os->pushString("paths");
+        os->getProperty(-2);
+        string fullDir = create_filespec(folder_current_full(), ".IceTea");
+        os->pushString(fullDir.c_str());
+        os->addProperty(-2);
+        os->pop();
     }
 
     // Run the script to populate the global objects.
