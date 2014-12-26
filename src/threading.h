@@ -112,7 +112,8 @@ public:
         bool canAdd=true;
         // Equality check.
         for(typename list<T>::iterator it=queue.begin(); it!=queue.end(); ++it) {
-            if(this->compare(*it, item, this)) {
+            T tmp = *it;
+            if(tmp != NULL && this->compare(tmp, item, this)) {
                 queue.erase(it);
             }
         }
