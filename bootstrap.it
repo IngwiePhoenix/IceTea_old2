@@ -102,7 +102,11 @@ native = extends Object {
             for(var _,lib in target.settings.LINK.libraries) {
                 // Windows does not have a -l flag - instead you specify the libs yourself.
                 // ...i call a whaaaaat.
-                LINK[] = (sys.type == 'unix' ? '-l'..lib : lib..'.lib');
+                if(pfs.fileExists(lib)) {
+                    LINK[] = lib;
+                } else {
+                    LINK[] = (sys.type == 'unix' ? '-l'..lib : lib..'.lib');
+                }
             }
             if(DEBUG) {
                 LINK[] = (sys.type == 'unix' ? '-g' : '/Zi');
@@ -114,6 +118,7 @@ native = extends Object {
                 }
             }
             var cmd = LINK.join(' ');
+            if(cli.check("-v")) print "$ ${cmd}";
             return [cmd];
         }
     }
@@ -167,6 +172,7 @@ rule('strip', 'Strip') {
         var cmd = @tool;
         cmd = cmd.replace('IN', instr);
         cmd = cmd.replace('OUT', output);
+        if(cli.check("-v")) print "$ ${cmd}"
         return [cmd];
     }
 }
@@ -181,4 +187,30 @@ rule('exe', 'Executable') {
         detect.compiler('c++');
     },
     build: native.link('c++'),
+}
+
+rule('lib', 'Static Library') {
+    accepts: ["*.o", "*.obj", "*.o-stripped"],
+    output: {
+        pattern: "*.a",
+        expected: "%o/lib%t.a"
+    },
+    prepare: function() {
+        for(var _,t in ["ar", "LINK"]) {
+            if(detect.tool(t)) {
+                @tool = t;
+                break;
+            }
+        }
+    },
+    build: function(input, output, targetName, target) {
+        var cmdl=[];
+        cmdl[]=@tool;
+        cmdl[]="cr";
+        cmdl[]=output;
+        cmdl[]=input.join(' ');
+        var cmd = cmdl.join(' ');
+        print "$ ${cmd}";
+        return [cmd];
+    }
 }

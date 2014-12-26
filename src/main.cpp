@@ -110,6 +110,7 @@ public:
     string targetName; ///< The target's name.
     string ruleDisplay; ///< How the rule should be displayed.
     list<string> input; ///< A vector containing the input files for the task.
+    list<string> dependencies; ///< List of files that this target depends on.
     string output; ///< The output file.
 
     TaskType type; ///< The type in which this task is ran.
@@ -1827,6 +1828,16 @@ int main(int argc, const char** argv) {
     // Wiping the source tree...
     if(cli->check("-w")) {
         runScheme = "clean";
+    }
+
+    // Auto-include
+    if(folder_exists(".IceTea")) {
+        // Get all *.it files
+        vector<string> itFiles = folder_wildcard(".IceTea", "*.it", false, true);
+        for(vector<string>::iterator it=itFiles.begin(); it!=itFiles.end(); ++it) {
+            string full = create_filespec(".IceTea", *it);
+            os->require(full.c_str());
+        }
     }
 
     // Run the script to populate the global objects.
