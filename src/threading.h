@@ -111,10 +111,11 @@ public:
         tthread::lock_guard<tthread::mutex> guard(mutex);
         bool canAdd=true;
         // Equality check.
-        for(typename list<T>::iterator it=queue.begin(); it!=queue.end(); ++it) {
-            T tmp = *it;
-            if(tmp != NULL && this->compare(tmp, item, this)) {
-                queue.erase(it);
+        for(typename list<T>::iterator it=queue.begin(); it!=queue.end(); ) {
+            if(this->compare(*it, item, this)) {
+                it = queue.erase(it);
+            } else {
+                ++it;
             }
         }
         queue.push_back(item);
