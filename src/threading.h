@@ -28,6 +28,8 @@ typedef void (*ThreadFunction)(void*);
     It is based off TinyThreads++. Upon instantiation, all the threads will be started.
 */
 template<typename T, typename ST=void*> class WorkQueue {
+public:
+    typedef bool (*compare_f)(T,T,WorkQueue<T,ST>*);
 private:
     vector<tthread::thread*> threads;
     int count;
@@ -37,13 +39,17 @@ private:
     int itemsEverAdded;
     // Misc...
     ST data;
+    compare_f compare;
+
+    static bool compare_default(T lh, T rh, WorkQueue<T,ST>* me) { return false; }
 
 public:
     // Synchronisation
     tthread::mutex               mutex;
     tthread::condition_variable  cond;
 
-    inline WorkQueue(int amt, ThreadFunction func, ST udata=NULL)
+
+    inline WorkQueue(int amt, ThreadFunction func, ST udata=NULL, compare_f comp=NULL)
         : count(amt),
           myID(tthread::this_thread::get_id()),
           doStop(false),
@@ -51,6 +57,11 @@ public:
           data(udata) {
         for(int i=0; i<amt; i++) {
             threads.push_back(new tthread::thread(func, (void*)this));
+        }
+        if(comp == NULL) {
+            compare = compare_default;
+        } else {
+            compare = comp;
         }
     }
     inline ~WorkQueue() {
@@ -101,8 +112,7 @@ public:
         bool canAdd=true;
         // Equality check.
         for(typename list<T>::iterator it=queue.begin(); it!=queue.end(); ++it) {
-            if(*it == item) {
-                // Remove the item so it can be put back on top.
+            if(this->compare(*it, item, this)) {
                 queue.erase(it);
             }
         }

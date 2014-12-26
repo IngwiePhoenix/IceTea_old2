@@ -79,6 +79,7 @@ native = extends Object {
             var cmd = cmdl.join(' ');
             pfs.mkdir(targetDir);
             if(pfs.dirWritable(targetDir)) {
+                if(cli.check("-v")) print "$ ${cmd}"
                 return [cmd];
             } else {
                 print 'ERROR: Target dir is not writable!'

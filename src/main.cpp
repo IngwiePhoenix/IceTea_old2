@@ -1693,6 +1693,10 @@ OS_FUNC(os_getTarget) {
     return 1;
 }
 
+/// Comparsion function for TaskQueue
+bool task_comparsion(Task* tl, Task* tr, TaskQueue* queue) {
+    return (tl->output == tr->output);
+}
 
 /**
     @brief The main logic
@@ -1918,7 +1922,7 @@ int main(int argc, const char** argv) {
         tmp << cli->value("-j");
         tmp >> thrs;
         // Now that we have the thread amount value, lets make it happen.
-        tasks = new TaskQueue(thrs, Run, os);
+        tasks = new TaskQueue(thrs, Run, os, task_comparsion);
 
         // Now, we've got a waiting task runner there, we ned to feed it one by one.
         bool transformedYet=Transformer();
