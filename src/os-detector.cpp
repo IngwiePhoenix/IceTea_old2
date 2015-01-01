@@ -836,9 +836,13 @@ OS_FUNC(osd_enabled) {
 
 int osd_tryTask(OS* os, int params, bool run) {
     EXPECT_STRING(1)
-    EXPECT_STRING(2)
     string source = os->toString(-params+0).toChar();
-    string kind = os->toString(-params+1).toChar();
+    string kind;
+    if(os->isString(-params+1)) {
+        kind = os->toString(-params+1).toChar();
+    } else {
+        kind = "c";
+    }
     string add="";
     if(os->isString(-params+2))
         add = os->toString(-params+2).toChar();

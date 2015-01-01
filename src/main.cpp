@@ -334,12 +334,13 @@ string estimateRuleOutput(string rule, string target, string file="") {
     @ref TargetBuild
 */
 OS_FUNC(os_target_clean) {
-    Task* t = (Task*)userData;
+    string output = os->toString(-params+1).toChar();
+    string _this = os->toString(-params-1).toChar();
     //if(is_present(output)) {
-        tout << "Deleting: " << t->output << endl;
+        tout << "Deleting: " << output << endl;
         print();
-        file_delete(t->output);
-        folder_delete(folder_part(t->output));
+        file_delete(output);
+        folder_delete(folder_part(output));
     //}
     return 0;
 }
@@ -434,7 +435,9 @@ void __makeTasks(
 
             // Find out what type the rule is. A function, or an array of commands?
             os->pushValueById(ruleObj->valueID);
-            os->getProperty(-1, runScheme.c_str());
+            os->pushString(runScheme.c_str());
+            os->getProperty(-2);
+            //tout << runScheme << "(" << display << "): " << os->getTypeStr() << endl; print();
             if(os->getTypeStr() == "array") {
                 t->type=COMMAND;
                 int objlen = os->getLen();
@@ -631,7 +634,9 @@ void __makeTasks(
                     t->output = theExpected;
 
                     os->pushValueById(currRule->valueID);
-                    os->getProperty(-1, runScheme.c_str());
+                    os->pushString(runScheme.c_str());
+                    os->getProperty(-2);
+                    //tout << runScheme << "(" << display << "): " << os->getTypeStr() << endl; print();
                     if(os->getTypeStr() == "array") {
                         t->type=COMMAND;
                         int objlen = os->getLen();
@@ -645,7 +650,7 @@ void __makeTasks(
                     } else {
                         if(cli->check("-w")) {
                             // Whipe mode. Replace the emptyness right there with an actual thing.
-                            os->pushValueById(ruleObj->valueID);
+                            os->pushValueById(currRule->valueID);
                             os->pushCFunction(os_target_clean, (void*)t);
                             os->setProperty(-2, runScheme.c_str());
                         } else {
@@ -797,12 +802,10 @@ bool Preprocessor() {
         os->pushValueById(val->valueID);
         os->pushString("configure");
         if(os->in(-1, -2)) {
-            os->getProperty();
+            os->getProperty(-2);
             if(os->isFunction()) {
-                if(cli->check("-v")) {
-                    cout << "(As self)" << endl;
-                }
-                os->callTF(0,1);
+                os->pushValueById(val->valueID);
+                os->callFT(0,1);
                 if(os->toBool() == false) {
                     cerr << "We have a false!" << endl;
                     // Configure returned false. So we quickly drop out.
@@ -1011,7 +1014,9 @@ bool Transformer() {
                                 // Fill in the rest...
                                 // Find out what type the rule is. A function, or an array of commands?
                                 os->pushValueById(ruleObj->valueID);
-                                os->getProperty(-1, runScheme.c_str());
+                                os->pushString(runScheme.c_str());
+                                os->getProperty(-2);
+                                //tout << runScheme << "(" << display << "): " << os->getTypeStr() << endl; print();
                                 if(os->getTypeStr() == "array") {
                                     t->type=COMMAND;
                                     for(int k=0; k<os->getLen(); k++) {
@@ -1122,6 +1127,7 @@ void Run(void* threadData) {
             if(!task->isBuilt() || task->shouldUpdate()) {
                 if(task->isProcessing()) {
                     // Another thread is using this.
+                    tthread::this_thread::sleep_for(tthread::chrono::milliseconds(50));
                     tasks->add(task);
                     continue;
                 }
@@ -1153,8 +1159,13 @@ void Run(void* threadData) {
                                     }
                                 }
                             }
-                            if(!task->isBuilt()) tasks->add(task);
+                            if(!task->isBuilt()) {
+                                //task->isProcessing(false);
+                                tasks->add(task);
+                            }
                             doCheck=false;
+                            // We need to wait to not cause a massive CPU bombardement.
+                            //tthread::this_thread::sleep_for(tthread::chrono::milliseconds(50));
                             break;
                         }
                     }
@@ -1567,6 +1578,7 @@ int main(int argc, const char** argv) {
         {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit.c_str())},
         {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
         {OS_TEXT("__cachefile"),   OS_TEXT(cacheFile.c_str())},
+        {OS_TEXT("__sourcedir"),   OS_TEXT(folder_current_full().c_str())},
         {}
     };
     os->pushGlobals();
@@ -1648,13 +1660,13 @@ int main(int argc, const char** argv) {
     // Pre-check
     if(cli->check("-u")) cli->group("Project options");
 
-    // init() has added its methods, now its time to put it in.
-    cli->parse();
-
     // Call every target's init() method.
     if(!Initializer()) {
         return itCleanup();
     }
+
+    // init() has added its methods, now its time to put it in.
+    cli->parse();
 
     // Post-check
     if(cli->check("-u")) {

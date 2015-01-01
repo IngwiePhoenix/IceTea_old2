@@ -18,13 +18,13 @@ target("IceTea", "exe") {
         echo detect.out .. "Do we want to optimize IceTea?";
         if(cli.check("--it-optimize")) {
             print " Yes.";
-            var st = @settings.CXX;
-            st.flags = (!DEBUG && sys.type == "unix" && isDarwin ? [
+            @settings.CXX.flags = (!DEBUG && sys.type == "unix" && isDarwin() ? [
                 "-ffunction-sections",
                 "-fdata-sections",
             ] : []);
-            st.optimization = (DEBUG ? "none":"size")
+            @settings.CXX.optimization = (DEBUG ? "none":"size")
         } else print " No.";
+        print this;
         return true;
     },
     settings: {

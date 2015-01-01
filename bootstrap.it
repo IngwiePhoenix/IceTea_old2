@@ -33,6 +33,7 @@ native = extends Object {
             }
 
             if(!DEBUG && typeOf(settings[key].optimization) == 'string') {
+                print "Optimizing...";
                 switch(settings[key].optimization) {
                     case 'none': cmdl[] = (sys.type=='unix'?'-O0':''); break;
                     case 'small': cmdl[] = (sys.type=='unix'?'-O1':'/O1'); break;
@@ -167,7 +168,6 @@ rule('strip', 'Strip') {
         }
     },
     build: function(input, output, targetName, target) {
-        var dirstr = 'out/.'..targetName;
         var instr = input.join(' ');
         var cmd = @tool;
         cmd = cmd.replace('IN', instr);
