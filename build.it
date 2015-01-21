@@ -5,7 +5,7 @@ function isDarwin() {
     } == "Darwin";
 }
 
-target("IceTea", "exe") {
+target("icetea", "exe") {
     input: pfs.glob("src", "*.cpp"),
     init: function() {
         cli.group "IceTea"
@@ -24,7 +24,6 @@ target("IceTea", "exe") {
             ] : []);
             @settings.CXX.optimization = (DEBUG ? "none":"size")
         } else print " No.";
-        print this;
         return true;
     },
     settings: {

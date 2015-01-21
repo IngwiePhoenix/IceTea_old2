@@ -37,6 +37,11 @@ detect.headerfunc("c", "objc/objc.h","objc_msgSend");
 // Functions in both
 
 
+// Checking for data types
+detect.type("uint16_t");
+detect.type("uint16_t", "stddef.h");
+detect.type("uint16_t", "inttypes.h");
+
 // Compiler flags
 
 
@@ -47,5 +52,5 @@ detect.headerfunc("c", "objc/objc.h","objc_msgSend");
 
 
 // Generate
-
+detect.write_header("config.h");
 print detect.footer

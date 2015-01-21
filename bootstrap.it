@@ -10,7 +10,7 @@ native = extends Object {
             var cmdl=[];
 
             // Build the command
-            cmdl[] = '"'..detect.compiler(kind)..'"';
+            cmdl[] = detect.compiler(kind);
 
             if(sys.type == 'windows') {
                 cmdl[] = '/nologo /EHsc';
@@ -33,7 +33,6 @@ native = extends Object {
             }
 
             if(!DEBUG && typeOf(settings[key].optimization) == 'string') {
-                print "Optimizing...";
                 switch(settings[key].optimization) {
                     case 'none': cmdl[] = (sys.type=='unix'?'-O0':''); break;
                     case 'small': cmdl[] = (sys.type=='unix'?'-O1':'/O1'); break;
@@ -94,10 +93,20 @@ native = extends Object {
             var LINK=[];
 
             // I need a better way to use the linker... :/
-            LINK[] = '"'..detect.compiler(kind)..'"';
+            LINK[] = detect.compiler(kind);
             if(sys.type == "windows") {
                 LINK[] = "/nologo";
             }
+
+            // Library dirs
+            var Lflag = (sys.type == "unix" ? "-L":"");
+            LINK[] = Lflag .. __outputdir;
+            if(typeOf(settings.LINK.library_dirs) == "array") {
+                for(var _,ld in settings.LINK.library_dirs) {
+                    LINK[] = Lflag .. ld;
+                }
+            }
+
             LINK[] = input.join(' ');
             LINK[] = (sys.type == 'unix' ? '-o' : '/Fe')..output;
             for(var _,lib in target.settings.LINK.libraries) {
@@ -126,7 +135,7 @@ native = extends Object {
 }
 
 rule('cxx', 'C++') {
-    accepts: ['*.cpp', '*.cxx', '*.c++'],
+    accepts: ['*.cpp', '*.cxx', '*.c++', '*.cc'],
     output: {
         pattern: (sys.type=='unix' ? '*.o':'*.obj'),
         expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
@@ -178,7 +187,7 @@ rule('strip', 'Strip') {
 }
 
 rule('exe', 'Executable') {
-    accepts: [(sys.type=='unix' ? (DEBUG?'*.o':'*.o-stripped'):'*.obj')],
+    accepts: [(sys.type=='unix' ? '*.o':'*.obj')],
     output: {
         pattern: (sys.type=='unix' ? '*':'*.exe'),
         expected: (sys.type=='unix' ? '%o/%t':'%o/%t.exe')
@@ -190,7 +199,7 @@ rule('exe', 'Executable') {
 }
 
 rule('lib', 'Static Library') {
-    accepts: ["*.o", "*.obj", "*.o-stripped"],
+    accepts: ["*.o"],
     output: {
         pattern: "*.a",
         expected: "%o/lib%t.a"
@@ -210,7 +219,7 @@ rule('lib', 'Static Library') {
         cmdl[]=output;
         cmdl[]=input.join(' ');
         var cmd = cmdl.join(' ');
-        print "$ ${cmd}";
+        if(cli.check("-v")) print "$ ${cmd}";
         return [cmd];
     }
 }

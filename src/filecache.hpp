@@ -8,6 +8,7 @@
 #include "minijson.h"
 #include "tinythread.h"
 #include "file_system.hpp"
+#include "util.h"
 
 // Simplified functions due to error handling
 inline bool _fc_fopen(FILE*& fh, const char* file, const char* mode) {
@@ -43,14 +44,16 @@ public:
     // Predefs...
     inline bool sync();
     inline bool reread();
-    inline std::map<std::string,std::string> getMap(const std::string obj) {
+    inline std::map<std::string,std::string> getMap(const std::string& obj) {
         using namespace std;
         using namespace minijson;
         _guard g(m);
         map<std::string,std::string> res;
-        object ov = o[obj].get<object>();
-        for(object::iterator it=ov.begin(); it!=ov.end(); ++it) {
-            res[it->first] = it->second.get<minijson::string>();
+        if(o.find(obj) != o.end()) {
+            object ov = o[obj].get<object>();
+            for(object::iterator it=ov.begin(); it!=ov.end(); ++it) {
+                res[it->first] = it->second.get<minijson::string>();
+            }
         }
         return res;
     }
@@ -89,7 +92,7 @@ public:
             if(o.find(key) == o.end())
                 return std::string("");
             else
-                return o[key].get<minijson::string>();
+                return ReplaceString(o[key].get<minijson::string>(), "\\\"", "\"");
         } else {
             if(o.find(obj) != o.end()) {
                 #ifdef DEBUG
@@ -105,7 +108,7 @@ public:
                     #ifdef DEBUG
                     std::cerr << "Filecache: " << key << " was found." << std::endl;
                     #endif
-                    return o2[key].get<minijson::string>();
+                    return ReplaceString(o2[key].get<minijson::string>(), "\\\"", "\"");
                 }
             } else {
                 #ifdef DEBUG

@@ -59,6 +59,7 @@
 void handler(int sig) {
   // print out all the frames to stderr
   cerr << Backtrace() << endl;
+  exit(1);
 }
 #endif
 
@@ -838,9 +839,6 @@ bool Preprocessor() {
                         os->getProperty();
                         if(os->isFunction() && cfgd.find(tname) == cfgd.end()) {
                             cfgd[tname]=true;
-                            if(cli->check("-v")) {
-                                cout << "(As dependency)" << endl;
-                            }
                             os->callTF(0,1);
                             if(!os->toBool()) {
                                 cout << "Dependency target '" << tname << "' returned false." << endl;
@@ -857,13 +855,6 @@ bool Preprocessor() {
                     int exoff = os->getAbsoluteOffs(-1);
                     if(os->isObject()) {
                         os->pushValueById(val->valueID);
-                        //os->pushString("settings");
-                        os->getProperty(-2);
-                        /*if(!os->isObject()) {
-                            os->newObject();
-                            os->pushString("settings");
-                            os->setProperty(-3);
-                        }*/
                         os->getProperty(-1, "__add"); // Thanks to os-std
                         os->pushStackValue(exoff);
                         os->callTF(1,0);
