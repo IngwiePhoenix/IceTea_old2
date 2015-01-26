@@ -200,8 +200,7 @@ bool       runTasks = true; ///< A boolean that defines if tasks are being ran o
 static tthread::mutex OSMutex; ///< A mutex to lock and unlock to gain access to ObjectScript.
 static tthread::mutex ConfigMutex; ///< A mutex used to halt execution of @ref Run
 // Printing
-stringstream tout; ///< Output for the @ref LinePrinter
-LinePrinter print(&tout); ///< LinePrinter instance
+LinePrinter tout; ///< LinePrinter instance
 
 // Tool functions
 int itCleanup();
@@ -338,8 +337,8 @@ OS_FUNC(os_target_clean) {
     string output = os->toString(-params+1).toChar();
     string _this = os->toString(-params-1).toChar();
     //if(is_present(output)) {
-        tout << "Deleting: " << output << endl;
-        print();
+        (*tout()) << "Deleting: " << output << endl;
+        tout.print();
         file_delete(output);
         folder_delete(folder_part(output));
     //}
@@ -468,7 +467,7 @@ void __makeTasks(
             t->parent = parent;
             parent->child = t;
 
-            print();
+            tout.print();
             tasks->add(t);
 
             // We send the output of this task back to the parent call.
@@ -1081,15 +1080,15 @@ void addToMap(map<string,Task*>& target, string key, Task* val) {
     This function is used to properly print the progress message for the task.
 */
 void taskPrinter(Task* task) {
-    tout << "[#" << CurrentTaskCount << "] "
-         << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
+    (*tout()) << "[#" << CurrentTaskCount << "] "
+           << task->targetName << "(" << task->ruleDisplay << ")" << ": ";
     if(task->input.size() == 1 && !task->isMaster()) {
-        tout << task->input.front();
+        (*tout()) << task->input.front();
     } else {
-        tout << task->output;
+        (*tout()) << task->output;
     }
-    tout << endl;
-    print();
+    (*tout()) << endl;
+    tout.print();
 }
 
 /**
@@ -1172,7 +1171,7 @@ void Run(void* threadData) {
                 bool doBuild=false;
                 bool invokeParent = false;
                 #ifdef IT_DEBUG
-                tout << task->output << " ";
+                (*tout()) << task->output << " ";
                 #endif
                 if(cli->check("-w")) {
                     // Clean, cleaner, cleanest.
@@ -1180,21 +1179,21 @@ void Run(void* threadData) {
                 } else if(!is_present(task->output)) {
                     doBuild = true;
                     #ifdef IT_DEBUG
-                    tout << "Hit: !is_present" << endl;
-                    print();
+                    (*tout()) << "Hit: !is_present" << endl;
+                    tout.print();
                     #endif
                 } else if(task->shouldUpdate()) {
                     // Well of course, thats why we're here.
                     doBuild = true;
                     #ifdef IT_DEBUG
-                    tout << "Hit: shouldupdate" << endl;
-                    print();
+                    (*tout()) << "Hit: shouldupdate" << endl;
+                    tout.print();
                     #endif
                 } else if(task->child != NULL && task->child->shouldUpdate()) {
                     doBuild = true;
                     #ifdef IT_DEBUG
-                    tout << "Hit: child update" << endl;
-                    print();
+                    (*tout()) << "Hit: child update" << endl;
+                    tout.print();
                     #endif
                 } else {
                     listMutex.lock();
@@ -1204,13 +1203,13 @@ void Run(void* threadData) {
                         // Output is not present in the cache.
                         doBuild = true;
                         #ifdef IT_DEBUG
-                        tout << "Hit: cache if" << endl;
-                        print();
+                        (*tout()) << "Hit: cache if" << endl;
+                        tout.print();
                         #endif
                     } else {
                         #ifdef IT_DEBUG
-                        tout << "Hit: cache else" << endl;
-                        print();
+                        (*tout()) << "Hit: cache else" << endl;
+                        tout.print();
                         #endif
                         if(cached != file2sha2(task->output)) doBuild=true;
                         for(StrList::iterator nt=task->input.begin(); nt!=task->input.end(); ++nt) {
@@ -1226,6 +1225,13 @@ void Run(void* threadData) {
                 if(doBuild) {
                     // The parent will very likely want to update.
                     if(task->parent != NULL) invokeParent = true;
+
+                    // Create a lock file.
+                    FILE* lockfile;
+                    stringstremam lkfn;
+                    lkfn << task->output << ".lock";
+                    const char* _cname = lkfn.str().c_str();
+                    lockfile = fopen(_cname, );
 
                     // Im totally NOT abusing this mutex....no....never.
                     listMutex.lock();
@@ -1269,9 +1275,9 @@ void Run(void* threadData) {
                             delete g;
                             goto Run_choice;
                         } else if(os->isType(OS_VALUE_TYPE_BOOL) && os->toBool() == false) {
-                            tout << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::" << runScheme << endl;
-                            tout << "Function returned false." << endl;
-                            print();
+                            (*tout()) << "FAILED: " << task->targetName << "(" << task->ruleDisplay << ")::" << runScheme << endl;
+                            (*tout()) << "Function returned false." << endl;
+                            tout.print();
                             tasks->stop();
                         } else {
                             // We assume a success.
@@ -1289,16 +1295,16 @@ void Run(void* threadData) {
                             }
                             CommandResult rc = it_cmd(cmdstr, vector<string>());
                             if(rc.exit_code != 0) {
-                                tout << "FAILED: " << cmdstr << endl;
-                                tout << "Program exited with status: " << rc.exit_code << endl;
+                                (*tout()) << "FAILED: " << cmdstr << endl;
+                                (*tout()) << "Program exited with status: " << rc.exit_code << endl;
                                 tasks->stop();
                             } else if(rc.p->error()) {
-                                tout << "FAILED: " << cmdstr << endl;
-                                tout << "Reason: " << rc.p->error_text() << endl;
+                                (*tout()) << "FAILED: " << cmdstr << endl;
+                                (*tout()) << "Reason: " << rc.p->error_text() << endl;
                                 tasks->stop();
                             } else if(!rc.spawned) {
-                                tout << "FAILED: " << cmdstr << endl;
-                                tout << "Subprocess could not be started." << endl;
+                                (*tout()) << "FAILED: " << cmdstr << endl;
+                                (*tout()) << "Subprocess could not be started." << endl;
                                 tasks->stop();
                             } else {
                                 // We believe its a success.
@@ -1308,17 +1314,17 @@ void Run(void* threadData) {
                                 string sout;
                                 stringstream ssout(rc.streams[1]);
                                 while(getline(ssout, sout).good()) {
-                                    tout << "| " << sout << endl;
+                                    (*tout()) << "| " << sout << endl;
                                 }
                             }
                             if(rc.streams[2].length() > 0) {
                                 string serr;
                                 stringstream sserr(rc.streams[2]);
                                 while(getline(sserr, serr).good()) {
-                                    tout << "> " << serr << endl;
+                                    (*tout()) << "> " << serr << endl;
                                 }
                             }
-                            print();
+                            tout.print();
                         }
                     }
                     if(buildSuccess && !cli->check("-w")) {
@@ -1338,8 +1344,8 @@ void Run(void* threadData) {
                             task->unlock();
                             task = task->parent;
                             #ifdef IT_DEBUG
-                            tout << "Invoked parent for " << task->output << endl;
-                            print();
+                            (*tout()) << "Invoked parent for " << task->output << endl;
+                            tout.print();
                             #endif
                             doGoto = true;
                         }

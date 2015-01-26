@@ -215,7 +215,7 @@ rule('lib', 'Static Library') {
     build: function(input, output, targetName, target) {
         var cmdl=[];
         cmdl[]=@tool;
-        cmdl[]="cr";
+        cmdl[]="crs";
         cmdl[]=output;
         cmdl[]=input.join(' ');
         var cmd = cmdl.join(' ');

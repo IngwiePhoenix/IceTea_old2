@@ -10,8 +10,14 @@ private:
     static tthread::mutex m;
     std::stringstream* stream;
 public:
-    LinePrinter(std::stringstream* str) : stream(str) {}
-    void operator()() {
+    LinePrinter() {
+        stream = new std::stringstream();
+    }
+    std::stringstream* operator()() {
+        tthread::lock_guard<tthread::mutex> guard(m);
+        return stream;
+    }
+    void print() {
         tthread::lock_guard<tthread::mutex> guard(m);
         string out(stream->str());
         cout << out << flush;
