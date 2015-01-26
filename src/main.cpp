@@ -1226,13 +1226,6 @@ void Run(void* threadData) {
                     // The parent will very likely want to update.
                     if(task->parent != NULL) invokeParent = true;
 
-                    // Create a lock file.
-                    FILE* lockfile;
-                    stringstremam lkfn;
-                    lkfn << task->output << ".lock";
-                    const char* _cname = lkfn.str().c_str();
-                    lockfile = fopen(_cname, );
-
                     // Im totally NOT abusing this mutex....no....never.
                     listMutex.lock();
                     CurrentTaskCount++;
