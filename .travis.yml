@@ -1,15 +1,23 @@
 language: cpp
-compiler:
-  - g++
-  - clang++
+
 os:
   - linux
   - osx
-osx_image: xcode61
+
 env:
-  - COMPILE_FLAGS="-lpthread -Wno-switch"
+  - TRCXX=g++
+  - TRCXX=clang++
+  - TRCXX=i586-mingw32msvc-g++
+
 script:
-    - $CXX src/*.cpp -o icetea $COMPILE_FLAGS
-    - ./icetea -h
-    - ./icetea -o tests/run_tests.os || true
-    - ./icetea
+  - export CXX=$TRCXX
+  - $CXX src/*.cpp -Wno-switch -o ./icetea
+
+matrix:
+  exclude:
+    - os: osx
+      env: TRCXX=i586-mingw32msvc-g++
+  allow_failures:
+    - env: TRCXX=clang++
+    - env: TRCXX=i586-mingw32msvc-g++
+  fast_finish: true
