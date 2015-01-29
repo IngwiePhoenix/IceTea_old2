@@ -11,7 +11,7 @@ env:
 
 script:
   - export CXX=$TRCXX
-  - $CXX src/*.cpp -Wno-switch -o ./icetea
+  - $CXX src/*.cpp -Wno-switch -lpthread -o ./icetea
 
 matrix:
   exclude:
