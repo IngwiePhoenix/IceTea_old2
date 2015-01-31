@@ -1140,6 +1140,11 @@ void Run(void* threadData) {
                 if(!cli->check("-w")) {
                     for(StrList::iterator it = task->input.begin(); it!=task->input.end(); ++it) {
                         if(!is_present(*it)) {
+                            if(cli->check("-v") && !task->isMaster()) {
+                                // Let the user know what is missing here.
+                                (*tout()) << "IceTea: Delaying : " << task->targetName << "::" << task->output << endl;
+                                tout.print();
+                            }
                             // O-lala.
                             if(task->child != NULL) {
                                 // do tests against the child

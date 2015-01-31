@@ -24,6 +24,12 @@ native = extends Object {
                 }
             }
 
+            if(typeOf(settings.native.warnings) == 'array') {
+                for(var _,warning2 in settings.native.warnings) {
+                    cmdl[] = (sys.type == 'unix' ? '-W' : '')..warning2;
+                }
+            }
+
             if(settings.native.warning_as_error == true) {
                 if(sys.type == 'unix') {
                     cmdl[] = '-Werror';
@@ -156,6 +162,30 @@ rule('c', 'C') {
         detect.compiler('c');
     },
     build: native.compile('c')
+}
+
+rule('objc', 'Objective-C') {
+    accepts: ['*.m'],
+    output: {
+        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
+        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+    },
+    prepare: function() {
+        detect.compiler('objc');
+    },
+    build: native.compile('objc')
+}
+
+rule('objcxx', 'Objective-C++') {
+    accepts: ['*.mm'],
+    output: {
+        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
+        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+    },
+    prepare: function() {
+        detect.compiler('objcxx');
+    },
+    build: native.compile('objcxx')
 }
 
 rule('strip', 'Strip') {
