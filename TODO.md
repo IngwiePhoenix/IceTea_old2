@@ -22,7 +22,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [X] Rewrite `void Run(void*)` for a better update tracker. It currently will happily rerun a task **multiple** times. It needs to learn to only run a task once, and only once.
 - [X] Add `+` operator for `Object`.
 - [ ] Better error handling if OS actually crashed. Currently `int main(int,char**)` will report that no targets were built whilst it actually has an exception written ontop of it.
-- [ ] Separate debug/non-debug builds-
+- [ ] Separate debug/non-debug builds
 - [X] Better Windows linker support / flag passing / warning handling.
 - [ ] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
 - [ ] Make rules be able to depend upon targets also.
@@ -30,8 +30,11 @@ I have set up myself to make an awesome build tool. But as each project's nature
 
 ### Added 25th Dec. 2014, 1.27PM
 - [ ] Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
+    * May make it recursive.
 - [ ] Finally write `detect.write_*()` functions.
-- [ ] Proper build flags for the `IceTea` target
+    - [X] `detect.write_header()`
+    - [ ] `detect.write_json()`
+- [X] Proper build flags for the `IceTea` target
 - [ ] Introduce an `install` kind of thing.
 - [ ] Teach `bootstrap.it` these rules:
     * ASM: Assembly
@@ -48,3 +51,12 @@ I have set up myself to make an awesome build tool. But as each project's nature
     * COMPONENT: target binary, other settings
     * ASM: Defines and such
 - [ ] Finally take `bootstrap.it` into memory within a post-build
+
+### Added 20th Februrary 2015, 10.21AM
+- [ ] Rewrite build executor (Thanks to @martine :))
+    * First generate all the tasks, then loop over them to execute them.
+    * Wait on multiple tasks (commands) and check for their status.
+        * If failed, let the other commands finish first, then exit.
+    - Use `stlplus::async_subprocess`.
+    - Create a subclass that reports `bool done()`.
+- [ ] Make `settings.LINK.libraries` unique (i.e.: only one `-lmylib` per array)
