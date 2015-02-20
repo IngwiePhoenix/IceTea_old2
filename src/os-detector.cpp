@@ -96,6 +96,7 @@ string have_type(const string& type) {
     string s;
     s.append(have_prefix);
     s.append(toUpper(type));
+    ReplaceStringInPlace(s, " ", "_");
     return s;
 }
 
