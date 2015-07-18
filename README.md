@@ -1,4 +1,5 @@
 <img src="http://ingwie.me/o.o/icetea.png" height=250 alt="IceTea logo">
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Deskshell-Core/PhoenixEngine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)˘
 # IceTea - couldn't be chillier.
 
 ## Quick summary:
@@ -27,6 +28,24 @@ Here is a short rundown of IceTea's features
 - __Extensible.__ By creating a local `.IceTea` folder and dropping files with the `.it` extension into it, they will become automatically loaded when IceTea starts, allowing any 3rd-party integration to be included. Because these fiels are sorted, you can use numbers to decide in which orders these extensions are loaded!
 - __Projects.__ Keep your build organized and your files sorted properly. Projects allow you to sort targets into groups and effectively make your build cleaner.
 - __Multi-threaded.__ IceTea runs on multiple cores to provide as much speed as it possibly can.
+
+## Building
+IceTea is ultra, ultra tiny. Therefore there is just one command on UNIX based system and 3 on Windows. The reason is that an ASM macro, `.incbin`, is used to include script files directly into the binary. That does not work so well on Windows.
+
+Unix:
+    $ g++ -Wno-switch src/*.cpp -o icetea
+
+Windows:
+    > cl /Tp incbin/incbin.c /Feincbin
+    > incbin src/scripts.rc -o src/scripts.cpp
+    > cl /EHsc src/*.cpp /Feicetea
+
+### Note!
+In order for the files to resolve correctly, make sure you navigated into the IceTea folder first. If you are using another program to run this, make sure to set the CWD of that of the IceTea root. For isntance, you can pull down and start building like so:
+
+    $ git clone https://github.com/IngwiePhoenix/IceTea.git
+    $ cd IceTea
+    $ ..build...
 
 ## It's as easy as opening a bottle of ice tea!
 ```javascript
@@ -179,14 +198,6 @@ Ninja does not go into the above list, simply because its a pure build tool an d
 Therefore I created IceTea - well, still AM creating it. It runs off [ObjectScript](http://github.com/unitpoint/objectscript) for the most part, uses [STLPlus](https://stlplus.sourceforge.net) for its filesystem and subprocess management, a modified variant of [picosha2](https://github.com/okdshin/PicoSHA2) for hashing files in a cache. There is also my own `cli.h` that supports grouped arguments, whose idea was taken from another argument parser called `NBCL`.
 
 IceTea is ment to be compact (currently 900kb when built with `-O3`) and simple. I am not directly aiming for speed, but since you can see `TinyThreads++` in there, you probably guessed already that I want to run build jobs on multiple threads to speed up the build time. I think it's called parallel building...
-
-So far, so good. If you want to look into the code, go ahead. To build a test binary, just run:
-
-```
-g++ -Wno-switch src/*.cpp -o icetea -lpthread
-```
-
-and you are good to go.
 
 
 ## Tiny benchmark from OS X
@@ -617,3 +628,6 @@ This is useful if you want to extend IceTea with a similar design as itself. Ano
 function static_lib(name) { return target(name, "lib"); }
 static_lib("foo") { /*...*/ }
 ```
+
+## Good resources
+- http://stackoverflow.com/questions/28263062/topological-sorting-of-c-data-structures/30249477#30249477

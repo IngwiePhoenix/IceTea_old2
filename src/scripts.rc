@@ -1,0 +1,5 @@
+#include "incbin.h"
+
+INCBIN(Configurable, "lib/configurable.os");
+INCBIN(libIceTea, "lib/IceTea.os");
+INCBIN(main, "lib/main.os");

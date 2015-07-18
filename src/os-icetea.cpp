@@ -18,79 +18,6 @@ using namespace std;
 using namespace ObjectScript;
 using namespace picosha2;
 
-// Pretending some globals...
-extern Value::Object* targets;
-extern Value::Object* rules;
-extern Value::Object* actions;
-
-
-/* The weirdest function you've ever seen.
-
-        target("name", "rule") { options };
-
-    It's actually legit ObjectScript code.
-    In order for it to work, we need 2 C functions and a struct.
-    And also a few defines to tell which kind we want to use.
-*/
-#define IT_TARGET   0
-#define IT_RULE     1
-#define IT_ACTION   2
-#define IT_EXTERNAL 3
-
-struct callInfo_t {
-    string name;
-    string rule;
-    int type;
-};
-
-OS_FUNC(shotgunner_2) {
-    callInfo_t* ce = (callInfo_t*)userData;
-    // Get this, before we loose control.
-    int offset = os->getAbsoluteOffs(-params+0);
-    if(os->isObject(-params+0) && ce->type == IT_EXTERNAL) {
-        os->setException("Targets, Actions, Rules and Externals require objects as parameter.");
-        return 0;
-    }
-    if(ce->type == IT_TARGET) {
-        // Add to the parameter object...
-        os->pushString(ce->rule.c_str());
-        os->setProperty(offset, "_");
-        os->pushValueById(targets->valueID);
-    } else if(ce->type == IT_RULE) {
-        os->pushString(ce->rule.c_str());
-        os->setProperty(offset, "display");
-        os->pushValueById(rules->valueID);
-    } else if(ce->type == IT_ACTION) {
-        // Assuming action, which doesnt need the 2nd param.
-        os->pushValueById(actions->valueID);
-    } else if(ce->type == IT_EXTERNAL) {
-        // Its a slightly different object.
-        os->pushString("External");
-        os->setProperty(offset, "_");
-        os->pushValueById(targets->valueID);
-    }
-
-    //os->pushValueById(targets->valueID); // FIXME: Could be nicer. Value::* needs setter.
-    os->pushStackValue(offset);
-    os->setProperty(-2, ce->name.c_str());
-    os->pop();
-    return 0;
-}
-
-OS_FUNC(shotgunner) {
-    callInfo_t* ce = new callInfo_t;
-    ce->type = *((int*)(&userData)); // void* -> int* -> int ... please FIXME. Never.
-    ce->name = string( os->toString(-params+0).toChar() );
-    if(os->isString(-params+1) && ce->type == IT_EXTERNAL) {
-        os->setException("Do not supply two arguments to an external. One is required only.");
-        return 0;
-    } else {
-        if(ce->type != IT_EXTERNAL) ce->rule = string( os->toString(-params+1).toChar() );
-    }
-    os->pushCFunction(shotgunner_2, (void*)ce);
-    return 1;
-}
-
 OS_FUNC(os_sh2_string) {
     // We can be cool and export this, so it can be used inside build.it's.
     std::string src_str = string( os->popString(-params+0).toChar() );
@@ -183,38 +110,14 @@ OS_FUNC(cli_group) {
     return 0;
 }
 
-void initObj(OS* os) {
-    // Now, initialize our objects:
-    // FIXME: Value::Object and Value::Array could REALLY create new objects/arrays too...
-    os->newObject();
-    targets = new Value::Object(os);
-    os->pop();
-
-    os->newObject();
-    rules = new Value::Object(os);
-    os->pop();
-
-    os->newObject();
-    actions = new Value::Object(os);
-    os->pop();
+OS_FUNC(cli_parse) {
+    CLI* cli = (CLI*)userData;
+    cli->parse();
+    return 0;
 }
 
 
 void initIceTeaExt(OS* os, CLI* cli) {
-    // First things first.
-    initObj(os);
-
-    // Bring it in, the targeter! Will be suited for Targets and Rules.
-    os->pushCFunction(shotgunner, (void*)IT_TARGET);
-    os->setGlobal("target");
-    os->pushCFunction(shotgunner, (void*)IT_RULE);
-    os->setGlobal("rule");
-    os->pushCFunction(shotgunner, (void*)IT_ACTION);
-    os->setGlobal("action");
-    os->pushCFunction(shotgunner, (void*)IT_EXTERNAL);
-    os->setGlobal("external");
-
-
     // Exec
     os->pushCFunction(os_exec);
     os->setGlobal("$");
@@ -227,6 +130,7 @@ void initIceTeaExt(OS* os, CLI* cli) {
         {OS_TEXT("value"), cli_value, (void*)cli},
         {OS_TEXT("check"), cli_check, (void*)cli},
         {OS_TEXT("group"), cli_group, (void*)cli},
+        {OS_TEXT("parse"), cli_parse, (void*)cli},
         {}
     };
     os->getModule("cli");

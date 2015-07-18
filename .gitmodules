@@ -1,0 +1,3 @@
+[submodule "incbin"]
+	path = incbin
+	url = https://github.com/IngwiePhoenix/incbin.git
