@@ -43,11 +43,11 @@ baz("a cheeseburger!");
 
 print ""
 print "Testing the syntactic shuggar of OS."
-configurable("order"){|head, body|
+configurable("order", function(head, body) {
     print "Your order:"
     print "    Store    : ${head[0]}"
     print "    Dish     : ${body.food}"
-};
+});
 order("Mr. King") {
     food: "A cheeseburger and a cola"
 }
