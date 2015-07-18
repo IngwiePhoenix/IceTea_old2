@@ -3,17 +3,19 @@ IceTea = extends _E {
     // The scheme (aka. action method) to run.
     scheme: "build",
     // The folder where output files should end up
-    outputDir: null,
+    outputDir: __outputdir,
     // If tasks should be ran or not.
     runTasks: true,
+    // The targets to build
+    toBuild: [],
+    toBuildResolv: [],
 
     // Global collectors
 
     // Rules
     __rules: {},
     addRule: function(n,r) {
-        if(n in IceTea.__rules) {
-            // check if we should show warnings...
+        if(n in IceTea.__rules && cli.check("-W")) {
             print "WARNING: Overwriting previously defined rule \""+r+"\"";
         }
         IceTea.__rules[n]=r;
@@ -26,14 +28,15 @@ IceTea = extends _E {
             throw "Target must be an instance of IceTea.Target.";
         } else {
             var expected = rule.output.expected;
-            var basename = path.basename(file);
-            var ext = path.extname(file);
+            var filename = pfs.filename(file);
+            var basename = pfs.basename(file);
+            var ext = pfs.extname(file);
             var out = expected
-                .replace("%t", target.name)
-                .replace("%b", basename)
-                .replace("%e", ext)
-                .replace("%f", file)
-                .replace("%o", IceTea.outputDir);
+                .replace('%t', target.name)
+                .replace('%b', basename)
+                .replace('%e', ext)
+                .replace('%f', filename)
+                .replace('%o', IceTea.outputDir);
 
             return out;
         }
@@ -51,11 +54,11 @@ IceTea = extends _E {
     // Return targets by tag. Supports wildcards.
     tag: function(t) {
         if(typeOf(t) == "null") {
-            return IceTea.__targets.keys();
+            return IceTea.__targets.keys;
         } else {
             var res = [];
             for(name,target in IceTea.__targets) {
-                if(typeOf(target.info.tag) != "null" && Wildcard.match(t, target.info.tag)) {
+                if(typeOf(target.info.tag) != "null" && wildcard.match(t,target.info.tag)) {
                     // Target has a tag AND it fits. Add.
                     res.push(name);
                 }
@@ -81,7 +84,7 @@ IceTea = extends _E {
     },
 
     // Tasks. They are topologicaly sorted - only the master nodes should go in.
-    __tasks = {};
+    __tasks = {},
     /**
         @brief Create the actual tasks
 
@@ -111,8 +114,8 @@ IceTea = extends _E {
 
             // See if the supplied file is accepted by this rule or not.
             var accepted = false;
-            for(i,acc in rule.output.accepts) {
-                if(Wildcard.match(file, acc)) {
+            for(var i,acc in rule.accepts) {
+                if(wildcard.match(acc, file)) {
                     accepted = true;
                     break;
                 }
@@ -120,10 +123,15 @@ IceTea = extends _E {
             if(accepted) {
                 // i.e.: myfile.x matches *.x
                 // This matches! This is the rule we want.
-                IceTea.__tasks[target.name].push( IceTea.Task(target, rule, file) );
+                var t = IceTea.Task(target, rule, file);
+                if(rule.displayName != target.rule.displayName) {
+                    // Only add if we have not met the top target.
+                    IceTea.__tasks[target.name][t.output] = t;
+                }
                 return {
                     rule: rule,
-                    estimated: IceTea.estimateRuleOutput(rule, target, file)
+                    estimated: t.output,
+                    input: t.input;
                 };
             } else {
                 // It does not match. So we have to look for a rule that outputs what this rule wants.
@@ -135,14 +143,13 @@ IceTea = extends _E {
                         break;
                     }
                 }
-                if(res != false) {
-                    if(res.rule != rule) {
+                if(typeOf(res) == "object") {
+                    if(res.rule.displayName != rule.displayName) {
                         // We are still not at the top.
-                        var est = IceTea.estimateRuleOutput(res.rule, target, file);
-                        __makeTasks(target, out.rule, est);
+                        return __makeTasks(target, rule, res.estimated);
                     }
                 } else {
-                    throw "There is appearently no rule to process file ${file}.";
+                    //throw "There is appearently no rule to process file ${file}.";
                 }
             }
         };
@@ -160,11 +167,15 @@ IceTea = extends _E {
             // We are going from the top to the bottom.
             target.master = true;
             // Prepare the task entry
-            IceTea.__tasks[target.name] = [];
-            for(i,file in target.input) {
+            IceTea.__tasks[target.name] = {};
+            var finalInput = [];
+            var finalOut = IceTea.estimateRuleOutput(target.rule, target);
+            for(i,file in target.info.input) {
                 // Trigger the back-tracking.
-                __makeTasks(target, target.rule, file);
+                var rt = __makeTasks(target, target.rule, file);
+                finalInput.push(rt.input);
             }
+            IceTea.__tasks[target.name][finalOut] = IceTea.Task(target, target.rule, finalInput);
         }
     },
 
@@ -199,9 +210,10 @@ IceTea = extends _E {
         @note This should actually change depending on specified actions...
     */
     Initializer: function() {
-        for(_,target in IceTea.__targets) {
-            if(typeOf(target.init) == "function") {
-                var rt = target.init();
+        for(name,target in IceTea.__targets) {
+            var init = target.info.init;
+            if(typeOf(init) == "function") {
+                var rt = init.call(target.info);
                 // Returning false halts the initialization, thus cancels anything else.
                 if(typeOf(rt) == "boolean" && !rt) return rt;
             }
@@ -220,9 +232,9 @@ IceTea = extends _E {
 
         For a configuration to fail explicitly, it must use the abort/exit methods.
     */
-    Preprocessor: function(targets) {
+    Preprocessor: function() {
         var configured = [];
-        for(_,tname in targets) {
+        for(_,tname in IceTea.toBuild) {
             var target = IceTea.__targets[tname];
             if(typeOf(target) == "null") {
                 throw "Target ${tname} does not exist.";
@@ -236,8 +248,11 @@ IceTea = extends _E {
                     }
                     if(t == target) continue; // Skip this one, itll be configured in a bit.
                     configured.push(tn);
-                    if(typeOf(t.configure) == "function") {
-                        t.configure();
+                    var configure = t.info.configure;
+                    if(typeOf(configure) == "function") {
+                        var rt = configure.call(t);
+                        // If false, stop.
+                        if(typeOf(rt) == "boolean" && rt == false) return rt;
                     }
                     // Update settings
                     target.settings = target.settings + t.exports;
@@ -245,12 +260,16 @@ IceTea = extends _E {
             }
 
             // Configure main target
-            if(typeOf(target.configure) == "function") {
-                var rt = target.init();
+            var mainConfigure = target.info.configure;
+            if(typeOf(mainConfigure) == "function") {
+                var rt = mainConfigure.call(target);
                 // Returning false halts the initialization, thus cancels anything else.
                 if(typeOf(rt) == "boolean" && !rt) return rt;
             }
+
+            configured.push(tname);
         }
+        IceTea.toBuildResolv = configured;
     },
 
     /**
@@ -266,15 +285,15 @@ IceTea = extends _E {
         @see Initializer
     */
     Transformer: function() {
-        // cli.check("-w") == wipe
+        IceTea.createTasks(IceTea.toBuildResolv);
     }
-};
+}
 
 IceTea.RuleException = extends Exception {
     __construct = function(prefix, msg) {
         return super(prefix+" :: "+msg);
     }
-}
+};
 
 IceTea.Rule = extends Object {
     __construct: function(displayName, o) {
@@ -318,14 +337,19 @@ IceTea.Task = extends Object {
     __construct: function(target, rule, file) {
         this.target = target;
         this.rule = rule;
+        this.input = file;
+        if(typeOf(file) == "array") {
+            // This is very likely a full final. So make file empty.
+            this.output = IceTea.estimateRuleOutput(rule, target);
+        } else {
+            this.output = IceTea.estimateRuleOutput(rule, target, file);
+        }
     }
 }
-
-
 // Configurables
 configurable("rule", function(head, body){
     var name = head[0];
-    var display = head[2];
+    var display = head[1];
     IceTea.addRule(name, IceTea.Rule(display, body));
 });
 configurable("target", function(head, body){

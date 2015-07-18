@@ -11,12 +11,27 @@
 
 #include "objectscript.h"
 #include "os-std.h"
-
 #include "os-icetea.h" // OS_FUNC
 #include "os-stacker.h"
 
+#include "wildcard.hpp"
+
+
 using namespace std;
 using namespace ObjectScript;
+using namespace stlplus;
+
+OS_FUNC(wildcard_match) {
+    if(params < 2) {
+        os->setException("Two parameters are required.");
+        return 0;
+    }
+    OS::String pat = os->toString(-params+0);
+    OS::String str = os->toString(-params+1);
+
+    os->pushBool(wildcard(pat.toChar(), str.toChar()));
+    return 1;
+}
 
 /// The array `+` operator.
 OS_FUNC(array_add) {
@@ -145,4 +160,13 @@ void initializeStdlib(OS* os) {
     os->pushCFunction(object_add);
     os->setProperty(-2, "__add");
     os->pop();
+
+    OS::FuncDef wcFuncs[] = {
+        {OS_TEXT("match"), wildcard_match},
+        {}
+    };
+    os->getModule("wildcard");
+    os->setFuncs(wcFuncs);
+    os->pop();
+
 }

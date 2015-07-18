@@ -144,7 +144,7 @@ rule('cxx', 'C++') {
     accepts: ['*.cpp', '*.cxx', '*.c++', '*.cc'],
     output: {
         pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
     },
     prepare: function() {
         detect.compiler('c++');
@@ -156,7 +156,7 @@ rule('c', 'C') {
     accepts: ['*.c', '*.C'],
     output: {
         pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
     },
     prepare: function() {
         detect.compiler('c');
@@ -168,7 +168,7 @@ rule('objc', 'Objective-C') {
     accepts: ['*.m'],
     output: {
         pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
     },
     prepare: function() {
         detect.compiler('objc');
@@ -180,7 +180,7 @@ rule('objcxx', 'Objective-C++') {
     accepts: ['*.mm'],
     output: {
         pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%e.o':'%o/.%t/%e.obj')
+        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
     },
     prepare: function() {
         detect.compiler('objcxx');
@@ -192,7 +192,7 @@ rule('strip', 'Strip') {
     accepts: ['*.o'],
     output: {
         pattern: '*.o-stripped',
-        expected: '%o/.%t/%e.o-stripped'
+        expected: '%o/.%t/%f.o-stripped'
     },
     prepare: function() {
         // We have to see how we gonna minify this thing.

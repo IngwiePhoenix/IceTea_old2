@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 
 #include "objectscript.h"
 #include "os-value.h"
@@ -116,6 +117,23 @@ OS_FUNC(cli_parse) {
     return 0;
 }
 
+OS_FUNC(cli_usage) {
+    CLI* cli = (CLI*)userData;
+    cli->usage();
+    return 0;
+}
+
+OS_FUNC(cli_getStrayArgs) {
+    CLI* cli = (CLI*)userData;
+    vector<string> stray = cli->getStrayArgs();
+    os->newArray();
+    vector<string>::iterator it = stray.begin();
+    for(; it!=stray.end(); ++it) {
+        os->pushString((*it).c_str());
+        os->addProperty(-2);
+    }
+    return 1;
+}
 
 void initIceTeaExt(OS* os, CLI* cli) {
     // Exec
@@ -128,9 +146,13 @@ void initIceTeaExt(OS* os, CLI* cli) {
     OS::FuncDef cliFuncs[] = {
         {OS_TEXT("insert"), cli_insert, (void*)cli},
         {OS_TEXT("value"), cli_value, (void*)cli},
+        {OS_TEXT("__get"), cli_value, (void*)cli},
         {OS_TEXT("check"), cli_check, (void*)cli},
         {OS_TEXT("group"), cli_group, (void*)cli},
         {OS_TEXT("parse"), cli_parse, (void*)cli},
+        {OS_TEXT("usage"), cli_usage, (void*)cli},
+        {OS_TEXT("__get@stray"), cli_getStrayArgs, (void*)cli},
+        {OS_TEXT("getStrayArgs"), cli_getStrayArgs, (void*)cli},
         {}
     };
     os->getModule("cli");

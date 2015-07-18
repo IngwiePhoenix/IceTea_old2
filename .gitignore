@@ -13,3 +13,4 @@ doc/
 *.obj
 misc/compile_cmd.txt
 misc/old algorythm.cpp
+config.h

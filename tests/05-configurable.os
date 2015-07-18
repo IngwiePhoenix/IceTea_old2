@@ -21,7 +21,7 @@ var meep = "meep.";
 foo()(meep);
 
 print "Finally, trying out a deprecation function!"
-configurable("deprecated")(function(head, callback){
+configurable("deprecated", function(head, callback){
     _G[head[0]] = function() {
         echo "*** WARNING ***: "
         print "Function ${head[0]} is deprecated: ${head[1]}"
