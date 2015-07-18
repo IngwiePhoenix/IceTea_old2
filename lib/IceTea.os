@@ -68,14 +68,7 @@ IceTea = extends _E {
     },
 
     // Actions
-    __actions: {
-        all: {
-            // The do-all method.
-            build: IceTea.tag(),
-            clean: IceTea.tag(),
-            install: IceTea.tag()
-        }
-    },
+    __actions = {},
     addAction: function(n, a) {
         if(n in IceTea.__actions && cli.check("-W")) {
             print "WARNING: Overwriting previously defined action \"${n}\"";
@@ -140,7 +133,7 @@ IceTea = extends _E {
                     if($rule.output.pattern in rule.accepts) {
                         // This matches. So let's pass on
                         res = __makeTasks(target, $rule, file, true);
-                        break;
+                        if(typeOf(res) == "object") break;
                     }
                 }
                 if(typeOf(res) == "object") {

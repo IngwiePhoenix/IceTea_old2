@@ -3,14 +3,6 @@ function __get(name) {
 }
 
 function main(args) {
-    // Pre-check
-    //if(cli->check("-u")) cli->group("Project options");
-    // init
-    // cli.parse
-    // if -u == usage
-    // else IceTea.Preprocessor
-    // if --print-json, print targets as json.
-
     // Determine run scheme
     if(cli.check("-w")) {
         IceTea.scheme = "clean";
@@ -18,6 +10,15 @@ function main(args) {
         IceTea.scheme = "install";
     } else if(cli.check("--scheme")) {
         IceTea.scheme = cli["--scheme"];
+    }
+
+    // Has someone made the all target, yet?
+    if(typeOf(IceTea.__actions.all) == "null") {
+        IceTea.addAction("all",{
+            build: IceTea.tag(),
+            clean: IceTea.tag(),
+            install: IceTea.tag()
+        });
     }
 
     // Status
@@ -60,10 +61,13 @@ function main(args) {
     rt = IceTea.Transformer();
     if(typeOf(rt) == "boolean" && rt == false) return 1;
 
+    var taskCount = 0;
     for(var i,v in IceTea.__tasks) {
         print "-- ${i}";
         for(var output,task in v) {
             print "  In: ${task.input} - Out: ${output}"
+            taskCount++;
         }
     }
+    print "[ Tasks: ${taskCount} ]"
 }

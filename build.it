@@ -5,6 +5,10 @@ function isDarwin() {
     } == "Darwin";
 }
 
+target("incbin", "exe") {
+    input: ["incbin/incbin.c"]
+}
+
 target("icetea", "exe") {
     input: pfs.glob("src", "*.cpp"),
     init: function() {
@@ -48,11 +52,6 @@ target("icetea", "exe") {
     },
 }
 
-action("all") {
-    build: ["*"],
-    clean: ["*"]
-}
-
 action("dist"){|scheme|
     print "Creating a distribution...";
     if(sys.which("tar") != "") {
@@ -63,4 +62,8 @@ action("dist"){|scheme|
 
 action("tests"){|scheme|
     require "tests/run_tests"
+}
+
+action("incbin") {
+    build: ["incbin"]
 }
