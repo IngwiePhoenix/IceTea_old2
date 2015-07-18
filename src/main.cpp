@@ -146,6 +146,7 @@ int main(int argc, const char** argv) {
     cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
     cli->insert("", "--print-targets", "", "Dump all targets in JSON format to standard error output. Export with: icetea --print-targets 2>targets.json");
     cli->insert("", "--print-actions", "", "Dump all actions in JSON format to standard error output. Export with: icetea --print-actions 2>actions.json");
+    cli->insert("", "--print-rules", "", "Dump all rules in JSON format to standard error output. Export with: icetea --print-rules 2>actions.json");
     cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
     cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
     cli->insert("-o", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
@@ -156,6 +157,7 @@ int main(int argc, const char** argv) {
         "-w", "--wipe", "",
         "Sets the build scheme to 'clear'. Will delete output files."
     );
+    cli->insert("","--scheme","","Set a custom scheme.");
     cli->insert("-c", "--configure", "", "Only configure the specified projects and do not build.");
     cli->insert("-g", "--debug", "", "Turn on the global DEBUG variable (set it to true)");
     cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
@@ -213,9 +215,10 @@ int main(int argc, const char** argv) {
         OS_EVAL(os, "_G.DEBUG=false");
     }
 
-    // Wiping the source tree...
-    if(cli->check("-w")) {
-        OS_EVAL(os, "IceTea.runScheme=\"clean\"");
+    // Run the script to populate the global objects.
+    if(file_exists(bootstrapit)) {
+        OS_REQUIRE(os, bootstrapit.c_str());
+        EXIT_ON_FAILURE()
     }
 
     // Auto-include
@@ -225,6 +228,7 @@ int main(int argc, const char** argv) {
         for(vector<string>::iterator it=itFiles.begin(); it!=itFiles.end(); ++it) {
             string full = create_filespec(".IceTea", *it);
             OS_REQUIRE(os, full.c_str());
+            EXIT_ON_FAILURE()
         }
         // Also make require aware of this new path.
         os->pushGlobals();
@@ -236,12 +240,6 @@ int main(int argc, const char** argv) {
         os->pushString(fullDir.c_str());
         os->addProperty(-2);
         os->pop();
-    }
-
-    // Run the script to populate the global objects.
-    if(file_exists(bootstrapit)) {
-        OS_REQUIRE(os, bootstrapit.c_str());
-        EXIT_ON_FAILURE()
     }
 
     if(file_exists(buildit)) {

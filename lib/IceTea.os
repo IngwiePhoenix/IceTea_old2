@@ -354,9 +354,12 @@ configurable("rule", function(head, body){
 });
 configurable("target", function(head, body){
     var name = head[0];
-    var rule = IceTea.__rules[head[1]];
-    if(typeOf(rule) == "null") throw "Rule ${head[1]} (used on target ${name}) is unknown.";
-    IceTea.addTarget(name, IceTea.Target(name, rule, body));
+    var rule = head[1];
+    var r = IceTea.__rules[rule];
+    if(typeOf(r) == "null") {
+        throw "Rule ${head[1]} (used on target ${name}) is unknown.";
+    }
+    IceTea.addTarget(name, IceTea.Target(name, r, body));
 });
 configurable("action", function(head, body){
     IceTea.addAction(head[0], body);

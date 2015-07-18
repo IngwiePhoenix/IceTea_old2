@@ -25,9 +25,20 @@ function main(args) {
 
     rt = IceTea.Initializer();
     if(rt==false) return 1;
-    // Usage?
-    if(cli.check("-u")) return cli.usage();
-
+    if(cli.check("-u")) {
+        // Usage?
+        return cli.usage();
+    } else if(cli.check("--print-targets")) {
+        // dump something...
+        print json.encode(IceTea.__targets);
+        return 0;
+    } else if(cli.check("--print-actions")) {
+        print json.encode(IceTea.__actions);
+        return 0;
+    } else if(cli.check("--print-rules")) {
+        print json.encode(IceTea.__rules);
+        return 0;
+    }
     var toBuild = [];
     if(cli.stray.length == 0) {
         toBuild = IceTea.__actions["all"][IceTea.scheme];
