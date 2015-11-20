@@ -8,6 +8,7 @@
 #include "os-pfs.h"
 #include "os-sys.h"
 #include "os-configurable.h"
+#include "os-console.h"
 
 #include "picosha2.h"
 
@@ -141,6 +142,10 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->setGlobal("$");
     os->pushCFunction(os_system);
     os->setGlobal("shell");
+
+    // Extend the $ with console funcs.
+    extendDollar(os);
+
 
     // Option parsing/passing
     OS::FuncDef cliFuncs[] = {

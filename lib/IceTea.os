@@ -157,8 +157,6 @@ IceTea = extends _E {
         }
 
         for(i,target in toBuild) {
-            // We are going from the top to the bottom.
-            target.master = true;
             // Prepare the task entry
             IceTea.__tasks[target.name] = {};
             var finalInput = [];
@@ -168,7 +166,7 @@ IceTea = extends _E {
                 var rt = __makeTasks(target, target.rule, file);
                 finalInput.push(rt.input);
             }
-            IceTea.__tasks[target.name][finalOut] = IceTea.Task(target, target.rule, finalInput);
+            IceTea.__tasks[target.name][finalOut] = IceTea.Task(target, target.rule, finalInput, true);
         }
     },
 
@@ -327,7 +325,9 @@ IceTea.Task = extends Object {
         SCRIPT: 1,
         COMMANDS: 2
     },
-    __construct: function(target, rule, file) {
+    __construct: function(target, rule, file, master) {
+        // Used to pick up when topo-sorting.
+        this.top = master || false;
         this.target = target;
         this.rule = rule;
         this.input = file;

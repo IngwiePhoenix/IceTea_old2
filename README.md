@@ -36,7 +36,7 @@ Unix:
     $ g++ -Wno-switch src/*.cpp -o icetea
 
 Windows:
-    > cl /Tp incbin/incbin.c /Feincbin
+    > cl incbin/incbin.c /Feincbin.exe
     > incbin src/scripts.rc -o src/scripts.cpp
     > cl /EHsc src/*.cpp /Feicetea
 
