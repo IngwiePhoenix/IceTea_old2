@@ -31,23 +31,23 @@
 
 // Scripting
 #include "objectscript.h"
-#include "os-value.h"
+// #include "os-value.h"
 #include "os-icetea.h"
 #include "os-detector.h"
 #include "os-exec.h"
 #include "os-pfs.h"
 #include "os-std.h"
 #include "os-stacker.h"
-#define OS_EVAL(_os, code)               _os->eval(code,0,0,OS_SOURCECODE_PLAIN,true,false)
+#define OS_EVAL(_os, code)                _os->eval(code,0,0,OS_SOURCECODE_PLAIN,true,false)
 #define OS_EVAL_FAKE_FILE(_os, file, src) _os->evalFakeFile(file,src,0,0,OS_SOURCECODE_PLAIN,true,false)
 #define OS_REQUIRE(_os, file)             _os->require(file,true,0,OS_SOURCECODE_PLAIN,true,false)
 
 // FS access
 #include "file_system.hpp"
-#include "wildcard.hpp"
+// #include "wildcard.hpp"
 
 // Hashing
-#include "picosha2.h"
+// #include "picosha2.h"
 
 // Misc
 #include "predef.h"
@@ -55,13 +55,13 @@
 #include "util.h"
 #include "stlplus_version.hpp"
 #include "filecache.hpp"
-#include "getMemorySize.h"
 
 // Because I have to
 /*
 #ifdef __APPLE__
 #include <execinfo.h>
 #include <signal.h>
+#include "getMemorySize.h"
 #include "stacktrace.h"
 void handler(int sig) {
   // print out all the frames to stderr
@@ -76,7 +76,7 @@ using namespace std;
 using namespace tthread;
 using namespace ObjectScript;
 using namespace stlplus;
-using namespace picosha2;
+// using namespace picosha2;
 
 OS*        os; ///< Global ObjectScript instance.
 CLI*       cli; ///< Global Command Line Interface instance.
@@ -116,7 +116,7 @@ int main(int argc, const char** argv) {
 
     // Generate a pretty copyright.
     stringstream cpr;
-    cpr << "IceTea 0.1.3 by Ingwie Phoenix" << endl
+    cpr << "IceTea 0.2.0 by Ingwie Phoenix" << endl
         << OS_COPYRIGHT << endl
         << "TinyThread++ " << TINYTHREAD_VERSION_MAJOR << "." << TINYTHREAD_VERSION_MINOR << endl
         << "stlplus " << stlplus::version() << endl;
@@ -223,13 +223,6 @@ int main(int argc, const char** argv) {
 
     // Auto-include
     if(folder_exists(".IceTea")) {
-        // Get all *.it files
-        vector<string> itFiles = folder_wildcard(".IceTea", "*.it", false, true);
-        for(vector<string>::iterator it=itFiles.begin(); it!=itFiles.end(); ++it) {
-            string full = create_filespec(".IceTea", *it);
-            OS_REQUIRE(os, full.c_str());
-            EXIT_ON_FAILURE()
-        }
         // Also make require aware of this new path.
         os->pushGlobals();
         os->pushString("require");
@@ -240,6 +233,13 @@ int main(int argc, const char** argv) {
         os->pushString(fullDir.c_str());
         os->addProperty(-2);
         os->pop();
+        // Get all *.it files
+        vector<string> itFiles = folder_wildcard(".IceTea", "*.it", false, true);
+        for(vector<string>::iterator it=itFiles.begin(); it!=itFiles.end(); ++it) {
+            string full = create_filespec(".IceTea", *it);
+            OS_REQUIRE(os, full.c_str());
+            EXIT_ON_FAILURE()
+        }
     }
 
     if(file_exists(buildit)) {

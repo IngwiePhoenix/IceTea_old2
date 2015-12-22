@@ -2,12 +2,16 @@
 #include "os-console.h"
 #include "rlutil.h"
 
+#include <iostream>
+
+using namespace std;
 using namespace ObjectScript;
 using namespace rlutil;
 
 // Set the text color.
 OS_FUNC(console_setColor) {
     setColor(os->toInt(-params+0));
+    cout << flush;
     return 0;
 }
 
@@ -55,6 +59,7 @@ OS_FUNC(console_saveDefaultColor) {
 // Reset the color, pretty much like a deinit function.
 OS_FUNC(console_resetColor) {
     resetColor();
+    cout << flush;
     return 0;
 }
 
@@ -67,12 +72,14 @@ OS_FUNC(console_cls) {
 // Hide the cursor
 OS_FUNC(console_cursor_hide) {
     hidecursor();
+    cout << flush;
     return 0;
 }
 
 // Unhide the cursor
 OS_FUNC(console_cursor_show) {
     showcursor();
+    cout << flush;
     return 0;
 }
 
@@ -97,6 +104,8 @@ OS_FUNC(console_getCols) {
 // Now comes the fun part!
 void extendDollar(OS* os) {
     OS::FuncDef consoleFuncs[] = {
+        // Misc
+        {OS_TEXT("msleep"),                 console_msleep},
         // Keyboard
         {OS_TEXT("anyKey"),                 console_anyKey},
         {OS_TEXT("getch"),                  console_getch},

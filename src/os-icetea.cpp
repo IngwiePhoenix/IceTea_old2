@@ -6,6 +6,7 @@
 #include "os-icetea.h"
 #include "os-exec.h"
 #include "os-pfs.h"
+#include "os-process.h"
 #include "os-sys.h"
 #include "os-configurable.h"
 #include "os-console.h"
@@ -146,7 +147,6 @@ void initIceTeaExt(OS* os, CLI* cli) {
     // Extend the $ with console funcs.
     extendDollar(os);
 
-
     // Option parsing/passing
     OS::FuncDef cliFuncs[] = {
         {OS_TEXT("insert"), cli_insert, (void*)cli},
@@ -178,5 +178,6 @@ void initIceTeaExt(OS* os, CLI* cli) {
 
     // Misc
     initializeSYS(os);
+    initializeProcess(os);
     initializeConfigurable(os);
 }
