@@ -1,4 +1,4 @@
-![Icetea Logo](misc/logo.png)
+![Icetea Logo](http://ingwie.me/img/icetea.png)
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/Deskshell-Core/PhoenixEngine?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)˘
 # IceTea - couldn't be chillier.
 
