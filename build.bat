@@ -5,14 +5,11 @@ REM Assuming that cl.exe is in path...
 REM make output folder
 mkdir out
 
-REM Compile incbin
-cl incbin/incbin.c /Fe:incbin
+REM Build IncBin
+cl incbin/incbin.c /Feincbin
 
-REM Render source files
-incbin src\sources.rc -o out\sources.cpp
+Build the source container
+incbin src/scripts.rc -o src/scripts.cpp
 
-REM Compile IceTea
-cl src\*.cpp out\sources.cpp /Fe:out\icetea.speed
-
-REM Compile IceTea using IceTea!
-out\icetea.speed
+REM Build IceTea
+cl /EHsc src/*.cpp /Feout\icetea
