@@ -45,7 +45,7 @@ In order for the files to resolve correctly, make sure you navigated into the Ic
 
     $ git clone https://github.com/IngwiePhoenix/IceTea.git
     $ cd IceTea
-    $ ..build...
+    $ ...build...
 
 ## It's as easy as opening a bottle of ice tea!
 ```javascript
@@ -383,7 +383,6 @@ This is used internally and is also being exported.
 | project(name)            | Define the current file to be this project.     |
 | IceTea(object)           | Configure IceTea. The call in `build.it` counts |
 | configurable(name) func  | Create a configurable yourself.                 |
-| $(...)                   | Run an external program.                        |
 
 #### Actions
 These have the following properties:
@@ -395,10 +394,12 @@ These have the following properties:
 
 However, if the action is not an object but a function instead, then this will be ran. You can use `build()`, `clean()`, `install()` and `uninstall()` just like in the object above, but can put things under conditions. All these functions take arrays as arguments. So you can call them as:
 
+The function obtains a reference to the command line args. It can do new parsing or something else.
+
 ```javascript
-action("dist") function() {
+action("dist"){|args|
     if(detect.tool("tar")) {
-        $("tar cvfz mydist.tgz ${__DIR__}/*.txt ${__DIR__}/out ${__DIR__}/include");
+        $ "tar cvfz mydist.tgz ${__DIR__}/*.txt ${__DIR__}/out ${__DIR__}/include";
     }
 }
 ```
@@ -471,7 +472,7 @@ The above has a `native` setting. This one is used independent of the current co
 
 A target has to define the following options:
 
-* `input`: The input to the rule, always an array.
+* `input`: The input to the rule, always an array. Use stuff like `pfs.glob` to pick many files at once.
 
 These are optional settings that can be given:
 
@@ -479,8 +480,8 @@ These are optional settings that can be given:
     - native
     - C
     - CXX
-    - ObjC
-    - ObjCXX
+    - OBJC
+    - OBJCXX
     - SHARED
     - INSTALL
     - Some platform specific ones:
@@ -537,6 +538,14 @@ Now you can have a target rely on LLVM. LLVM will occupy a thread to configure a
 #### Running shell commands.
 As you saw above, you can use the `$()` function to run commands. And since OS does not require parantheses if oly one argument is given, it will look a bit like an actual line within a terminal. But there is way more to it. For instance, it supports placeholders:
 
+A normal command:
+
+```javascript
+$ "git pull https://github.com/IngwiePhoenix/IceTea.git"
+```
+
+With placeholders:
+
 ```javascript
 $("cd ? && rm ?", SRC_DIR, "foobar");
 ```
@@ -574,13 +583,13 @@ var ARCH, OEM, KERNEL = tripple[0], tripple[1], tripple[2];
 
 Useful, if you are cross-compiling.
 
-Alternatively, you can run a process in place of the current one and have it share the standart input, output and error. To do so, use `shell()`:
+Alternatively, you can run a process in place of the current one and have it share the standard input, output and error. To do so, use `shell()`:
 
 ```javascript
 shell "sudo apt-get update"
 ```
 
-This will actually ask for the user's password and return to executing IceTea. Do not use this during task runs - this is prune to showcase unexpected behaviour...
+This will actually ask for the user's password and return to executing IceTea. Do not use this during task runs - this is prune to showcase unexpected behaveiour...
 
 #### Project
 If you are working with multiple projects and wish to keep them organized in a way, you can do so by specifying a project. The current file will be treatened to be of this project. Any output will have a new subfolder with the project's name. For instance:
@@ -628,6 +637,44 @@ This is useful if you want to extend IceTea with a similar design as itself. Ano
 function static_lib(name) { return target(name, "lib"); }
 static_lib("foo") { /*...*/ }
 ```
+
+### `$` The console, your terminal
+
+| name                    | Description                                                        |
+|-------------------------|--------------------------------------------------------------------|
+| $(...)                  | Run a shell command. The function described above.                 |
+| .Cursor.hide()          | Hide the console cursor.                                           |
+| .Cursor.show()          | Show the cursor again.                                             |
+| .msleep(Milliseconds)   | Sleep for some milliseconds.                                       |
+| .anyKey([Message])      | Wait for any key to be pressed. Displays a message while waiting.  |
+| .getch()                | Get a character from the keyboard.                                 |
+| .getKey()               | Get a key from the keyboard.                                       |
+| .key                    | Same as above, but as a property accessor.                         |
+| .setColor(Color)        | Set the output color. Use from `$.Color`                           |
+| .saveDefaultColor()     | Call this to save the color prior to the call to restore it later. |
+| .resetColor()           | Reset the color to the previous state.                             |
+| .cls()                  | Clear the screen.                                                  |
+| .locate()               | Returns an array with the coordinates of the cursor.               |
+| .rows / $.getRows()     | Returns the current rows within the terminal.                      |
+| .cols / $.getCols()     | Returns the current columns within the terminal.                   |
+
+This object also boosts a few extra objects to identify colors and keyboard buttons.
+
+| Name       | Purpose
+|------------|------------------------------------------------------------|
+| $.Keyboard | Key names, in uppercase.                                   |
+| $.Color    | Color names. They are actually integers. Use to set color. |
+
+### `process`: IceTea's process instance
+
+This is no complete implementation of a process object - but it is getting there. It's main job is to give you almost direct access to the standard output and standard error output.
+
+| Name    | Purpose
+|---------|---------------|
+| .stdout | Access STDOUT |
+| .stderr | Access STDERR |
+
+Both of these have a `write()` and `flush()` method. The first writes a string directly and without buffering to the STDOUT or STDERR - and the latter flushes them and releases all the un-flushed data onto their respective stream.
 
 ## Good resources
 - http://stackoverflow.com/questions/28263062/topological-sorting-of-c-data-structures/30249477#30249477
