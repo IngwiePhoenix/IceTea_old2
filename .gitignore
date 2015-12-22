@@ -1,16 +1,6 @@
+/*.os
+src/os-scripts.cpp
+/icetea
 *.dSYM
-*.o
-icetea
-.DS_Store
-out/*
-.cache.it
-*.o-stripped
-out/
-build_test/out/
-build_test/out/*
-doc/
-*.exe
-*.obj
-misc/compile_cmd.txt
-misc/old algorythm.cpp
 config.h
+out/

@@ -1,13 +1,21 @@
 #!/bin/bash
+# Set up CWD
 cd "$(dirname '$0')"
+set -v
 # Prepare speedbuild
-mkdir out
-PATH=./out:$PATH
+if [ ! -d "./out" ]; then
+    mkdir out
+fi
+
 # Build the incbin utility
 gcc incbin/incbin.c -o out/incbin
+
 # Generate resources
-incbin src/scripts.rc -o src/os-scripts.cpp
+./out/incbin src/scripts.rc -o src/os-scripts.cpp
+
 # Speedbuild IceTea
-g++ src/*.cpp -o out/speed.icetea
+CXXFLAGS="-Wno-switch $CXXFLAGS"
+g++ src/*.cpp -o out/speed.icetea $CXXFLAGS
+
 # Build ourself
-speed.icetea
+./out/speed.icetea

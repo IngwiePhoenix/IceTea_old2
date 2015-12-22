@@ -8,7 +8,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [ ] Introduce `external(name) {... opts ...}`
 - [X] Implement the detector module.
 - [X] Implement an overall caching storage to make it possible for the app to store a cache for detector and alike.
-- [ ] Somehow introduce console colors for all platforms.
+- [X] Somehow introduce console colors for all platforms.
 - [X] Introduce pre-inclusion (`require()`ing all files within a specified subfolder)
 - [ ] Introduce addition to `require()` to automatically include a project. I.e.: `require.project "submodule/"`
 - [X] Begin using the `prepare()` method for rules.
@@ -21,11 +21,11 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [X] Introduce dependency tracker
 - [X] Rewrite `void Run(void*)` for a better update tracker. It currently will happily rerun a task **multiple** times. It needs to learn to only run a task once, and only once.
 - [X] Add `+` operator for `Object`.
-- [ ] Better error handling if OS actually crashed. Currently `int main(int,char**)` will report that no targets were built whilst it actually has an exception written ontop of it.
+- [X] Better error handling if OS actually crashed. Currently `int main(int,char**)` will report that no targets were built whilst it actually has an exception written ontop of it.
 - [ ] Separate debug/non-debug builds
 - [X] Better Windows linker support / flag passing / warning handling.
 - [ ] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
-- [ ] Make rules be able to depend upon targets also.
+- [ ] Make rules able to depend upon targets also.
 - [ ] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
 
 ### Added 25th Dec. 2014, 1.27PM
@@ -60,3 +60,9 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Use `stlplus::async_subprocess`.
     - Create a subclass that reports `bool done()`.
 - [ ] Make `settings.LINK.libraries` unique (i.e.: only one `-lmylib` per array)
+
+### Added 20th November 2015, 11:07PM
+- [ ] Implement a Topsort mechanism
+    * Luckily, advice was retrived here: http://stackoverflow.com/a/30249477/2423150
+- [ ] Possibly generate a graph.
+- [ ] Maybe introduce RegEx support.
