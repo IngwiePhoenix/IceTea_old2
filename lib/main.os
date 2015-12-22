@@ -70,4 +70,5 @@ function main(args) {
         }
     }
     print "[ Tasks: ${taskCount} ]"
+    print "To build: " .. IceTea.toBuild;
 }
