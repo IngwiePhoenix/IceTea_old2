@@ -1,3 +1,3 @@
-#include <objectscript.h>
+#include "objectscript.h"
 
 void initializeProcess(ObjectScript::OS* os);
