@@ -84,7 +84,7 @@ string have_prefix("HAVE_");
 string havelib_prefix("HAVE_LIB");
 string havefunc_prefix("HAVE_");
 Filecache* cache;
-extern CLI* cli; // main.cpp
+CLI* cli;
 
 string toUpper(const string str) {
     string s = str;
@@ -1196,9 +1196,12 @@ OS_FUNC(osc_new) {
 }
 
 
-bool initializeDetector(OS* os, Filecache* _cache, CLI* _cli) {
+bool initializeDetector(IceTea* os) {
+    cache = os->getFilecache();
+    cli = os->getCliHandle();
+
     initCompilers();
-    cache = _cache;
+
     OS::FuncDef dtFuncs[] = {
         // Display and output
         {OS_TEXT("__get@head"), osd_head},

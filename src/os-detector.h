@@ -9,16 +9,16 @@
 
 #include "os-icetea.h"
 #include "os-exec.h"
-#include "objectscript.h"
+#include "IceTea.h"
 #include "filecache.hpp"
 #include "cli.h"
 
-bool initializeDetector(ObjectScript::OS*, Filecache*, CLI*);
+bool initializeDetector(IceTea*);
+void initCompilers();
 std::string toUpper(const std::string str);
 std::string have_header(const std::string name);
 std::string have_lib(const std::string lib);
 std::string have_func(const std::string func);
-void initCompilers();
 std::string find_tool(std::vector<std::string> cmds);
 std::string find_compiler(const std::string kind);
 bool write_file(const std::string& content, const std::string& filename);
