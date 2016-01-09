@@ -1,16 +1,10 @@
 #include <iostream>
 #include <vector>
 
-#include "objectscript.h"
-#include "os-value.h"
+#include "IceTea.h"
 #include "os-icetea.h"
 #include "os-exec.h"
-#include "os-pfs.h"
-#include "os-process.h"
-#include "os-sys.h"
-#include "os-configurable.h"
 #include "os-console.h"
-
 #include "picosha2.h"
 
 #include "predef.h"
@@ -137,7 +131,10 @@ OS_FUNC(cli_getStrayArgs) {
     return 1;
 }
 
-void initIceTeaExt(OS* os, CLI* cli) {
+void initIceTeaExt(IceTea* os) {
+    // Grab a reference to the CLI instance.
+    CLI* cli = os->getCliHandle();
+
     // Exec
     os->pushCFunction(os_exec);
     os->setGlobal("$");
@@ -172,12 +169,4 @@ void initIceTeaExt(OS* os, CLI* cli) {
     os->getModule("sha2");
     os->setFuncs(sh2Funcs);
     os->pop();
-
-    // PFS, aka our FS module
-    initializePFS(os);
-
-    // Misc
-    initializeSYS(os);
-    initializeProcess(os);
-    initializeConfigurable(os);
 }
