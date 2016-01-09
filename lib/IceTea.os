@@ -277,6 +277,20 @@ IceTea = extends _E {
     */
     Transformer: function() {
         IceTea.createTasks(IceTea.toBuildResolv);
+    },
+
+    /**
+     * @brief This function loads stuff from local .IceTea folders.
+     */
+    AutoInclude: function() {
+        var fullPath = path.join(__sourcedir, ".IceTea");
+        if(fs.fileExists(fullPath)) {
+            require.paths.push(fullPath);
+            var incFiles = fs.glob(fullPath, "*.it");
+            for(var i,file in incFiles) {
+                require(file); // it should work on .it files...
+            }
+        }
     }
 }
 
