@@ -32,3 +32,6 @@ print "Result is: " .. r
 
 print "Without capturing the output"
 shell "ls -aGp"
+
+// Swap back.
+$ = exec;

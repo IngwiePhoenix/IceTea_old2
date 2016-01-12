@@ -41,6 +41,6 @@ person + {
 print person;
 
 print "\n----- Exiting using die()"
-print "I will be seen"
+print "I will be seen!"
 abort("ded\n")
 print "I won't."
