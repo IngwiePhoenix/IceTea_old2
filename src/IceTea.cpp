@@ -83,7 +83,7 @@ void IceTea::initSettings() {
 IceTea::~IceTea() {
     delete this->cli;
     delete this->fc;
-    OS::~OS();
+    // OS::~OS();
 }
 
 void IceTea::setupArguments() {
