@@ -66,3 +66,10 @@ I have set up myself to make an awesome build tool. But as each project's nature
     * Luckily, advice was retrived here: http://stackoverflow.com/a/30249477/2423150
 - [ ] Possibly generate a graph.
 - [ ] Maybe introduce RegEx support.
+
+### Added 10th Janurary 2016, 6:42AM
+- [ ] Re-implement a `describe/it` style testing framework as seen in:
+    - https://github.com/stephenmathieson/describe.h/blob/master/describe.h
+
+### Added 12th Janurary 2016, 5.47AM
+- [ ] Make sure that files within a target actually exist.
