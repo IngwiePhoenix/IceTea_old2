@@ -11,8 +11,9 @@ env:
 
 script:
   - export CXX=$TRCXX
-  - $CXX src/*.cpp -Wno-switch -lpthread -o ./icetea
-  - ./icetea -x tests/run_tests.os || ( [ "$?" == "2" ] && exit 0 || exit 1 )
+  - $CXX src/*.cpp -Wno-switch -lpthread -o ./icetea.flat
+  - ./icetea.flat --detail-output
+  - ./out/icetea -x tests/run_tests.os || ( [ "$?" == "2" ] && exit 0 || exit 1 )
 
 matrix:
   exclude:
