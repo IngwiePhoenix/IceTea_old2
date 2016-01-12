@@ -5,10 +5,6 @@ function isDarwin() {
     } == "Darwin";
 }
 
-target("incbin", "exe") {
-    input: ["incbin/incbin.c"]
-}
-
 target("icetea", "exe") {
     title: "IceTea",
     input: pfs.glob("src", "*.cpp"),

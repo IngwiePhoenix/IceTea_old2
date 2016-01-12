@@ -1,0 +1,3 @@
+target("incbin", "exe") {
+    input: ["incbin/incbin.c"]
+}
