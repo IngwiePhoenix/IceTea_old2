@@ -10,6 +10,7 @@ target("incbin", "exe") {
 }
 
 target("icetea", "exe") {
+    title: "IceTea",
     input: pfs.glob("src", "*.cpp"),
     init: function() {
         cli.group "IceTea"
@@ -27,12 +28,13 @@ target("icetea", "exe") {
                 "-fdata-sections",
             ] : []);
             @settings.CXX.optimization = (DEBUG ? "none":"size")
+            print @settings;
         } else print " No.";
         return true;
     },
     settings: {
         CXX: {
-            include_dirs: ["src"],
+            includeDirs: ["src"],
             warnings: (sys.type == "unix" ? [
                 "no-switch"
             ] : [
@@ -65,5 +67,6 @@ action("tests"){|scheme|
 }
 
 action("incbin") {
-    build: ["incbin"]
+    build: ["incbin"],
+    clear: ["incbin"]
 }

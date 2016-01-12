@@ -1,255 +1,310 @@
-// A function to help us generate native rules.
-native = extends Object {
-    compile = function(kind) {
-        return function(input, output, targetName, target) {
-            // Now lets get serious.
-            var key = detect.kind2key(kind);
-            var settings = target.settings;
-            var outDir = __outputdir;
-            var targetDir = pfs.join(outDir, '.'..targetName);
-            var cmdl=[];
-
-            // Build the command
-            cmdl[] = detect.compiler(kind);
-
-            if(sys.type == 'windows') {
-                cmdl[] = '/nologo /EHsc';
-            }
-
-            if(typeOf(settings[key].warnings) == 'array') {
-                for(var _,warning in settings[key].warnings) {
-                    // On windows, the user should know what he/she is passing...for now.
-                    // A generalization of warning flags would be cool. o.o
-                    cmdl[] = (sys.type == 'unix' ? '-W' : '')..warning;
-                }
-            }
-
-            if(typeOf(settings.native.warnings) == 'array') {
-                for(var _,warning2 in settings.native.warnings) {
-                    cmdl[] = (sys.type == 'unix' ? '-W' : '')..warning2;
-                }
-            }
-
-            if(settings.native.warning_as_error == true) {
-                if(sys.type == 'unix') {
-                    cmdl[] = '-Werror';
-                } else {
-                    cmdl[] = '/WX';
-                }
-            }
-
-            if(!DEBUG && typeOf(settings[key].optimization) == 'string') {
-                switch(settings[key].optimization) {
-                    case 'none': cmdl[] = (sys.type=='unix'?'-O0':''); break;
-                    case 'small': cmdl[] = (sys.type=='unix'?'-O1':'/O1'); break;
-                    case 'medium': cmdl[] = (sys.type=='unix'?'-O2':'/O2'); break;
-                    case 'max': cmdl[] = (sys.type=='unix'?'-O3':'/O3'); break;
-                    case 'size': cmdl[] = (sys.type=='unix'?'-Os':'/Os'); break;
-                    default: cmdl[] = ''; break;
-                }
-            }
-
-            if(typeOf(settings.native.include_dirs) == 'array') {
-                for(var _,ink in settings.native.include_dirs) {
-                    cmdl[] = (sys.type == 'unix' ? '-I' : '/I')..ink;
-                }
-            }
-            if(typeOf(settings[key].include_dirs) == 'array') {
-                for(var _,ink in settings[key].include_dirs) {
-                    cmdl[] = (sys.type == 'unix' ? '-I' : '/I')..ink;
-                }
-            }
-
-            if(typeOf(settings.native.defines) == 'array') {
-                for(var _,ink in settings.native.defines) {
-                    cmdl[] = (sys.type == 'unix' ? '-D' : '/D')..ink;
-                }
-            }
-            if(typeOf(settings[key].defines) == 'array') {
-                for(var _,ink in settings[key].defines) {
-                    cmdl[] = (sys.type == 'unix' ? '-D' : '/D')..ink;
-                }
-            }
-
-            if(typeOf(settings[key].flags) == 'array') {
-                cmdl[] = settings[key].flags.join(' ');
-            }
-
-            if(DEBUG) {
-                cmdl[] = (sys.type == 'unix' ? '-g' : '/Zi');
-            }
-
-            cmdl[] = (sys.type == 'unix' ? '-c' : '/c');
-            cmdl[] = input.join(' ');
-            cmdl[] = (sys.type == 'unix' ? '-o' : '/Fo')..output;
-            var cmd = cmdl.join(' ');
-            pfs.mkdir(targetDir);
-            if(pfs.dirWritable(targetDir)) {
-                if(cli.check("-v")) print "$ ${cmd}"
-                return [cmd];
-            } else {
-                print 'ERROR: Target dir is not writable!'
-            }
-        }
+SettingsContainer = extends Object {
+    __construct: function() {
+        @stores = arguments;
     },
-    link = function(kind) {
-        return function(input, output, targetName, target) {
-            var settings = target.settings;
-            var key = detect.kind2key(kind);
-            var LINK=[];
-
-            // I need a better way to use the linker... :/
-            LINK[] = detect.compiler(kind);
-            if(sys.type == "windows") {
-                LINK[] = "/nologo";
+    __get: function(key) {
+        for(var _,store in @stores) {
+            if(key in store) {
+                return store[key];
             }
-
-            // Library dirs
-            var Lflag = (sys.type == "unix" ? "-L":"");
-            LINK[] = Lflag .. __outputdir;
-            if(typeOf(settings.LINK.library_dirs) == "array") {
-                for(var _,ld in settings.LINK.library_dirs) {
-                    LINK[] = Lflag .. ld;
-                }
-            }
-
-            LINK[] = input.join(' ');
-            LINK[] = (sys.type == 'unix' ? '-o' : '/Fe')..output;
-            for(var _,lib in target.settings.LINK.libraries) {
-                // Windows does not have a -l flag - instead you specify the libs yourself.
-                // ...i call a whaaaaat.
-                if(pfs.fileExists(lib)) {
-                    LINK[] = lib;
-                } else {
-                    LINK[] = (sys.type == 'unix' ? '-l'..lib : lib..'.lib');
-                }
-            }
-            if(DEBUG) {
-                LINK[] = (sys.type == 'unix' ? '-g' : '/Zi');
-            }
-            if(typeOf(settings.LINK.flags) == 'array') {
-                if(sys.type == 'windows') LINK[] = '/link';
-                for(var _,flag in settings.LINK.flags) {
-                    LINK[] = (sys.type == 'unix' ? '-Wl,' : '')..flag;
-                }
-            }
-            var cmd = LINK.join(' ');
-            if(cli.check("-v")) print "$ ${cmd}";
-            return [cmd];
         }
+        throw "Unable to find setting ${key} in specified containers.";
+    },
+    __isset: function(key) {
+        for(var _,store in @stores) {
+            if(key in store) {
+                return true;
+            }
+        }
+        return false;
+    },
+    __getCombined: function(key) {
+        var start = null;
+        for(var _,store in @stores) {
+            if(key in store) {
+                if(typeOf(start) == "null") {
+                    start = store[key];
+                } else {
+                    var v = store[key];
+                    start += v;
+                }
+            }
+        }
+        return start;
     }
 }
 
-rule('cxx', 'C++') {
-    accepts: ['*.cpp', '*.cxx', '*.c++', '*.cc'],
-    output: {
-        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
-    },
-    prepare: function() {
-        detect.compiler('c++');
-    },
-    build: native.compile('c++')
-}
+NativeStep = extends Object {
+    // Native objects always have .o or .obj. So, we can groundwire this.
+    pattern: (sys.type=='unix'
+        ? '%o/.%t/%b.o'
+        : '%o/.%t/%b.obj'
+    ),
 
-rule('c', 'C') {
-    accepts: ['*.c', '*.C'],
-    output: {
-        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
+    // All that this configure() function does, is to look for the compiler.
+    configure: function() {
+        detect.compiler(@name);
     },
-    prepare: function() {
-        detect.compiler('c');
-    },
-    build: native.compile('c')
-}
 
-rule('objc', 'Objective-C') {
-    accepts: ['*.m'],
-    output: {
-        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
-    },
-    prepare: function() {
-        detect.compiler('objc');
-    },
-    build: native.compile('objc')
-}
+    // Build
+    build: function() {
+        // Getting the key that we use to acces Detector stuff.
+        var key = detect.kind2key(@backend.name);
 
-rule('objcxx', 'Objective-C++') {
-    accepts: ['*.mm'],
-    output: {
-        pattern: (sys.type=='unix' ? '*.o':'*.obj'),
-        expected: (sys.type=='unix' ? '%o/.%t/%f.o':'%o/.%t/%f.obj')
-    },
-    prepare: function() {
-        detect.compiler('objcxx');
-    },
-    build: native.compile('objcxx')
-}
+        // The settings we'll work off.
+        var settings = SettingsContainer(
+            "native" in @target.settings ? @target.settings.native : {},
+            key in @target.settings ? @target.settings[key] : {}
+        );
 
-rule('strip', 'Strip') {
-    accepts: ['*.o'],
-    output: {
-        pattern: '*.o-stripped',
-        expected: '%o/.%t/%f.o-stripped'
-    },
-    prepare: function() {
-        // We have to see how we gonna minify this thing.
-        if(detect.tool('upx'))
-            @tool = 'upx IN -o OUT';
-        else {
-            if(sys.type == 'unix') {
-                @tool = 'cp IN OUT';
+        // We will put the entire bulk of the command in here and join it up later.
+        var commandLine = [];
+        var compiler = detect.compiler(@backend.name);
+        commandLine.push(compiler);
+
+        // FIXME: React on Windows or cl.exe, when being in Wine.
+        // Turn on C++ standard exceptions.
+        if(sys.type == "windows" || compiler == "cl") {
+            commandLine.push("/nologo");
+            if(!("WindowsExceptions" in settings)) {
+                commandLine.push("/EHsc");
             } else {
-                @tool = 'copy IN OUT';
+                settings.WindowsExceptions
+                    && commandLine.push("/EHsc");
             }
         }
-    },
-    build: function(input, output, targetName, target) {
-        var instr = input.join(' ');
-        var cmd = @tool;
-        cmd = cmd.replace('IN', instr);
-        cmd = cmd.replace('OUT', output);
-        if(cli.check("-v")) print "$ ${cmd}"
-        return [cmd];
-    }
-}
 
-rule('exe', 'Executable') {
-    accepts: [(sys.type=='unix' ? '*.o':'*.obj')],
-    output: {
-        pattern: (sys.type=='unix' ? '*':'*.exe'),
-        expected: (sys.type=='unix' ? '%o/%t':'%o/%t.exe')
-    },
-    prepare: function() {
-        detect.compiler('c++');
-    },
-    build: native.link('c++'),
-}
+        if("warningsAsErrors" in settings) {
+            commandLine.push((
+                sys.type == "unix"
+                ? "-Werror" // GCC/Clang
+                : "/WX"     // MSVC
+            ));
+        }
 
-rule('lib', 'Static Library') {
-    accepts: ["*.o"],
-    output: {
-        pattern: "*.a",
-        expected: "%o/lib%t.a"
-    },
-    prepare: function() {
-        for(var _,t in ["ar", "LINK"]) {
-            if(detect.tool(t)) {
-                @tool = t;
+        // Only for windows
+        if(sys.type == "windows" && "warningLevel" in settings) {
+            commandLine.push("/W"..settings.warningLevel);
+        }
+
+        var warnings = settings.__getCombined("warnings");
+        if(warnings != null) {
+            for(var _,warn in warnings) {
+                commandLine.push((
+                    sys.type == "unix"
+                    ? "-W"  // GCC-Style warnings - enables it.
+                    : "/w"  // MSVC-Style warnings. Turns on this very warning, on this level.
+                )..warn);
+            }
+        }
+
+        // Optimization?
+        if("optimization" in settings) {
+            switch(settings.optimization) {
+                case "none":
+                    commandLine.push((sys.type == "unix" ? "-O0" : ""));
+                break;
+
+                case "small":
+                    commandLine.push((sys.type == "unix" ? "-O1" : "/O1"));
+                break;
+
+                case "medium":
+                    commandLine.push((sys.type == "unix" ? "-O2" : "/O2"));
+                break;
+
+                case "max":
+                    commandLine.push((sys.type == "unix" ? "-O3" : "/O3"));
+                break;
+
+                case "size":
+                    commandLine.push((sys.type == "unix" ? "-Os" : "/Os"));
+                break;
+
+                default:
+                    // In case the user is being randomly custom.
+                    commandLine.push(settings.optimization);
                 break;
             }
         }
+
+        var includeDirs = settings.__getCombined("includeDirs");
+        for(var _,dir in includeDirs) {
+            commandLine.push((
+                sys.type == "unix"
+                ? "-I"   // GCC/Clang
+                : "/I"   // MSVC
+            )..dir);
+        }
+
+        var defines = settings.__getCombined("define");
+        for(var name,def in defines) {
+            commandLine.push((
+                sys.type == "unix"
+                ? "-D"
+                : "/D"
+            ).."${name}=${def}");
+        }
+
+        var extraFlags = settings.__getCombined("flags");
+        for(var _,flag in extraFlags) {
+            commandLine.push(flag);
+        }
+
+        if(DEBUG) {
+            commandLine.push((
+                sys.type == "unix"
+                ? "-g"
+                : "/Zi"
+            ));
+        }
+
+        // Now that all the flags are set, let us write the actual how-to-compile.
+        var compileFlag = (sys.type == "unix" ? "-c" : "/c");
+        var outFlag = (sys.type == 'unix' ? '-o' : '/Fo');
+        commandLine.push(compileFlag);
+        commandLine.push(@in);
+        commandLine.push([
+            outFlag, @out
+        ].join(""));
+
+        // Create the output folder for the object.
+        var outDir = pfs.dirname(@out);
+        debug "Mkdir: ${outDir}"
+        pfs.mkdir(outDir);
+
+        // FIXME: Make and use AsyncProcess.
+        var command = commandLine.join(" ");
+        debug "$ ${command}"
+        var spawned, exitCode, output = $(command);
+        if(exitCode != 0) {
+            // FIXME: IceTea should do this.
+            for(var _,line in output[1].trim().split("\n")) {
+                print "STDOUT:\t${line}"
+            }
+            for(var _,line in output[2].trim().split("\n")) {
+                print "STDERR:\t${line}"
+            }
+            return false;
+        }
+        return true;
     },
-    build: function(input, output, targetName, target) {
-        var cmdl=[];
-        cmdl[]=@tool;
-        cmdl[]="crs";
-        cmdl[]=output;
-        cmdl[]=input.join(' ');
-        var cmd = cmdl.join(' ');
-        if(cli.check("-v")) print "$ ${cmd}";
-        return [cmd];
+    clean: function() {
+        return pfs.remove(@out);
+    }
+}
+
+// Steps:
+step([
+    "*.cc", "*.cpp",
+    "*.cxx", "*.cpp",
+    "*.c++"
+], "*.o")(extends NativeStep {
+    name: "C++"
+})
+
+step(["*.c", "*.C"], "*.o")(extends NativeStep {
+    name: "C"
+})
+
+step(["*.m"], "*.o")(extends NativeStep {
+    name: "ObjC"
+})
+
+step(["*.mm"], "*.o")(extends NativeStep {
+    name: "ObjC++"
+})
+
+step(["*.swift"], "*.o")(extends NativeStep {
+    name: "Swift"
+})
+
+// Rules:
+rule("exe", "Executable") {
+    pattern: (sys.type=='unix'
+        ? '%o/%t'
+        : '%o/%t.exe'
+    ),
+    configure: function() {
+        // FIXME: We kinda need to think, if this is wise.
+        // Let's say someone only uses C sources. They will not need a C++ compiler.
+        // Alternatively, we should use ld or link.exe respectively.
+        // However, I have yet to learn ld...
+        detect.compiler("c++");
+    },
+    build: function() {
+        var commandLine = [];
+        var settings = ("LINK" in @target.settings
+            ? @target.settings.LINK
+            : {}
+        );
+
+        commandLine.push(detect.compiler("c++"));
+
+        if(sys.type == "windows") {
+            commandLine.push("/nologo");
+        }
+
+        var libFlag = (sys.type == "unix"
+            ? "-l" // GCC and Clang use -l as prefix. I.e.: -lfoo
+            : ""   // Windows has none.
+        );
+        var libDirFlag = (sys.type == "unix"
+            ? "-L"          // -L./folder
+            : "/LIBPATH:"   // Windows...
+        );
+
+        // The first one to add is the output folder.
+        // We might be building libs into this, too.
+        commandLine.push(libDirFlag .. __outputdir);
+
+        if("libraryDirs" in settings) {
+            for(var _,libDir in settings.libraryDirs) {
+                commandLine.push(libDirFlag .. libDir);
+            }
+        }
+
+        if("libraries" in settings) {
+            for(var _,lib in settings.libraries) {
+                // Be careful. This might actually be a full path.
+                // This check is not perfect, but it'll be in the future.
+                var libAsFile = pfs.join(__outputdir, lib);
+                if(pfs.isPresent(libAsFile)) {
+                    commandLine.push(libAsFile);
+                } else {
+                    commandLine.push(libFlag .. lib);
+                }
+            }
+        }
+
+        commandLine.push(@in.join(" ")); // As this is a rule, our input is an array.
+        commandLine.push((sys.type == "unix"
+            ? "-o"  // GCC and Clang
+            : "/Fe"
+        )..@out);
+
+        if("flags" in settings) {
+            for(var _,flag in settings.flags) {
+                commandLine.push(flag);
+            }
+        }
+
+        var command = commandLine.join(" ");
+        debug "$ ${command}"
+        var spawned, exitCode, output = $(command);
+        if(exitCode != 0) {
+            // FIXME: IceTea should do this.
+            for(var _,line in output[1].trim().split("\n")) {
+                print "STDOUT:\t${line}"
+            }
+            for(var _,line in output[2].trim().split("\n")) {
+                print "STDERR:\t${line}"
+            }
+            return false;
+        }
+        return true;
+    },
+    clean: function() {
+        return true;
     }
 }
