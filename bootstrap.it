@@ -137,13 +137,13 @@ NativeStep = extends Object {
             )..dir);
         }
 
-        var defines = settings.__getCombined("define");
-        for(var name,def in defines) {
+        var defines = settings.__getCombined("defines");
+        for(var _,def in defines) {
             commandLine.push((
                 sys.type == "unix"
                 ? "-D"
                 : "/D"
-            ).."${name}=${def}");
+            )..def);
         }
 
         var extraFlags = settings.__getCombined("flags");
@@ -303,6 +303,53 @@ rule("exe", "Executable") {
             return false;
         }
         return true;
+    },
+    clean: function() {
+        return true;
+    }
+}
+
+
+rule("lib", "Static Library") {
+    pattern: (sys.type=='unix'
+        ? '%o/lib%t.a'
+        : '%o/%t.lib'
+    ),
+    configure: function() {
+        return detect.tool("ar");
+    },
+    build: function() {
+        var command = [
+            "ar",
+            "rcs",
+            @out,
+            @{
+                var ins = [];
+                for(var _,file in @in) {
+                    debug "Testing: ${file}"
+                    if(file == "null" || typeOf(file) == "null") {
+                        debug "Where is this null coming from? ${@in}"
+                        continue;
+                    }
+                    ins.push(file);
+                }
+                return ins.join(" ")
+            }
+        ].join(" ");
+        debug "$ ${command}"
+        var spawned, exitCode, output = $(command);
+        if(exitCode != 0) {
+            // FIXME: IceTea should do this.
+            for(var _,line in output[1].trim().split("\n")) {
+                print "STDOUT:\t${line}"
+            }
+            for(var _,line in output[2].trim().split("\n")) {
+                print "STDERR:\t${line}"
+            }
+            return false;
+        }
+        return true;
+
     },
     clean: function() {
         return true;

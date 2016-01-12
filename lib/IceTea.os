@@ -74,8 +74,9 @@ IceTea = extends _E {
         } else {
             var res = [];
             for(name,target in IceTea.__targets) {
-                if(typeOf(target.tag) != "null" && wildcard.match(t,target.info.tag)) {
-                    // Target has a tag AND it fits. Add.
+                if("tag" in target && wildcard.match(target.tag, t)) {
+                    res.push(name);
+                } else if(wildcard.match(name, t)) {
                     res.push(name);
                 }
             }
@@ -219,7 +220,7 @@ IceTea = extends _E {
                 }
 
                 if(!stepFound) {
-                    if(lastTask == null) {
+                    if(lastTask == null || typeOf(lastTask) == "null") {
                         debug "There does not seem to be a previous task for ${currentFile}. Is a step missing?"
                     }
 
@@ -242,7 +243,11 @@ IceTea = extends _E {
             input: @{
                 var outs = [];
                 for(var _,dep in finalDeps) {
-                    outs.push(dep.out);
+                    if(dep.out == "null" || typeOf(dep.out) == "null") {
+                        throw "${dep}'s output is NULL!"
+                    } else {
+                        outs.push(dep.out);
+                    }
                 }
                 return outs;
             }
@@ -320,7 +325,7 @@ IceTea = extends _E {
         targetNames = targetNames || IceTea.targetList;
         // Recursively configure a target and it's needs.
         var configureTarget = function(targetName, dependsOn) {
-            if(typeOf(IceTea.__targets[targetName]) == "null") {
+            if(!(targetName in IceTea.__targets)) {
                 if(typeOf(dependsOn) != "null") {
                     throw "Target ${targetName}, depended on by ${dependsOn}, does not exist.";
                 } else {
@@ -331,8 +336,11 @@ IceTea = extends _E {
             var target = IceTea.__targets[targetName];
             var configured = [];
 
-            if("needs" in target && typeOf(target.needs) == "array") {
-                for(var _,depName in target.needs) {
+            var needs = "needs" in target ? target.needs : [];
+            debug "Are we configuring dependencies? ${needs} (${target})"
+            if(typeOf(needs) == "array") {
+                for(var _,depName in needs) {
+                    debug "Configuring dependency: ${depName} of ${targetName}"
                     var rt, depConfigured = configureTarget(depName, targetName);
                     configured += depConfigured;
 
@@ -353,16 +361,21 @@ IceTea = extends _E {
 
             // And the rule.
             if(target.rule.isConfigured()) {
-                var rt3 = target.configure();
+                var rt3 = target.rule.configure();
                 if(typeOf(rt3) == "boolean" && !rt3) {
                     return rt2, configured;
                 }
             }
 
+            var dpendsOnType = typeOf(dependsOn);
+            debug "Are we merging ${dependsOn}:<${dpendsOnType}> ?"
             if(typeOf(dependsOn) == "string") {
                 // We are being a child, so we should export ourself into parent.
+                debug "Merging exports from ${target.name} into settings of ${dependsOn}"
                 var dependant = IceTea.__targets[dependsOn];
-                dependant.settings += target.exports;
+                if("exports" in target && "settings" in dependant) {
+                    dependant.settings += target.exports;
+                }
             }
 
             return true, configured;
@@ -726,6 +739,17 @@ IceTea.Storeable = extends Object {
     },
     __getStore: function() {
         return this.__store;
+    },
+    __isset: function(name) {
+        if(name in this.__store.keys) {
+            debug "Storeable::__isset(${name}) -> this.__store"
+            return true;
+        } else if(name in this.keys) {
+            debug "Storeable::__isset(${name}) -> this"
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 

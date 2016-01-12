@@ -35,7 +35,7 @@ function Array.__add(operand) {
         }
     } else {
         var type = typeOf(operand);
-        throw "Array.__add: Expected Object, got ${type} instead.";
+        throw "Array.__add: Expected Object, got ${type} instead: ${operand}";
     }
     return this;
 }
