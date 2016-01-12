@@ -38,14 +38,12 @@ target("icetea", "exe") {
             ])
         },
         LINK: {
-            libraries: (sys.type == "unix" ? [
-                "pthread"
-            ] : [
-                // None?
-            ]),
+            libraries: [],
             flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
                 "-dead_strip"
-            ] : []),
+            ] : []) + [
+                "-pthread"
+            ],
         }
     },
 }
