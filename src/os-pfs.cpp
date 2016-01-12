@@ -290,7 +290,14 @@ OS_FUNC(os_pfs_join) {
     EXPECT_STRING(2)
     string base = os->toString(-params+0).toChar();
     string appe = os->toString(-params+1).toChar();
-    os->pushString(create_filespec(base, appe).c_str());
+    string root = folder_current();
+    if(os->isString(-params+2)) {
+        root = os->toString(-params+2).toChar();
+    }
+    string path = create_filespec(base, appe);
+    // FIXME: Proper root should be the current script's dirname.
+    string fullPath = folder_to_path(path, root);
+    os->pushString(fullPath.c_str());
     return 1;
 }
 

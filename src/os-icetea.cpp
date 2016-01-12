@@ -131,6 +131,13 @@ OS_FUNC(cli_getStrayArgs) {
     return 1;
 }
 
+OS_FUNC(print_debug) {
+    IceTea* it = (IceTea*)os;
+    string msg = string( os->popString(-params+0).toChar() );
+    it->printDebug(msg);
+    return 0;
+}
+
 void initIceTeaExt(IceTea* os) {
     // Grab a reference to the CLI instance.
     CLI* cli = os->getCliHandle();
@@ -169,4 +176,8 @@ void initIceTeaExt(IceTea* os) {
     os->getModule("sha2");
     os->setFuncs(sh2Funcs);
     os->pop();
+
+    os->pushCFunction(print_debug);
+    os->setGlobal("debug");
+
 }

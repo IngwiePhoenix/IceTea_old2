@@ -1,5 +1,6 @@
 #include "incbin.h"
 
+INCBIN(STD, "lib/std.os");
 INCBIN(Configurable, "lib/configurable.os");
 INCBIN(libIceTea, "lib/IceTea.os");
-INCBIN(main, "lib/main.os");
+INCBIN(InternalBootstrapIt, "bootstrap.it");

@@ -29,7 +29,7 @@ private:
     void setupArguments();
 
     // Initialize the various IceTea modules.
-    void initializeModules();
+    bool initializeModules();
 
 public:
 
@@ -78,7 +78,8 @@ public:
     void eval(std::string);
 
     // Minimalistic version of evalFakeFile()
-    void evalFakeFile(std::string, char*);
+    void evalFakeFile(std::string, const unsigned char[], int len);
+    void evalFakeFile(const char*, const char*);
 
     // Setup the environment, load stuff and such.
     // Also creates the output folder and cache file!

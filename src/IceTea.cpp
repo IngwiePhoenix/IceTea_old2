@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <map>
+#include <stdlib.h>
 
 #include "objectscript.h"
 #include "IceTea.h"
@@ -14,18 +16,48 @@
 #include "cli.h"
 #include "filecache.hpp"
 #include "tinythread.h"
+#include "portability_fixes.hpp"
 #include "stlplus_version.hpp"
+#include "rlutil.h"
 
 // Embed
 #include "scripts.rc"
 // Little macro to help us out on names
-#define INCBIN_DATA(name) (char*)g ## name ## Data
+#define INCBIN_DATA(name) g ## name ## Data
 #define INCBIN_LEN(name) g ## name ## Size
 
 using namespace ObjectScript;
 using namespace std;
 using namespace stlplus;
 using namespace tthread;
+
+bool callObjectFunction(
+    IceTea* self,
+    string objName, string funcName,
+    int args=0, int expected=0,
+    bool cast = false
+) {
+    self->getGlobalObject(objName.c_str());
+    self->pushString(funcName.c_str());
+    self->getProperty(-2);
+
+    // Sanity check
+    if(self->getTypeStr() != "function") {
+        self->pop();
+        return false;
+    }
+
+    self->callF(args, expected);
+    return (cast && expected > 0 ? self->popBool() : true);
+}
+
+void performIceTeaEvent(IceTea* it, const string& name, int expected=0) {
+    it->getGlobalObject("IceTea");
+    it->pushString("CallEvent");
+    it->getProperty(-2);
+    it->pushString(name.c_str());
+    it->callF(1,expected);
+}
 
 IceTea::IceTea() : OS() {
     // Fetch thread number beforehand!
@@ -56,45 +88,60 @@ IceTea::~IceTea() {
 
 void IceTea::setupArguments() {
     this->cli->group("Main options");
-    this->cli->insert("-f", "--file", "<file>", "Select a different built file.", true, "./build.it");
-    this->cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./bootstrap.it");
-    this->cli->insert("-C", "--chdir", "<dir>", "Change to this directory before doing anything.");
-    this->cli->insert("-h", "--help", "", "Show this help.");
-    this->cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
-    this->cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", true, "./out");
-    this->cli->insert("-D", "--define", "key=value", "Define a global value within the scripting language's scope.");
-    this->cli->insert(
-        "-j", "--jobs", "<N>",
-        "Amount of jobs to run at the same time. Default: "+thrs_sst.str(),
-        true, thrs_sst.str()
-    );
-    this->cli->insert("-p", "--purge", "", "Purge the cache file.");
-    this->cli->insert("-t", "--target", "<target>", "Build only the specified target.");
+    {
+        this->cli->insert("-f", "--file", "<file>", "Select a different built file.", true, "./build.it");
+        this->cli->insert("-b", "--boot", "<file>", "Select a different bootstrap file.", true, "./bootstrap.it");
+        this->cli->insert("-C", "--chdir", "<dir>", "Change to this directory before doing anything.");
+        this->cli->insert("-h", "--help", "", "Show this help.");
+        this->cli->insert("-u", "--usage", "", "Show the usage details of a project plus this help.");
+        this->cli->insert("-d", "--dir", "<path>", "Place where to store output files. Default: ./out", true, "./out");
+        this->cli->insert("-D", "--define", "key=value", "Define a global value within the scripting language's scope.");
+        this->cli->insert(
+            "-j", "--jobs", "<N>",
+            "Amount of jobs to run at the same time. Default: "+thrs_sst.str(),
+            true, thrs_sst.str()
+        );
+        this->cli->insert("-p", "--purge", "", "Purge the cache file.");
+        this->cli->insert("-t", "--target", "<target>", "Build only the specified target.");
+    }
+
+    this->cli->group("Display options");
+    {
+        this->cli->insert("", "--no-color", "", "Disable colors.");
+        this->cli->insert("", "--detail-output", "", "Force detailed output.");
+    }
 
     this->cli->group("Developer options");
-    this->cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
-    this->cli->insert("", "--print-targets", "", "Dump all targets in JSON format to standard error output. Export with: icetea --print-targets 2>targets.json");
-    this->cli->insert("", "--print-actions", "", "Dump all actions in JSON format to standard error output. Export with: icetea --print-actions 2>actions.json");
-    this->cli->insert("", "--print-rules", "", "Dump all rules in JSON format to standard error output. Export with: icetea --print-rules 2>actions.json");
-    this->cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
-    this->cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
-    this->cli->insert("-x", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
-    this->cli->insert("-e", "--exec", "<str>", "Run ObjectScript code from string, or if - was given, then from standard input.");
-    this->cli->insert("-W", "--warn", "", "Display warnings.");
+    {
+        this->cli->insert("", "--dump", "", "Dump the internal bootstrap.it to standart output. Save it using redirection: icetea --dump >./build.it");
+        this->cli->insert("", "--print-targets", "", "Dump all targets in JSON format to standard error output. Export with: icetea --print-targets 2>targets.json");
+        this->cli->insert("", "--print-actions", "", "Dump all actions in JSON format to standard error output. Export with: icetea --print-actions 2>actions.json");
+        this->cli->insert("", "--print-rules", "", "Dump all rules in JSON format to standard error output. Export with: icetea --print-rules 2>actions.json");
+        this->cli->insert("-r", "--dry-run", "", "Don't actually build, but do a dry-run.");
+        this->cli->insert("-v", "--verbose", "", "Commands are shown instead of the progress indicator.");
+        this->cli->insert("-x", "--os", "<file>", "Run an ObjectScript file. Only it will be ran, other options are ignored.");
+        this->cli->insert("-e", "--exec", "<str>", "Run ObjectScript code from string, or if - was given, then from standard input.");
+        this->cli->insert("-W", "--warn", "", "Display warnings.");
+    }
+
     this->cli->group("Build options");
-    this->cli->insert(
-        "-w", "--wipe", "",
-        "Sets the build scheme to 'clear'. Will delete output files."
-    );
-    this->cli->insert("","--scheme","","Set a custom scheme.");
-    this->cli->insert("-c", "--configure", "", "Only configure the specified projects and do not build.");
-    this->cli->insert("-g", "--debug", "", "Turn on the global DEBUG variable (set it to true)");
-    this->cli->insert("-F", "--force", "", "Run without a mandatory build.it file.");
+    {
+        this->cli->insert(
+            "-w", "--wipe", "",
+            "Sets the build scheme to 'clear'. Will delete output files."
+        );
+        this->cli->insert("","--scheme","","Set a custom scheme.");
+        this->cli->insert("-c", "--configure", "", "Only configure the specified projects and do not build.");
+        this->cli->insert("-g", "--debug", "", "Turn on the global DEBUG variable (set it to true)");
+        this->cli->insert("-F", "--force", "", "Run without a mandatory build.it file.");
+    }
+
     this->cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
+
     this->cli->parse();
 }
 
-void IceTea::initializeModules() {
+bool IceTea::initializeModules() {
     // Initialize the native modules
     initIceTeaExt(this);
     initializePFS(this);
@@ -105,15 +152,47 @@ void IceTea::initializeModules() {
     initializeStdlib(this);
 
     // Initialize the scripted modules
-    this->evalFakeFile("Configurable.os", INCBIN_DATA(Configurable));
-    this->evalFakeFile("IceTea.os", INCBIN_DATA(libIceTea));
-    this->evalFakeFile("main.os", INCBIN_DATA(main));
+    struct ScriptMap_t {
+        const char*             name;
+        const unsigned char*    script;
+        int                     len;
+    };
+    ScriptMap_t scripts[] = {
+        {"std.os",          INCBIN_DATA(STD),           INCBIN_LEN(STD)},
+        {"Configurable.os", INCBIN_DATA(Configurable),  INCBIN_LEN(Configurable)},
+        {"IceTea.os",       INCBIN_DATA(libIceTea),     INCBIN_LEN(libIceTea)},
+        {}
+    };
+    ScriptMap_t* list = &scripts[0];
+
+    while(list->name && list->script) {
+        string script(reinterpret_cast<const char*>(list->script), list->len);
+        this->evalFakeFile(list->name, script.c_str());
+        if(this->hasEndedExecuting()) return false;
+        list++;
+    }
 
     if(this->shouldDebug) {
         this->eval("_G.DEBUG=true");
     } else {
         this->eval("_G.DEBUG=false");
     }
+
+    performIceTeaEvent(this, "beforeInitialize");
+    if(this->hasEndedExecuting()) return false;
+
+    if(file_exists(this->bootstrapit)) {
+        this->require(this->bootstrapit);
+    } else {
+        this->printDebug("No bootstrap.it file found. Using internal.");
+        this->evalFakeFile("bootstrap.it", INCBIN_DATA(InternalBootstrapIt), INCBIN_LEN(InternalBootstrapIt));
+    }
+    if(this->hasEndedExecuting()) return false;
+
+    performIceTeaEvent(this, "afterInitialize");
+    if(this->hasEndedExecuting()) return false;
+
+    return true;
 }
 
 void IceTea::setDebug(bool debug) {
@@ -126,7 +205,14 @@ bool IceTea::getDebug() {
 
 void IceTea::printDebug(string msg) {
     if(this->shouldDebug || this->cli->check("--debug")) {
-        cerr << "[IceTea]: " << msg << endl;
+        if(!cli->check("--no-color")) {
+            rlutil::saveDefaultColor();
+            rlutil::setColor(rlutil::GREY);
+            cout << "[IceTea]: " << msg << endl;
+            rlutil::resetColor();
+        } else {
+            cout << "[IceTea]: " << msg << endl;
+        }
     }
 }
 
@@ -162,7 +248,7 @@ IceTea* IceTea::setupCli(int argc, const char** argv) {
 
     const char* env_boot = getenv("ICETEA_BOOTSTRAP");
     if(env_boot != NULL) {
-        bootstrapit = env_boot;
+        this->bootstrapit = env_boot;
     }
 
     // Generic
@@ -249,8 +335,12 @@ void IceTea::eval(string code) {
     OS::eval(code.c_str(), 0, 0, OS_SOURCECODE_PLAIN, true, false);
 }
 
-void IceTea::evalFakeFile(string fileName, char* source) {
-    OS::evalFakeFile(fileName.c_str(), source, 0, 0, OS_SOURCECODE_PLAIN, true, false);
+void IceTea::evalFakeFile(string fileName, const unsigned char* src, int len) {
+    string script(reinterpret_cast<const char*>(src), len);
+    this->evalFakeFile(fileName.c_str(), script.c_str());
+}
+void IceTea::evalFakeFile(const char* name, const char* source) {
+    OS::evalFakeFile(name, source, 0, 0, OS_SOURCECODE_PLAIN, true, false);
 }
 
 bool IceTea::startup() {
@@ -266,23 +356,11 @@ bool IceTea::startup() {
     this->fc = new Filecache(this->cacheFile);
 
     // First, load the native modules.
-    this->initializeModules();
-
-    // Then, populate rules and other global things.
-    if(file_exists(this->bootstrapit)) {
-        this->require(this->bootstrapit);
-    } else {
-        this->printDebug("No bootstrap.it file found. Using internal.");
+    if(!this->initializeModules()) {
+        // Something did not initiaize.
+        // We can't work with a half-initialized environment.
+        return 1;
     }
-    if(this->hasEndedExecuting()) return false;
-
-    // Auto-include
-    /*
-    this->getGlobal("IceTea");
-    this->pushString("AutoInclude");
-    this->getProperty(-2);
-    this->callF(0,0);
-    */
 
     if(file_exists(this->buildit)) {
         this->require(this->buildit);
@@ -299,33 +377,55 @@ bool IceTea::startup() {
     return hasSetup;
 }
 
-void IceTea::runMain(int& rt) {
-    this->getGlobal("main");
-    this->callF(0,1);
-    this->hasEndedExecuting(rt);
-}
-
 int IceTea::run() {
     // Return code tracker
-    int rt=0;
+    int rt = 0;
 
     // Setup everything.
     if(!this->startup()) {
+        this->printDebug("Startup failed.");
         return -1;
     }
 
-    if(this->checkAndRunInline(rt)) {
+    // Initialize all the targets, rules, actions, and possibly more.
+    callObjectFunction(this, "IceTea", "Initializer", 0, 0, false);
+    if(this->hasEndedExecuting(rt)) {
+        this->printDebug("Initializer failed.");
+        return rt;
+    } else {
+        rt = this->popNumber();
+    }
+
+    if(this->checkAndRunHelp()) {
+        // We ran the help. Exit with 0.
+        return 0;
+    } if(this->checkAndRunInline(rt)) {
         // We ran an inline script, return.
         return rt;
     }
 
-    // Run the IceTea stuff!
-    this->runMain(rt);
+    // Is there anything else?
+    performIceTeaEvent(this, "postprocessCli", 1);
+    if(this->hasEndedExecuting(rt)) {
+        this->printDebug("event:postprocessCli failed.");
+        return rt;
+    }
 
-    // Prepare return value
-    OS::String rt_typeid = this->getTypeStr();
-    if(rt_typeid == "number") {
+    bool shouldContinue = this->isType(OS_VALUE_TYPE_BOOL) ? this->popBool() : false;
+    if(!shouldContinue) {
+        // We did something in postprocessCli, so we should exit.
+        this->printDebug("Closing after event:postprocessCli");
+        return 0;
+    }
+
+    // If we came thus far, then we really want to configure, stack and run.
+    callObjectFunction(this, "IceTea", "Main");
+    if(this->hasEndedExecuting(rt)) {
+        this->printDebug("Main failed.");
+        return rt;
+    } else {
         rt = this->popNumber();
     }
+
     return rt;
 }
