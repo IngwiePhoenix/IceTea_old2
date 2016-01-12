@@ -1,3 +1,6 @@
 [submodule "incbin"]
 	path = incbin
 	url = https://github.com/graphitemaster/incbin.git
+[submodule "rlutil"]
+	path = rlutil
+	url = https://github.com/tapio/rlutil.git

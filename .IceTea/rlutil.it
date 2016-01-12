@@ -1,0 +1,6 @@
+target("rlutil_test", "exe") {
+    input: ["rlutil/test.cpp"]
+}
+target("rlutil_example", "exe") {
+    input: ["rlutil/example.c"]
+}
