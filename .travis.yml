@@ -12,7 +12,7 @@ env:
 script:
   - export CXX=$TRCXX
   - $CXX src/*.cpp -Wno-switch -lpthread -o ./icetea.flat
-  - ./icetea.flat --detail-output
+  - ./icetea.flat --debug
   - ./out/icetea -x tests/run_tests.os || ( [ "$?" == "2" ] && exit 0 || exit 1 )
 
 matrix:
