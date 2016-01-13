@@ -1,3 +1,4 @@
+#include "IceTea.h"
 #include "os-icetea.h"
 
 // Define the various rlutil func wrappers that
@@ -31,4 +32,4 @@
 
 // Initializer. Its a bit bigger than the others.
 // Plus, almost extern-able!
-void extendDollar(ObjectScript::OS*);
+void extendDollar(IceTea*);
