@@ -9,6 +9,6 @@ public:
 };
 
 #define ICETEA_MODULE(name, initFunc) \
-    Plugin p_##name(#name, initFunc)
+    const Plugin p_##name(#name, initFunc)
 
 #endif

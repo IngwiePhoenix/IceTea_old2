@@ -7,5 +7,5 @@ using namespace std;
 
 Plugin::Plugin(const string& name, PluginCallback* cb) {
     PluginDef plugin(name, cb, this);
-    PluginStore.attach(plugin);
+    PluginStore::attach(plugin);
 }

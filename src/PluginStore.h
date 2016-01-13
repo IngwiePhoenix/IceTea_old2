@@ -8,16 +8,10 @@
 
 typedef std::vector<PluginDef> PluginList;
 
-class _PluginStore_impl {
-private:
-    PluginList plugins;
-
+class PluginStore {
 public:
-    _PluginStore_impl();
-    void attach(const PluginDef& plugin);
-    PluginList* get();
+    static void attach(const PluginDef& plugin);
+    static PluginList* get();
 };
-
-extern _PluginStore_impl PluginStore;
 
 #endif

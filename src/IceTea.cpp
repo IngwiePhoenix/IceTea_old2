@@ -137,9 +137,10 @@ void IceTea::setupArguments() {
 
 bool IceTea::initializeModules() {
     // Print the modules, for debugging.
-    PluginList* plugins = PluginStore.get();
+    PluginList* plugins = PluginStore::get();
     PluginList::iterator it;
     for(it = plugins->begin(); it!=plugins->end(); ++it) {
+        cout << ">> Module: " << (*it).name << endl;
         (*it).cb(this);
     }
 
