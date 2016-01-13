@@ -1,2 +1,2 @@
 // Proxy header.
-#include "../incbin/incbin.h"
+#include "../deps/incbin/incbin.h"
