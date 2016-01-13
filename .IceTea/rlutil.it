@@ -1,6 +1,6 @@
 target("rlutil_test", "exe") {
-    input: ["rlutil/test.cpp"]
+    input: ["deps/rlutil/test.cpp"]
 }
 target("rlutil_example", "exe") {
-    input: ["rlutil/example.c"]
+    input: ["deps/rlutil/example.c"]
 }
