@@ -140,7 +140,6 @@ bool IceTea::initializeModules() {
     PluginList* plugins = PluginStore::get();
     PluginList::iterator it;
     for(it = plugins->begin(); it!=plugins->end(); ++it) {
-        cout << ">> Module: " << (*it).name << endl;
         (*it).cb(this);
     }
 
