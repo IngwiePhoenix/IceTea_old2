@@ -1,10 +1,10 @@
 #include <stdlib.h> // getenv, putenv
 #include <string>
 
-#include "os-sys.h"
 #include "os-pfs.h" // CALL_STLPLUS_*()
 #include "file_system.hpp"
 #include "predef.h"
+#include "Plugin.h"
 
 using namespace stlplus;
 using namespace ObjectScript;
@@ -103,8 +103,7 @@ OS_FUNC(os_sys_putenv) {
     return 1;
 }
 
-
-bool initializeSYS(ObjectScript::OS* os) {
+bool initializeSYS(IceTea* os) {
     OS::FuncDef sysFuncs[] = {
         {OS_TEXT("cd"),             os_sys_cd},
         {OS_TEXT("which"),          os_sys_which},
@@ -127,3 +126,4 @@ bool initializeSYS(ObjectScript::OS* os) {
 
     return true;
 }
+ICETEA_MODULE(sys, initializeSYS);

@@ -6,19 +6,13 @@
 #include "objectscript.h"
 #include "IceTea.h"
 
-#include "os-pfs.h"
-#include "os-process.h"
-#include "os-sys.h"
-#include "os-configurable.h"
-#include "os-detector.h"
-#include "os-std.h"
-
 #include "cli.h"
 #include "filecache.hpp"
 #include "tinythread.h"
 #include "portability_fixes.hpp"
 #include "stlplus_version.hpp"
 #include "rlutil.h"
+#include "PluginStore.h"
 
 // Embed
 #include "scripts.rc"
@@ -142,16 +136,15 @@ void IceTea::setupArguments() {
 }
 
 bool IceTea::initializeModules() {
-    // Initialize the native modules
-    initIceTeaExt(this);
-    initializePFS(this);
-    initializeSYS(this);
-    initializeProcess(this);
-    initializeConfigurable(this);
-    initializeDetector(this);
-    initializeStdlib(this);
+    // Print the modules, for debugging.
+    PluginList* plugins = PluginStore.get();
+    PluginList::iterator it;
+    for(it = plugins->begin(); it!=plugins->end(); ++it) {
+        (*it).cb(this);
+    }
 
     // Initialize the scripted modules
+    // FIXME: Move into Modules.
     struct ScriptMap_t {
         const char*             name;
         const unsigned char*    script;

@@ -8,7 +8,7 @@
 #include "picosha2.h"
 
 #include "predef.h"
-
+#include "Plugin.h"
 #include "cli.h"
 
 using namespace std;
@@ -138,7 +138,7 @@ OS_FUNC(print_debug) {
     return 0;
 }
 
-void initIceTeaExt(IceTea* os) {
+bool initIceTeaExt(IceTea* os) {
     // Grab a reference to the CLI instance.
     CLI* cli = os->getCliHandle();
 
@@ -180,4 +180,6 @@ void initIceTeaExt(IceTea* os) {
     os->pushCFunction(print_debug);
     os->setGlobal("debug");
 
+    return true;
 }
+ICETEA_MODULE(IceTeaShell, initIceTeaExt);

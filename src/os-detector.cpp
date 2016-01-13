@@ -15,6 +15,7 @@
 #include "picosha2.h"
 #include "wildcard.hpp"
 #include "util.h"
+#include "Plugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -1195,7 +1196,7 @@ OS_FUNC(osc_new) {
     return 1;
 }
 
-
+ICETEA_MODULE(detector, initializeDetector);
 bool initializeDetector(IceTea* os) {
     cache = os->getFilecache();
     cli = os->getCliHandle();

@@ -1,6 +1,8 @@
-#include "objectscript.h"
-#include "os-icetea.h"
 #include <iostream>
+
+#include "IceTea.h"
+#include "os-icetea.h"
+#include "Plugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -25,7 +27,7 @@ OS_FUNC(stderr_flush) {
     return 0;
 }
 
-void initializeProcess(OS* os) {
+bool initializeProcess(IceTea* os) {
     OS::FuncDef stdoutFuncs[] = {
         {OS_TEXT("write"), stdout_write},
         {OS_TEXT("flush"), stdout_flush},
@@ -49,4 +51,7 @@ void initializeProcess(OS* os) {
     os->setProperty(processObj, "stderr");
 
     os->pop();
+
+    return true;
 }
+ICETEA_MODULE(process, initializeProcess);

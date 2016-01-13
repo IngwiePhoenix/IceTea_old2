@@ -9,13 +9,12 @@
 #include <iostream>
 #include <vector>
 
-#include "objectscript.h"
-#include "os-std.h"
+#include "IceTea.h"
 #include "os-icetea.h" // OS_FUNC
 #include "os-stacker.h"
 
 #include "wildcard.hpp"
-
+#include "Plugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -46,7 +45,7 @@ OS_FUNC(os_die) {
     return 0;
 }
 
-void initializeStdlib(OS* os) {
+bool initializeStdlib(IceTea* os) {
     os->pushCFunction(os_exit);
     os->setGlobal("exit");
 
@@ -61,4 +60,6 @@ void initializeStdlib(OS* os) {
     os->setFuncs(wcFuncs);
     os->pop();
 
+    return true;
 }
+ICETEA_MODULE(stdlib, initializeStdlib);

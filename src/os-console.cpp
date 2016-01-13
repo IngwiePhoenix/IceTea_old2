@@ -1,4 +1,4 @@
-#include "objectscript.h"
+#include "IceTea.h"
 #include "os-console.h"
 #include "rlutil.h"
 
@@ -102,7 +102,7 @@ OS_FUNC(console_getCols) {
 }
 
 // Now comes the fun part!
-void extendDollar(OS* os) {
+void extendDollar(IceTea* os) {
     OS::FuncDef consoleFuncs[] = {
         // Misc
         {OS_TEXT("msleep"),                 console_msleep},
