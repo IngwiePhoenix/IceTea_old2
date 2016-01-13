@@ -4,15 +4,15 @@ I have set up myself to make an awesome build tool. But as each project's nature
 
 - [ ] Support creation and manipulation of files by mapping the oldschool `FILE* f*()` functions into the `os-pfs` module.
 - [X] Finally introduce the usage of actions instead of building all targets.
-- [ ] Implement sanity checks to make sure that an action/target/rule object is correctly entered.
-- [ ] Introduce `external(name) {... opts ...}`
+- [X] Implement sanity checks to make sure that an action/target/rule object is correctly entered.
+- [-] Introduce `external(name) {... opts ...}`
 - [X] Implement the detector module.
 - [X] Implement an overall caching storage to make it possible for the app to store a cache for detector and alike.
 - [X] Somehow introduce console colors for all platforms.
 - [X] Introduce pre-inclusion (`require()`ing all files within a specified subfolder)
 - [ ] Introduce addition to `require()` to automatically include a project. I.e.: `require.project "submodule/"`
 - [X] Begin using the `prepare()` method for rules.
-- [ ] Implement the `tag()` mechanism for usage inside targets/externals and the function to do a proper lookup.
+- [X] Implement the `tag()` mechanism for usage inside targets/externals and the function to do a proper lookup.
 - [X] Introduce the array `+` operator. I.e.: `var a=["foo"] + ["bar"]`. `o` should now contain: `["foo","bar"]`
 - [X] Proper SHA2 implementation
 - [X] Properly implement the lib+func checks (libdl on linux and what on Win32?)
@@ -29,7 +29,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [ ] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
 
 ### Added 25th Dec. 2014, 1.27PM
-- [ ] Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
+- [X] Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
     * May make it recursive.
 - [ ] Finally write `detect.write_*()` functions.
     - [X] `detect.write_header()`
@@ -44,25 +44,26 @@ I have set up myself to make an awesome build tool. But as each project's nature
     * Concat: Combine inputs into single output
     * Shared libraries
     * Static libraries
-- [ ] Implement these settings:
+- [X] Implement these settings: [Rules now use the settings, so they are userland-defined.]
     * native.framework_dirs: OBJC, OBJCXX
     * OBJC/XX.GC/ARC: Settings for garbage collection or ARC
     * LIB.rpath: Search paths and install name
     * COMPONENT: target binary, other settings
     * ASM: Defines and such
-- [ ] Finally take `bootstrap.it` into memory within a post-build
+- [X] Finally take `bootstrap.it` into memory within a post-build
+    - Using the `incbin` utility.
 
 ### Added 20th Februrary 2015, 10.21AM
-- [ ] Rewrite build executor (Thanks to @martine :))
+- [X] Rewrite build executor (Thanks to @martine :))
     * First generate all the tasks, then loop over them to execute them.
     * Wait on multiple tasks (commands) and check for their status.
         * If failed, let the other commands finish first, then exit.
     - Use `stlplus::async_subprocess`.
     - Create a subclass that reports `bool done()`.
-- [ ] Make `settings.LINK.libraries` unique (i.e.: only one `-lmylib` per array)
+- [-] Make `settings.LINK.libraries` unique (i.e.: only one `-lmylib` per array)
 
 ### Added 20th November 2015, 11:07PM
-- [ ] Implement a Topsort mechanism
+- [X] Implement a Topsort mechanism
     * Luckily, advice was retrived here: http://stackoverflow.com/a/30249477/2423150
 - [ ] Possibly generate a graph.
 - [ ] Maybe introduce RegEx support.
