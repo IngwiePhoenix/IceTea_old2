@@ -4,3 +4,6 @@
 [submodule "rlutil"]
 	path = deps/rlutil
 	url = https://github.com/tapio/rlutil.git
+[submodule "deps/mbedtls"]
+	path = deps/mbedtls
+	url = https://github.com/ARMmbed/mbedtls.git
