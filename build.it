@@ -23,7 +23,7 @@ target("icetea", "exe") {
                 "-ffunction-sections",
                 "-fdata-sections",
             ] : []);
-            @settings.CXX.optimization = (DEBUG ? "none":"size")
+            @settings.CXX.optimization = (DEBUG ? "none" : "size");
             print @settings;
         } else print " No.";
         return true;
@@ -35,7 +35,8 @@ target("icetea", "exe") {
                 "no-switch"
             ] : [
                 // None
-            ])
+            ]),
+            defines: ["ICETEA_FULL"]
         },
         LINK: {
             libraries: [],
@@ -43,7 +44,9 @@ target("icetea", "exe") {
                 "-dead_strip"
             ] : []) + [
                 "-pthread"
-            ],
+            ] + (DEBUG ? [
+                "-g"
+            ] : []),
         }
     },
 }
