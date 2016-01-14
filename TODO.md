@@ -74,3 +74,15 @@ I have set up myself to make an awesome build tool. But as each project's nature
 
 ### Added 12th Janurary 2016, 5.47AM
 - [ ] Make sure that files within a target actually exist.
+
+### Added 13th Janurary 2016, 4.20PM
+- [ ] Add a rule - and options - that allow it to be "not run".
+    - Makes it possible for targets to depend on header-only libs.
+    - Get extra settings in or trigger other configure steps.
+- [ ] Build the same target for multiple rules. I.e. as shared and static library.
+- [ ] Write proper process classes. `$()` is nice, but more complex classes are needed.
+    - `Command.Async` : Runs a command and watches it in a separate thread.
+    - `Command.Sync`  : A command that is constructed and ran immediately. The backend for normal `$()` calls.
+    - `shell` will not be affected by this. It uses an entirely different routine anyway.
+- [ ] Rewrite parts of `detect` in OS itself to simplify source.
+- [ ] Store info about input files' last-changed date. On subsequent runs, filter these, and manipulate the queue accordingly.
