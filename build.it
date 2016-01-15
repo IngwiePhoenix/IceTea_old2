@@ -50,7 +50,7 @@ target("icetea", "exe") {
                 // Force IceTea into using INCBIN_EXTERNAL instead.
                 // Allows for the generated incbin script file to be used.
                 // Not needed on Windows.
-                "ICETEA_INCBIN_FORCE_EXTERNAL"
+                //"ICETEA_INCBIN_FORCE_EXTERNAL"
             ]
         },
         LINK: {
