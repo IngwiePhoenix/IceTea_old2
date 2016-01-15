@@ -76,6 +76,7 @@ public:
 
     // Minimalistic version of eval()
     void eval(std::string);
+    void eval(std::string, int);
 
     // Minimalistic version of evalFakeFile()
     void evalFakeFile(std::string, const unsigned char[], int len);

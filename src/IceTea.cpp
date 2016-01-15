@@ -282,9 +282,10 @@ bool IceTea::checkAndRunInline(int &rt) {
             } else {
                 code = this->cli->value("--exec");
             }
-            this->eval(code);
+            this->eval(code, 1);
         }
         this->hasEndedExecuting(rt);
+        cout << this->toString() << endl;
         return true;
     }
 
@@ -324,9 +325,14 @@ void IceTea::require(string file) {
     OS::require(file.c_str(), true, 0, OS_SOURCECODE_PLAIN, true, false);
 }
 
+
 void IceTea::eval(string code) {
-    OS::eval(code.c_str(), 0, 0, OS_SOURCECODE_PLAIN, true, false);
+    this->eval(code, 0);
 }
+void IceTea::eval(string code, int expected) {
+    OS::eval(code.c_str(), 0, expected, OS_SOURCECODE_PLAIN, true, false);
+}
+
 
 void IceTea::evalFakeFile(string fileName, const unsigned char* src, int len) {
     string script(reinterpret_cast<const char*>(src), len);
