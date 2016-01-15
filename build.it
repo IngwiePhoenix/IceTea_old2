@@ -16,37 +16,53 @@ target("icetea", "exe") {
         }
     },
     configure: function() {
-        echo detect.out .. "Do we want to optimize IceTea?";
-        if(cli.check("--it-optimize")) {
+        echo detect.out .. "Do we want to optimize IceTea (aka. release build)?";
+        if(DEBUG && cli.check("--it-optimize")) {
+            print " Can not optimize on debug build."
+        } else if(!DEBUG && cli.check("--it-optimize")) {
             print " Yes.";
-            @settings.CXX.flags = (!DEBUG && sys.type == "unix" && isDarwin() ? [
-                "-ffunction-sections",
-                "-fdata-sections",
-            ] : []);
-            @settings.CXX.optimization = (DEBUG ? "none" : "size");
-            print @settings;
-        } else print " No.";
+            if(sys.type == "unix") {
+                @settings.CXX.optimization = "size";
+                if(isDarwin()) {
+                    // FIXME: Are they OS X only, and could we possibly use them on *NIX?
+                    @settings.CXX.flags += [
+                        "-ffunction-sections",
+                        "-fdata-sections"
+                    ];
+                }
+            }
+        } else {
+            print " No."
+        }
         return true;
     },
     settings: {
         CXX: {
             includeDirs: ["src"],
             warnings: (sys.type == "unix" ? [
+                // ObjectScript
                 "no-switch"
-            ] : [
-                // None
-            ]),
-            defines: ["ICETEA_FULL"]
+            ] : []),
+            defines: [
+                // We can go all-out now. Include everything.
+                "ICETEA_FULL",
+
+                // Force IceTea into using INCBIN_EXTERNAL instead.
+                // Allows for the generated incbin script file to be used.
+                // Not needed on Windows.
+                "ICETEA_INCBIN_FORCE_EXTERNAL"
+            ]
         },
         LINK: {
             libraries: [],
             flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
+                // OS X: Strip dead symbols.
                 "-dead_strip"
-            ] : []) + [
+            ] : []) + (sys.type == "unix" ? [
+                // UNIX: Use -pthread - for now.
+                // FIXME: Teach detect to check for the proper flag to use pThreads.
                 "-pthread"
-            ] + (DEBUG ? [
-                "-g"
-            ] : []),
+            ]),
         }
     },
 }
