@@ -1,5 +1,10 @@
 #include "incbin.h"
 
+#ifdef ICETEA_INCBIN_FORCE_EXTERNAL
+#undef INCBIN
+#define INCBIN INCBIN_EXTERNAL
+#endif
+
 INCBIN(STD, "lib/std.os");
 INCBIN(Configurable, "lib/configurable.os");
 INCBIN(libIceTea, "lib/IceTea.os");
