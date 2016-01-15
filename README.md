@@ -47,13 +47,16 @@ In order for the files to resolve correctly, make sure you navigated into the Ic
     $ cd IceTea
     ...
 
+## Read more in the wiki!
+Read further to get an overview. But when you're ready for the big walls of text, head to [the wiki](wiki).
+
 ## It's as easy as opening a bottle of ice tea!
 ```javascript
 target("myProg", "exe") {
     input: pfs.glob("src", "*.cpp"),
     settings: {
         native: {
-            include_dirs: ["src/"]
+            includeDirs: ["src/"]
         }
     }
 }
@@ -86,7 +89,8 @@ target("myLib", "shlib") {
     },
     settings: {
         native: {
-            include_dirs: ["lib/"]
+            includeDirs: ["lib/"],
+            defines: ["HAVE_CONFIG_H"]
         }
     }
 }
@@ -99,9 +103,8 @@ Now we take it a step further. Imagine you wish to have a conditional configurat
 ```javascript
 target("mySpecialLib", "lib") {
     input: pfs.glob("static_lib", "*.c"),
-    prepare: function() {
+    init: function() {
         // We can add options to the help screen here!
-        // When we do, its prefixed with our target's name, too.
         cli.insert {
             longopt: "--curl-path",
             arg: "dir",
@@ -126,15 +129,16 @@ target("mySpecialLib", "lib") {
 }
 ```
 
-In the above example, we use the `prepare()` method to prepare the rest of the target that can not statically be written in. Within `configure()` we check if `--with-libmeep` was specified, and get it's "value". If it has one, it returns it. Otherwise it returns false. But since we gave it a default, "no" is returned. `config.with()` only returns wether it was supplied or not.
+In the above example, we use the `init()` method to prepare the rest of the target that can not statically be written in. Within `configure()` we check if `--with-libmeep` was specified, and get it's "value". If it has one, it returns it. Otherwise it returns false. But since we gave it a default, "no" is returned. `config.with()` only returns wether it was supplied or not.
 
-You dont even need to specify a wildcard for your paths. Imagine you have some test cases and want to build them all!
+You don't even need to specify a wildcard for your paths. Imagine you have some test cases and want to build them all!
 
 ```javascript
 for(var _,testfile in pfs.glob("test/", "*.cpp")) {
     var testname = pfs.basename( testfile );
     target(testname, "exe") {
         input: [testfile],
+        title: "MyApp Test: ${testname}",
         // Get a dependency and add it's exports to this target.
         needs: ["myMainProject"]
     }
@@ -160,7 +164,7 @@ target("bar", "exe") {
 
 Use the plus (`+`) operator to combine arrays, since `tag()` returns all targets matching a tag.
 
-This is all I am going to show for now... See for a bit of backstory below!
+This is all I am going to show for now... See the wiki for more.
 
 ## Inspiration
 Okay... So I was working a lot with script extensions and had to use either `phpize`, `node-gyp` or something else. If I wanted to port a library to multiple languages, I was quickly caught up rewriting and typing redundant information. So I wanted to be able to do something as simple as:
@@ -193,11 +197,11 @@ But that was likely impossible. Some people wrote shims over existing build syst
     * Per-Folder files
     * Very compact syntax doe snot give away what is ment for what.
 
-Ninja does not go into the above list, simply because its a pure build tool an dits only purpose is to read in generated Ninja files and act upon what they read.
+Ninja does not go into the above list, simply because its a pure build tool and its only purpose is to read in generated Ninja files and act upon what they read.
 
 Therefore I created IceTea - well, still AM creating it. It runs off [ObjectScript](http://github.com/unitpoint/objectscript) for the most part, uses [STLPlus](https://stlplus.sourceforge.net) for its filesystem and subprocess management, a modified variant of [picosha2](https://github.com/okdshin/PicoSHA2) for hashing files in a cache. There is also my own `cli.h` that supports grouped arguments, whose idea was taken from another argument parser called `NBCL`.
 
-IceTea is ment to be compact (currently 900kb when built with `-O3`) and simple. I am not directly aiming for speed, but since you can see `TinyThreads++` in there, you probably guessed already that I want to run build jobs on multiple threads to speed up the build time. I think it's called parallel building...
+IceTea is meant to be compact (currently 900kb when built with `-O3`) and simple. I am not directly aiming for speed, but since you can see `TinyThreads++` in there, you probably guessed already that I want to run build jobs on multiple threads to speed up the build time. I think it's called parallel building...
 
 ## Good resources
 - http://stackoverflow.com/questions/28263062/topological-sorting-of-c-data-structures/30249477#30249477
