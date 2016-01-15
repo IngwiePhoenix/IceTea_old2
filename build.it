@@ -62,7 +62,7 @@ target("icetea", "exe") {
                 // UNIX: Use -pthread - for now.
                 // FIXME: Teach detect to check for the proper flag to use pThreads.
                 "-pthread"
-            ]),
+            ] : [])
         }
     },
 }

@@ -1,3 +1,92 @@
 target("incbin", "exe") {
     input: ["deps/incbin/incbin.c"]
 }
+
+/**
+ * This rule allows for IncBin to be utilized in a programatic way.
+ *
+ * It can get _any_ file as input and is hence a raw rule.
+ *
+ * After the incbin tool is built, a pseudo-header containing INCBIN() statements is generated,
+ * mapping the key and value in the input object to valid statements.
+ *
+ * The compiled incbin file is then added to the parent target.
+ *
+ * Example:
+ * 		MyApp : Application
+ * 			| src/main.c
+ * 			| src/script_engine.c
+ *
+ * This is a typical target. Now, we could also make a second target:
+ * 		MyApp_Scripts : IncBin
+ * 			| lib/script.js
+ *
+ * The input definition for that target would look like so:
+ *
+ * target("MyApp_Scripts", "incbin") {
+ * 	   input: {
+ * 	       script: "lib/script.js"
+ * 	   }
+ * }
+ *
+ * You realize: Normally, you supply arrays as input. But this is a special rule - the input specified goes to this target directly.
+ * That means, that it also can specify a new input format.
+ *
+ * This rule would then do the following:
+ *
+ * 		1. Build a temporary file in out/ - for instance "MyApp_Scripts.incbin.h"
+ * 		2. Once the incbin tool is compiled: out/icnbin out/MyApp_Scripts.incbin.h -o @out (where @out is the result of estimate)
+ * 		3. After the build, the files are added as a task, and added to the target's final task.
+ *
+ * To make sure that both, the .h and .c file are avilable, they're forced in:
+ * - MyApp_Scripts.incbin.h : We add -include to the target's native.flags settings.
+ * - MyApp_Scripts.incbin.c : Process this file into steps, and add it to the final rule as dep and input.
+ */
+// FIXME: Implement missing API.
+rule("incbin", "IncBin") {
+    pattern: "%o/$t.incbin.c",
+    options: {
+        raw: true
+    },
+    configure: function() {
+        @hdrName = IceTea.estimate("%o/%t.incbin.c",{
+            target: @target,
+            rule: @backend
+        });
+        return true;
+    },
+    build: function() {
+        var hdr = "/* Generated via IceTea+IncBin */\n";
+
+        // Write INCBIN(name, "file"); statements.
+        for(var name,file in @in) {
+            hdr += "INCBIN(${name}, \"${file}\");\n";
+        }
+
+        // Write the header to disk.
+        File.writeWhole(hdr, hdrName);
+
+        // Process it using IncBin
+        var spawned,ec,out = $ "incbin -o ${@out} ${hdrName}"
+        if(ec != 0 || !spawned) { return false; }
+
+        // Make new steps for the .c file.
+        // FIXME: Make the API.
+        @finalStep = IceTea.createStepsInline {
+            target: @target,
+            file: hdrName,
+            asFinalDep: true,
+            preserveLevel: true
+        }
+
+        return false;
+    },
+    test: function() {
+        // Did the child finish yet?
+        return @finalStep.built;
+    },
+    clean: function() {
+        pfs.delete(@hdrName);
+        pfs.delete(@out);
+    }
+}
