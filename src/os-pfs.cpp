@@ -1,9 +1,17 @@
+#include <sstream>
+
 #include "IceTea.h"
 #include "os-pfs.h"
 #include "os-detector.h"
 #include "file_system.hpp"
 #include "wildcard.hpp"
 #include "Plugin.h"
+
+#if defined(PREDEF_PLATFORM_WIN32)
+    #define ICETEA_DIRSEP "\\"
+#else
+    #define ICETEA_DIRSEP "/"
+#endif
 
 using namespace std;
 using namespace ObjectScript;
@@ -229,18 +237,16 @@ OS_FUNC(os_pfs_lookup) {
 }
 
 OS_FUNC(os_pfs_join) {
-    EXPECT_STRING(1)
-    EXPECT_STRING(2)
-    string base = os->toString(-params+0).toChar();
-    string appe = os->toString(-params+1).toChar();
-    string root = folder_current();
-    if(os->isString(-params+2)) {
-        root = os->toString(-params+2).toChar();
+    if(params < 2) {
+        os->setException("pfs.path: Expected at least 2 parameters.");
+        return 0;
     }
-    string path = create_filespec(base, appe);
-    // FIXME: Proper root should be the current script's dirname.
-    string fullPath = folder_to_path(path, root);
-    os->pushString(fullPath.c_str());
+    string path = os->toString(-params+0).toChar();
+    for(int i=1; i<params; i++) {
+        string tmp = os->toString(-params+i).toChar();
+        path = filespec_to_path(path, tmp);
+    }
+    os->pushString(path.c_str());
     return 1;
 }
 
