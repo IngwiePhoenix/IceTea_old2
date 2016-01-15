@@ -361,23 +361,29 @@ IceTea = extends _E {
 
             // And the rule.
             if(target.rule.isConfigured()) {
-                var rt3 = target.rule.configure();
+                var rt3 = target.rule.configure(target);
                 if(typeOf(rt3) == "boolean" && !rt3) {
                     return rt2, configured;
                 }
             }
 
-            var dpendsOnType = typeOf(dependsOn);
-            debug "Are we merging ${dependsOn}:<${dpendsOnType}> ?"
             if(typeOf(dependsOn) == "string") {
                 // We are being a child, so we should export ourself into parent.
-                debug "Merging exports from ${target.name} into settings of ${dependsOn}"
                 var dependant = IceTea.__targets[dependsOn];
-                if("exports" in target && "settings" in dependant) {
-                    dependant.settings += target.exports;
+                if(
+                    !dependant.hasMergedWith(targetName)
+                    && "exports" in target
+                    && "settings" in dependant
+                ) {
+                    debug "Merging exports from ${target.name} into settings of ${dependsOn}"
+                    debug dependant.settings
+                    debug target.exports
+                    dependant.settings = dependant.settings + target.exports;
+                    dependant.setHasMergedWith(targetName);
                 }
+                debug "Done merging."
             }
-
+            debug "Done configuring."
             return true, configured;
         }
 
@@ -878,6 +884,7 @@ IceTea.Target = extends IceTea.Storeable {
             @settings = {};
         }
         @__isConfigured = false;
+        @__mergedWith = [];
     },
     __get@title: function() {
         var o = @__getStore();
@@ -898,6 +905,12 @@ IceTea.Target = extends IceTea.Storeable {
         if("init" in o && typeOf(o.init) == "function") {
             o.init.apply(this);
         }
+    },
+    setHasMergedWith: function(name) {
+        @__mergedWith.push(name);
+    },
+    hasMergedWith: function(name) {
+        return (name in @__mergedWith);
     }
 };
 

@@ -10,22 +10,23 @@ function Object.__get(name) {
 
 function Object.__add(operand) {
     if(typeOf(operand) == "object") {
-        for(var key, value in operand) {
-            if(typeOf(value) == "object" || typeOf(value) == "array") {
-                if(!(key in this)) {
-                    this[key] = value;
+        for(var k,v in operand) {
+            if(typeOf(v) == "object" || typeOf(v) == "array") {
+                // These two can be added too.
+                if(k in this) {
+                    this[k] += v;
                 } else {
-                    this[key] += value;
+                    this[k] = v;
                 }
             } else {
-                this[key] = value;
+                this[k] = v;
             }
         }
+        return this;
     } else {
-        var type = typeOf(operand);
-        throw "Object.__add: Expected Object, got ${type} instead.";
+        var t = typeOf(operand);
+        throw "Object.__add: Expected Object, got ${t} instead.";
     }
-    return this;
 }
 
 function Array.__add(operand) {
