@@ -101,7 +101,7 @@ rule("incbin", "Include Binary") {
         header[] = "#endif // ${defineKey}";
 
         // Write.
-        print ""
+        //print "" // FIXME: Global IceTea display settings. Possibly reporters??
         detect.line "Writing: ${headerFile}..."
         var bytes = File.writeWhole(header.join("\n"), headerFile);
         if(__.isNull(bytes)) {

@@ -207,6 +207,40 @@ IceTea = extends _E {
         return count;
     },
 
+    // We can optimize task containers,
+    // by putting all IceTea.Rule objects
+    // into the same level, for instance.
+    // this is basically what we'll attempt to do, for now.
+    // FIXME: This is rather impossible, when considering, that two rules may produce dependencies for one another.
+    // Awh man... FIXME, come back here later.
+    optimizeTaskContainer: function(taskContainer) {
+        var newTaskContainer = [];
+        var xLevel = 0;
+        var ruleStack = [];
+        var T = IceTea.Task.Type;
+        for(var level,tasks in taskContainer) {
+            var allAreRules = true;
+            for(var id,task in tasks) {
+                if(task.type != T.RULE) {
+                    allAreRules = false;
+                    break;
+                }
+            }
+            if(!allAreRules) {
+                // Tons of steps. We don't want to mess with them.
+                debug "OPTIMIZE: Advancing level."
+            } else {
+                // Add all rules from this level
+                // into the stack. That allows us
+                // to have a collection of all the rules together.
+                // We can then set the current tasks to NULL.
+                // When we realize that the next level
+                // only consists of steps again, we can
+                // put all the ruels into the previous level.
+            }
+        }
+    },
+
     /**
      * Create the steps required to build.
      * Each step is a Task. A step can be of various types.
@@ -227,7 +261,7 @@ IceTea = extends _E {
             // Already done with this one.
             return true;
         }
-        target.__isSteppd = true;
+        target.__isStepped = true;
 
         debug "Level: ${level}"
 
@@ -503,238 +537,225 @@ IceTea = extends _E {
         }
     },
 
-    Runner: function(taskContainer, printPrefix){
+    Runner: function(taskContainer, outputPrefix, forceDetail){
+        // Global or custom task-container?
+        // FIXME: Syntactic shuggar, use matrix.
         taskContainer = taskContainer || IceTea.__tasks;
-        printPrefix = __.isString(printPrefix)
-            ? " " .. printPrefix .. " "
-            : "";
-        $.Cursor.hide();
-        $.saveDefaultColor();
-        var longOutput = cli.check("--debug") || cli.check("--detail-output");
-        // function globals.
-        var maxJobs = toNumber(cli["-j"]);
-        var taskCount = IceTea.getTaskCount(taskContainer);
-        var currCount = 0;
-        var highestLevel = IceTea.getLevel(taskContainer);
-        for(var level, tasks in taskContainer) {
-            //print "Level: ${level}/${highestLevel}; Tasks: ${#tasks}"
-            var allHidden = true;
-            for(var i,task in tasks) {
-                if(!task.isHidden()) {
-                    allHidden = false;
-                    break;
-                }
+
+        // normalize the third, now new flag.
+        forceDetail = forceDetail || false;
+
+        // First, determine the way of reporting.
+        var isCompact = @{
+            if(
+                forceDetail
+                || cli.check("--debug")
+                || cli.check("--detail-output")
+                //|| Is this a TTY?
+            ) {
+                return false;
+            } else {
+                return true;
             }
-            if(allHidden) {
-                debug "All tasks are hidden. Skipping level ${level}"
-                continue;
+        };
+        var isColorful = !cli.check("--no-color");
+        var reportTarget = function(currentIdx, maxIdx, level, task) {
+            // Shorthand:
+            var _write = process.stdout.write;
+
+            // The variables used to display things.
+            var buildstr = @{
+                var orig = typeOf(task.in) == "array" ? task.out : task.in;
+                if("_present" in task.backend) {
+                    orig = task.backend._present.call(task);
+                }
+                return orig;
+            };
+            var targetTitle = task.target.title;
+            var stepDisplay = task.backend.display;
+
+            // Clear the current line before printing into it.
+            if(isCompact) {
+                for(var i=0; i<$.cols-2; i++) {
+                    _write " "
+                }
+                _write "\r"
             }
 
+            // Print logic... fancy, eh?
+            outputPrefix = outputPrefix || ""
+            if(outputPrefix != "") outputPrefix = outputPrefix .. " ";
+
+                            _write outputPrefix;
+            if(isColorful)  $.saveDefaultColor();
+            if(isColorful)  $.setColor($.Colors.CYAN);
+                            _write "#${level} [${currentIdx}/${maxIdx}] ";
+            if(isColorful)  $.resetColor();
+                            _write targetTitle .. "(";
+            if(isColorful)  $.setColor($.Colors.MAGENTA);
+                            _write stepDisplay;
+            if(isColorful)  $.resetColor();
+                            _write "): ${buildstr}";
+            if(isCompact)   _write "\r"
+            else            _write "\n"
+        }
+
+        // The n-th task we're running
+        var currentIndex = 0;
+        // The maximum of tasks.
+        var maxIndex = IceTea.getTaskCount(taskContainer);
+        // The maximum of parallel tasks to run.
+        var maxParallel = toNumber(cli["-j"]);
+
+        debug "Executing ${maxIndex} tasks with ${maxParallel} in parallel."
+
+        // Step through each level individually.
+        for(var level,tasks in taskContainer) { //try {
             debug "Entering level: ${level}"
-            var jobs = [];
-            var taskId = 0;
-            while(true) {
 
-                // Ensure that we have always as many jobs as possible in the job queue.
-                while(#jobs < maxJobs) {
-                    if(taskId+1 >= #tasks) {
-                        taskId = 0;
-                    } else {
-                        taskId++;
-                    }
-                    var task = tasks[taskId];
+            // Backgrounded tasks (Status.PENDING)
+            var backgroundTasks = [];
 
-                    // Sanity check: All pending?
-                    var allPending = true;
-                    for(var _tid,_task in tasks) {
-                        var status = _task.status();
-                        debug "Status: ${status} (${typeOf(status)})"
-                        var T_PEN = IceTea.Task.Status.PENDING;
-                        if(__.isNull(status) || status != T_PEN) {
-                            allPending = false;
-                            break;
-                        }
-                    }
-                    if(allPending) {
-                        debug "Loop full of pens.";
-                        break;
-                    }
-                    // Sanity check: All built?
-                    var allBuilt = true;
-                    for(var _tid,_task in tasks) {
-                        if(!("built" in task)) {
-                            allBuilt = false;
-                            break;
-                        }
-                    }
-                    if(allBuilt) {
-                        debug "Loop full of builts.";
-                        break;
-                    }
+            // In case of an error, wait for all tasks to finish and exit.
+            var shouldExit = false;
 
-
-                    debug "Accepting new task now. (${taskId} / ${#tasks})"
-
-                    // If this is a hidden task, we can skip it.
-                    if(task.isHidden()) {
-                        debug "-> ... is hidden."
-                        continue;
-                    }
-
-                    if(typeOf(task.previous) != "null") {
-                        debug "Testing if dependant target was or was not built yet."
-                        if(!task.previous.built) {
-                            // Skip this task and come back here later.
-                            continue;
-                        }
-                    }
-
-                    // If this job was built, skip it.
-                    if(task.built == true) {
-                        debug "Already built."
-                        continue;
-                    }
-
-                    if(task.status() == IceTea.Task.Status.PENDING) {
-                        // We already have this job in.
-                        debug "Duplicate"
-                        continue;
-                    }
-
-                    debug "Running job ${level}.${taskId}"
-                    if(!("reported" in task)) {
-                        var buildStr = @{
-                            var orig = typeOf(task.in) == "array" ? task.out : task.in;
-                            if("_present" in task.backend) {
-                                orig = task.backend._present.call(task);
-                            }
-                            return orig;
-                        };
-                        var progStr = "${++currCount}/${taskCount} #${level}/#${#jobs}";
-                        var targetStr = task.target.title;
-                        var stepStr = task.backend.display;
-                        var baseStr = "${printPrefix}[${progStr}] ${targetStr}(${stepStr}): ${buildStr}";
-                        if(cli.check("--no-color")) {
-                            if(!longOutput && #baseStr <= $.cols) {
-                                process.stdout.write("\r");
-                                // Clear the line.
-                                for(var i=0; i<$.cols-2; i++) {
-                                    process.stdout.write(" ");
-                                }
-                                process.stdout.write("\r");
-                            } else if(#baseStr > $.cols) {
-                                process.stdout.write("\n");
-                            }
-                            process.stdout.write(baseStr);
-                            if(longOutput || #baseStr > $.cols) {
-                                process.stdout.write("\n");
-                            }
-                        } else {
-                            if(!longOutput && #baseStr <= $.cols) {
-                                process.stdout.write("\r");
-                                // Clear the line.
-                                for(var i=0; i<$.cols-2; i++) {
-                                    process.stdout.write(" ");
-                                }
-                                process.stdout.write("\r");
-                            } else if(#baseStr > $.cols) {
-                                process.stdout.write("\n");
-                            }
-                            // Colorize
-                            $.setColor($.Colors.CYAN);
-                            process.stdout.write("[${progStr}] ");
-                            $.resetColor();
-                            process.stdout.write("${targetStr}(");
-                            $.setColor($.Colors.MAGENTA);
-                            process.stdout.write(stepStr);
-                            $.resetColor();
-                            process.stdout.write("): ${buildStr}");
-                            if(longOutput || #baseStr > $.cols) {
-                                process.stdout.write("\n");
-                            }
-                        }
-                        task.reported = true;
-                    }
-
-
-                    // Run the task and determine its lifecycle.
-                    var immediate = task.run();
-
-                    // Did the job possibly fail?
-                    if(task.status() == IceTea.Task.Status.FAIL) {
-                        // The task arleady failed. Print an error and break.
-                        // Also print the error message.
-                        // Note, that on compact output, we want to write a new line before, and after.
-                        debug "Job failed immediately.";
-                        $.Cursor.show(); // Reset.
-                        return task.exitCode();
-                    } else if(task.status() == IceTea.Task.Status.OK) {
-                        debug "Job was built successfuly."
-                        task.cache();
-                        task.built = true;
-                    } else if(task.status() == IceTea.Task.Status.PENDING) {
-                        debug "Job is pending."
-                        jobs.push(task);
-                    } else {
-                        throw "Unknown status ${task.status()}!"
-                    }
-                }
-
-                // Test for the jobs.
-                var newJobs = [];
-                var exitNow = false;
-                for(var n,job in jobs) {
-                    var status = job.test();
-                    if(!__.isNumber(status)) {
-                        var t = typeOf(status);
-                        throw "The returned status must be one of IceTea.Task.Status, which is a number! Got: ${t}";
-                    }
-                    var _Status = IceTea.Task.Status;
-                    debug "Getting status for ${job.name} (${job.out}) (${_Status} vs. ${status})"
-                    switch(status) {
-                        case _Status.OK:
-                            debug "${n}: OK"
-                            // This task is done. mark it as built.
-                            job.built = true;
-                            job.cache();
-                        break;
-                        case _Status.FAIL:
-                            debug "${n}: FAIL"
-                            // This task actually failed. Break out and stop.
-                            var exCode = job.exitCode();
-                            return exCode;
-                        break;
-                        case _Status.PENDING:
-                            debug "${n}: Pending"
-                            // Still pending...
-                            newJobs.push(job);
-                        break;
-                    }
-                }
-
-                // Overwrite the new jobs with the old ones.
-                jobs = newJobs;
-
-                // We can only leave if ALL tasks are built.
-                var leave = true;
-                for(var n,job in jobs) {
-                    debug "Querying: ${job.name}"
-                    if(!job.built || !job.isHidden()) {
-                        leave = false;
-                    }
-                }
-                if(leave) {
-                    debug "Leaving this level"
-                    break;
-                } else {
-                    debug "Continuing on this level"
+            for(var id,task in tasks) {
+                // Is this task hidden?
+                // Hidden tasks == cached output.
+                if(task.isHidden()) {
                     continue;
                 }
+
+                // Report it.
+                reportTarget(++currentIndex, maxIndex, level, task);
+
+                // Run.
+                task.run();
+
+                // Status: OK, FAIL or PENDING
+                var status = task.test();
+                var S = IceTea.Task.Status;
+                switch(status) {
+                    case S.OK:
+                        // Nothing to be done here.
+                        debug "Status: OK (Immediate task.)"
+                        task.cache();
+                        continue;
+                    case S.FAIL:
+                        // Signal everyone that this is failure.
+                        debug "Status: FAIL (Preparing for shutdown.)"
+                        shouldExit;
+                        break;
+                    case S.PENDING:
+                        // We want to add this job to the background.
+                        // However, we shouldn't add more jobs to the
+                        // backgroundTasks array than we have specified.
+                        debug "Status: PENDING (Pushing into queue.)"
+                        while(#backgroundTasks >= maxParallel) {
+                            debug "Waiting to push. In queue: ${#backgroundTasks} of ${maxParallel}"
+                            // We need to see if one of the background
+                            // tasks has been completed, and remove it.
+                            var newTasks = [];
+                            for(var i,bTask in backgroundTasks) {
+                                var status = bTask.test();
+                                switch(status) {
+                                    case S.OK:
+                                        // This one is good to go.
+                                        debug "Waiting on empty spot; status: OK"
+                                        bTask.cache();
+                                        break;
+                                    case S.FAIL:
+                                        // It had a problem. Exit now.
+                                        debug "Waiting on empty spot; status: FAIL (Preparing shutdown)"
+                                        shouldExit = true;
+                                        break;
+                                    case S.PENDING:
+                                        debug "Waiting on empty spot; status: PENDING (Re-adding)"
+                                        newTasks.push(bTask);
+                                        break;
+                                    default:
+                                        throw "Unknown status! ${task.out} -> ${status}"
+                                }
+
+                                // Should we exit?
+                                if(shouldExit) break;
+
+                                // Swap the queues.
+                                backgroundTasks = newTasks;
+                            }
+
+                            // Did one of the previous tasks fail?
+                            // If so, we gotta bail. (rhyme was not intended!)
+                            if(shouldExit) break;
+                        }
+                        // Push the task.
+                        if(!shouldExit) {
+                            debug "Pushing new task to queue. (${task.out})"
+                            backgroundTasks.push(task);
+                        }
+                        break;
+                }
+
+                // Short-circuit this loop. No further execution needed.
+                if(shouldExit) break;
             }
-        }
-        debug "Reached end of control."
-        if(!longOutput) process.stdout.write("\n");
-        $.Cursor.show();
+
+            // Drain the queue.
+            // Even when an error has occured, we need to be graceful.
+            debug "Draining queue now (${#backgroundTasks})."
+            while(#backgroundTasks > 0) {
+                debug "In queue: ${#backgroundTasks}"
+                var remainder = [];
+                for(var i,xtask in backgroundTasks) {
+                    var status = xtask.test();
+                    debug "Status: ${status}";
+                    switch(status) {
+                        case S.FAIL:
+                            // We might be exiting anyway.
+                            // So we can gracefuly ignore this one.
+                            // However, we still should raise the flag.
+                            debug "Queue drain: Task failed. (${xtask.out})"
+                            shouldExit = true;
+                            break;
+                        case S.OK:
+                            // The task is done. Good!
+                            debug "Queue drain: Task was successful. (${xtask.out})"
+                            xtask.cache();
+                            break;
+                        case S.PENDING:
+                            // Not done yet. Wait for it.
+                            debug "Queue drain: Still waiting on this one. (${xtask.out})"
+                            remainder.push(xtask);
+                            break;
+                        default:
+                            throw "Unknown status! ${task.out} -> ${status}"
+                    }
+                }
+                // Swap.
+                debug "Swapping ${#backgroundTasks} with ${#remainder}"
+                backgroundTasks = remainder;
+            }
+
+            // IF:      One/Many tasks exited with Status.FAIL,
+            // THEN:    Exit using `return 1`. We can't commulate error codes.
+            // ELSE:    Enter next level.
+            if(shouldExit) {
+                debug "Exiting now."
+                return 1;
+            } else {
+                debug "Advancing to next level. ${#backgroundTasks}"
+                continue;
+            }
+        } /*} catch(e) {
+            // FIXME: Unify this, and below.
+            unhandledException(e);
+            if(isCompact) print "";
+            return 1;
+        }*/
+
+        debug "Reached end of control"
+        if(isCompact) print "";
+        return 0;
     },
 
     // Runs a target through a secondary build chain.
@@ -807,12 +828,18 @@ IceTea = extends _E {
             if(typeOf(rt) == "boolean" && rt == false) return 1;
 
             // And run it too.
-            rt = IceTea.Runner();
+            $.Cursor.hide();
+            try {
+                rt = IceTea.Runner();
+            } catch(e) {
+                unhandledException(e);
+                rt = 1;
+            }
+            $.Cursor.show();
         }
 
         // Reset things.
         $.resetColor();
-        $.Cursor.show();
         return rt;
     },
 
@@ -1296,6 +1323,9 @@ IceTea.Task = extends Object {
             return false; // Delayed return
         }
     },
+
+    // Gets the current status _WITHOUT_ asking the backend first.
+    // Mainly used internally.
     status: function() {
         return this._status;
     },
@@ -1304,6 +1334,7 @@ IceTea.Task = extends Object {
     run: function() {
         try {
             var rt = this.backend[IceTea.scheme].call(this);
+            debug "Task returned: ${rt} (${typeOf(rt)})"
             return this._setStatus(rt);
         } catch(e) {
             unhandledException(e)
@@ -1312,28 +1343,26 @@ IceTea.Task = extends Object {
         }
     },
 
-    // If the status is pending, then this tests if things are resolved.
-    // This function should return one of IceTea.Task.Type
+    // See if this task is still running.
+    // In case of an async process being the underlying task,
+    // this will cause the ::tick() method to be called.
     test: function() {
-        if(this._status == @Status.PENDING) {
-            try {
+        try {
+            var S = IceTea.Task.Status;
+            if(@status() != S.PENDING) {
+                debug "Task already returned."
+                return @status();
+            } else {
                 var rt = this.backend.status.call(this);
-                debug "${@backend.name}: Status is ${rt} (${typeOf(rt)})"
+                @_status = rt;
+                debug "${@out}: Status is ${rt} (${typeOf(rt)})"
                 return rt;
-            } catch(e) {
-                print "CRITICAL: Error while testing (@name).";
-                unhandledException(e);
-                $.Cursor.show();
-                return @Status.FAIL;
             }
-        } else {
-            throw "This task is not pending.";
+        } catch(e) {
+            print "CRITICAL: Error while testing ${@name}.";
+            unhandledException(e);
+            return @Status.FAIL;
         }
-    },
-
-    exitCode: function() {
-        // FIXME: Actually implement this.
-        return 0;
     }
 }
 

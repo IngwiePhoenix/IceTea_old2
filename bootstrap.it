@@ -85,30 +85,22 @@ NativeStep = extends Object {
     status: function() {
         var T = IceTea.Task.Status;
         if(@runner.tick()) {
+            debug "${@out}: Pending still."
             return T.PENDING; // Not done yet.
         } else {
+            debug "${@out}: Task complete. Placing output."
             var stdout = @runner.stdout();
             var stderr = @runner.stderr();
             var color = !cli.check("--no-color");
             var headed = false;
-            var head = {|| if(!headed && !cli.check("--detail-output")) print ""; headed = true; }
-            if(#stdout > 0) {
-                head();
-                print stdout;
-            }
-            if(#stderr > 0) {
-                head();
-                color && @runner.exit_code() != 0 && $.setColor($.Colors.RED);
-                print stderr;
-                color && $.resetColor();
-            }
+            if(#stdout>0) echo stdout;
+            if(#stderr>0) echo stderr;
             // Done. Check status.
             if(@runner.exit_code() == 0) {
                 return T.OK;
             } else {
                 print "Failed command: $ ${@cmd}"
                 print "Exit code: ${@runner.exit_code()}"
-                $.Cursor.show();
                 return T.FAIL;
             }
         }

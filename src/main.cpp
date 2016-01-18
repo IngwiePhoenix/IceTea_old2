@@ -15,5 +15,7 @@
 
 int main(int argc, char** argv) {
     IceTea* it = IceTea::create();
-    return it->setupCli(argc, (const char**)argv)->run();
+    return it
+        ->setupCli(argc, (const char**)argv)
+        ->run();
 }
