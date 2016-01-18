@@ -1,18 +1,17 @@
 print detect.head .. "Running several tests using the detector module..."
 
-detect.compiler("c");
-detect.compiler("c++");
-detect.compiler("objc");
-detect.compiler("objc++");
-detect.compiler("java");
-detect.compiler("swift");
+detect.findCompiler(detect.name2kind("c"));
+detect.findCompiler(detect.name2kind("c++"));
+detect.findCompiler(detect.name2kind("objc"));
+detect.findCompiler(detect.name2kind("objc++"));
+//detect.findCompiler(detect.name2kind("java"));
+detect.findCompiler(detect.name2kind("swift"));
 
 detect.header("c", "stdio.h");
 detect.header("c", "conio.h");
 detect.header("c", "ncurses.h");
 detect.header("c++", "iostream");
 detect.header("objc", "objc/objc.h");
-// objc++, java and swift not supported yet.
 
 // Libs...
 detect.lib("curl");
@@ -31,16 +30,16 @@ detect.libfunc("libpthread", "pthread_create");
 detect.libfunc("pthread", "pthread_create");
 
 // Functions in headers
-detect.headerfunc("c", "stdio.h", "printf");
-detect.headerfunc("c", "objc/objc.h","objc_msgSend");
+detect.headerfunc("stdio.h", "printf");
+detect.headerfunc("objc/objc.h","objc_msgSend");
 
 // Functions in both
 
 
 // Checking for data types
 detect.type("uint16_t");
-detect.type("uint16_t", "stddef.h");
-detect.type("uint16_t", "inttypes.h");
+detect.typeHeader("uint16_t", "stddef.h");
+detect.typeHeader("uint16_t", "inttypes.h");
 
 // Compiler flags
 
@@ -52,5 +51,5 @@ detect.type("uint16_t", "inttypes.h");
 
 
 // Generate
-detect.write_header("config.h");
+detect.writeHeader("config.h");
 print detect.footer
