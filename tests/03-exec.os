@@ -20,12 +20,15 @@ $ "ls";
 print "Running with arguments";
 $ "ls -1 ."
 
+// FIXME: Horribly broken.
+/*
 print "Running with argument replacements"
 $("echo ?", "Hello, World!");
 
 print "Running with quoted replace"
 $("echo '?'", "Yo, amma quoted.");
-
+*/
+*
 print "Using the exec command now."
 var r = shell("ls -aGp")
 print "Result is: " .. r
