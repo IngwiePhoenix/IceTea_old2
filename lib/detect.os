@@ -502,7 +502,7 @@ detect = detect + {
             for(var _,entry in list) {
                 var entryBase = pfs.basename(entry._toolName);
                 if(envBase == entryBase) {
-                    if(!(kind in @_hasReported)) @success "${entry.name}: ${env} ($${key})"
+                    if(!(key in @_hasReported)) @success "${entry.name}: ${env} ($${key})"
                     var x = entry.clone();
                     x._toolName = env;
                     return true, x;
