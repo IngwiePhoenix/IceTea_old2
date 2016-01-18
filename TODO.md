@@ -97,3 +97,12 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Useful for finding the currently executed file!
 - [ ] Introduce `Template`. A class to take `.in` files and transform them.
 - [X] Export cached values into ObjectScript, so that we can process `.in` files.
+
+
+### Added 18th Janurary 2016, 5.12pm
+- [ ] Advanced APIs:
+    - Compile a file directly, utilize IceTea's functionality to properly resolve the compiler and any settings. Provide a "Template target" to serve all the various settings.
+    - Simplify the usage of sub-builds.
+- [ ] Find better ways to merge as many tasks together as possible.
+- [ ] Improve caching and step-minimizing.
+- [ ] A way to have sub-builds trigger changes in upstream. So that generated code gets re-compiled into an executable.
