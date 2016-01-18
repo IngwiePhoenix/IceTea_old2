@@ -883,7 +883,7 @@ detect = detect + {
             }
         }
     },
-    headerFunc: function(header, func, name, runArgs){
+    headerfunc: function(header, func, name, runArgs){
         name = name || "c";
         var kind = @name2kind(name);
         var headerCacheKey = @haveHeader(header);
@@ -1032,17 +1032,18 @@ detect = detect + {
 
     // Test compiler flags.
     tryCompilerFlag: function(args, kind){
-        if(!__.isString(args) || !__.isArray(args)) {
+        if(!__.isString(args) && !__.isArray(args)) {
             var t = typeOf(args);
             throw "Can't test compiler flag(s). Args aren't array or string, but '${t}' instead."
         }
+        kind = kind || "CC";
         if(!(kind in @activeCompilerMap)) {
             var rt = @findCompiler(kind);
             if(!rt) return rt;
         }
-        var compiler = @activeCompilerMap[key];
+        var compiler = @activeCompilerMap[kind];
         var argStr = __.isArray(args) ? args.join(" ") : args;
-        @line "Checking if ${compiler.name} supports '${argStr}'"
+        @line "Checking if ${@nameMap[kind]} compiler supports '${argStr}'"
         var p = SubProcess({async: false});
         var src = "int main(int argc, char** argv){ return 0; }";
         var ext = @kind2ext(kind);
@@ -1069,7 +1070,7 @@ detect = detect + {
                     return false;
                 }
             } else {
-                @fail "No. (Could not compile!)"
+                @fail "No."
                 return false;
             }
         } else {

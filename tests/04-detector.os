@@ -42,14 +42,16 @@ detect.typeHeader("uint16_t", "stddef.h");
 detect.typeHeader("uint16_t", "inttypes.h");
 
 // Compiler flags
-
+detect.tryCompilerFlag("-fno-rtti","CXX");
+detect.tryCompilerFlag("-pthread");
+detect.tryCompilerFlag("-ObjC", "OBJC");
+detect.tryCompilerFlag("-ObjC++", "OBJCXX");
+detect.tryCompilerFlag("--nope");
 
 // Running tests
 
 
-// Direct cache access
-
-
 // Generate
 detect.writeHeader("config.h");
+detect.writeJson("config-h.json");
 print detect.footer

@@ -4,3 +4,4 @@ src/os-scripts.cpp
 *.dSYM
 config.h
 out/
+*.json
