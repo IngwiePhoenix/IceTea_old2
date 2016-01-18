@@ -1,12 +1,42 @@
 #include "IceTea.h"
-#include "os-console.h"
+#include "os-icetea.h"
 #include "rlutil.h"
+#include "Plugin.h"
 
 #include <iostream>
 
 using namespace std;
 using namespace ObjectScript;
 using namespace rlutil;
+
+// Define the various rlutil func wrappers that
+// will be appended to $
+/*
+    Methods:
+    - $.setColor($.Color[name])
+    - $.anyKey([message])
+    - $.locate(x, y)
+    - $.getch()
+    - $.getKey() / $.__get@key : $.Keyboard
+    - $.saveDefaultColor()
+    - $.resetColor()
+    - $.cls()
+    - $.Cursor.hide()
+    - $.Cursor.show()
+    - $.msleep(milliseconds)
+    - $.__get@rows / $.getRows()
+    - $.__get@cols / $.getCols()
+
+    Keyboard numbers:
+    - $.Keyboard.UP
+    - $.Keyboard.DOWN
+    - ...
+
+    Color numbers
+    - $.Color.RED
+    - $.Color.GREEN
+    - ...
+*/
 
 // Set the text color.
 OS_FUNC(console_setColor) {
@@ -102,7 +132,7 @@ OS_FUNC(console_getCols) {
 }
 
 // Now comes the fun part!
-void extendDollar(IceTea* os) {
+bool extendDollar(IceTea* os) {
     OS::FuncDef consoleFuncs[] = {
         // Misc
         {OS_TEXT("msleep"),                 console_msleep},
@@ -203,7 +233,7 @@ void extendDollar(IceTea* os) {
         {}
     };
 
-    os->getGlobal("$");
+    os->getModule("$");
     int dollar = os->getAbsoluteOffs(-1);
 
     // Console funcs
@@ -211,18 +241,20 @@ void extendDollar(IceTea* os) {
 
     // Cursor funcs
     os->newObject();
-    os->setFuncs(cursorFuncs);
+        os->setFuncs(cursorFuncs);
     os->setProperty(dollar, "Cursor");
 
     // Keyboard props
     os->newObject();
-    os->setNumbers(keyboardKeys);
+        os->setNumbers(keyboardKeys);
     os->setProperty(dollar, "Keyboard");
 
     // Color codes
     os->newObject();
-    os->setNumbers(colorCodes);
+        os->setNumbers(colorCodes);
     os->setProperty(dollar, "Colors");
 
     os->pop();
+    return true;
 }
+ICETEA_MODULE(Console, extendDollar);

@@ -2,7 +2,7 @@
 
 I have set up myself to make an awesome build tool. But as each project's nature, it has a todo list. Here it goes!
 
-- [ ] Support creation and manipulation of files by mapping the oldschool `FILE* f*()` functions into the `os-pfs` module.
+- [X] Support creation and manipulation of files by mapping the oldschool `FILE* f*()` functions into the `os-pfs` module.
 - [X] Finally introduce the usage of actions instead of building all targets.
 - [X] Implement sanity checks to make sure that an action/target/rule object is correctly entered.
 - [-] Introduce `external(name) {... opts ...}`
@@ -24,16 +24,16 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [X] Better error handling if OS actually crashed. Currently `int main(int,char**)` will report that no targets were built whilst it actually has an exception written ontop of it.
 - [ ] Separate debug/non-debug builds
 - [X] Better Windows linker support / flag passing / warning handling.
-- [ ] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
+- [X] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
 - [ ] Make rules able to depend upon targets also.
 - [ ] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
 
 ### Added 25th Dec. 2014, 1.27PM
 - [X] Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
     * May make it recursive.
-- [ ] Finally write `detect.write_*()` functions.
+- [X] Finally write `detect.write_*()` functions.
     - [X] `detect.write_header()`
-    - [ ] `detect.write_json()`
+    - [X] `detect.write_json()`
 - [X] Proper build flags for the `IceTea` target
 - [ ] Introduce an `install` kind of thing.
 - [ ] Teach `bootstrap.it` these rules:
@@ -61,6 +61,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Use `stlplus::async_subprocess`.
     - Create a subclass that reports `bool done()`.
 - [-] Make `settings.LINK.libraries` unique (i.e.: only one `-lmylib` per array)
+    - Should probably make `Array.dedupe`.
 
 ### Added 20th November 2015, 11:07PM
 - [X] Implement a Topsort mechanism
@@ -73,16 +74,26 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - https://github.com/stephenmathieson/describe.h/blob/master/describe.h
 
 ### Added 12th Janurary 2016, 5.47AM
-- [ ] Make sure that files within a target actually exist.
+- [X] Make sure that files within a target actually exist.
 
 ### Added 13th Janurary 2016, 4.20PM
-- [ ] Add a rule - and options - that allow it to be "not run".
+- [X] Add a rule - and options - that allow it to be "not run".
     - Makes it possible for targets to depend on header-only libs.
     - Get extra settings in or trigger other configure steps.
-- [ ] Build the same target for multiple rules. I.e. as shared and static library.
-- [ ] Write proper process classes. `$()` is nice, but more complex classes are needed.
-    - `Command.Async` : Runs a command and watches it in a separate thread.
-    - `Command.Sync`  : A command that is constructed and ran immediately. The backend for normal `$()` calls.
+- [Never] Build the same target for multiple rules. I.e. as shared and static library.
+    - This might result in chaos. Rather, just copy the input object to multiple targets.
+- [X] Write proper process classes. `$()` is nice, but more complex classes are needed.
+    - `SubProcess`: Pass`{async:}` with either `true` or `false`.
     - `shell` will not be affected by this. It uses an entirely different routine anyway.
-- [ ] Rewrite parts of `detect` in OS itself to simplify source.
-- [ ] Store info about input files' last-changed date. On subsequent runs, filter these, and manipulate the queue accordingly.
+- [X] Rewrite parts of `detect` in OS itself to simplify source.
+- [X] Store info about input files' last-changed date. On subsequent runs, filter these, and manipulate the queue accordingly.
+
+
+### Added 16th Janurary 2016, 1.02AM
+- [ ] Overwrite internal ObjectScript classes to extend behaviour.
+    - [ ] `OS::initPreScript()`: can run a script for initialization. We can use that in `IceTea::initializeModules()`. We can also override `require()`!
+    - [ ] `OS::resolveFile(OS::String)` -> `require.resolve`: Resolve a file.
+- [ ] Utilize `OS::Core` to get ahold of the backtrace.
+    - Useful for finding the currently executed file!
+- [ ] Introduce `Template`. A class to take `.in` files and transform them.
+- [X] Export cached values into ObjectScript, so that we can process `.in` files.

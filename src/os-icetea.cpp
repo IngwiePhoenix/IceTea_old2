@@ -4,7 +4,6 @@
 #include "IceTea.h"
 #include "os-icetea.h"
 #include "os-exec.h"
-#include "os-console.h"
 #include "picosha2.h"
 
 #include "predef.h"
@@ -138,18 +137,27 @@ OS_FUNC(print_debug) {
     return 0;
 }
 
+OS_FUNC(os_system) {
+    // Flat wrapper around the system call.
+    if(params < 1 || params > 1) {
+        os->setException("System only expects one parameter, and one only.");
+        return 0;
+    }
+    int res = system( os->toString(-params+0).toChar() );
+    os->pushNumber(res);
+    return 1;
+}
+
 bool initIceTeaExt(IceTea* os) {
     // Grab a reference to the CLI instance.
     CLI* cli = os->getCliHandle();
 
-    // Exec
-    os->pushCFunction(os_exec);
-    os->setGlobal("$");
+    // Make it a value.
+    os->getModule("$");
+    os->pop();
+
     os->pushCFunction(os_system);
     os->setGlobal("shell");
-
-    // Extend the $ with console funcs.
-    extendDollar(os);
 
     // Option parsing/passing
     OS::FuncDef cliFuncs[] = {

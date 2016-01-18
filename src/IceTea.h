@@ -9,6 +9,18 @@
 #include "cli.h"
 #include "filecache.hpp"
 
+// File related things
+#define ICETEA_SCRIPT_EXT ".it"
+#define ICETEA_TEMPLATE_EXT ".in"
+
+// Copyright and such.
+#define ICETEA_VERSION "1.0.0"
+#define ICETEA_VERSION_TAG "-dev"
+#define ICETEA_AUTHOR "Kevin \"Ingwie Phoenix\" Ingwersen <ingwie2000@gmail.com>"
+#define ICETEA_VERSION_STR \
+    "IceTea " ICETEA_VERSION ICETEA_VERSION_TAG \
+    "by " ICETEA_AUTHOR
+
 class IceTea : public ObjectScript::OS {
 // Aliases:
     typedef std::string string;
@@ -81,6 +93,10 @@ public:
     // Minimalistic version of evalFakeFile()
     void evalFakeFile(std::string, const unsigned char[], int len);
     void evalFakeFile(const char*, const char*);
+
+    // OS is rightout missing this one xD
+    bool isBool(int offs);
+    bool isBool();
 
     // Setup the environment, load stuff and such.
     // Also creates the output folder and cache file!

@@ -7,8 +7,38 @@ IceTea = extends _E {
     // The folder where output files should end up
     outputDir: __outputdir,
 
+    // global settings.
+    GlobalSettings: @{
+        var st = {};
+        // FIXME: We likely need to ad this at the bottom of detect.os
+        var map = [
+            "ASM",
+            "CC", "CXX",
+            "OBJC", "OBJCXX",
+            "SWIFTC", "DC", "CSC",
+            "GOC", "RUSTC", "JAVAC"
+        ];
+        for(var kind,name in map) {
+            st[kind] = {};
+        }
+        st.$PATH = [];
+    },
+
+    // Should we traverse Win32 stuff?
+    _win32: false,
+    searchWin32: function(should) {
+        if(__.isBool(should)) {
+            @_win32 = should;
+        } else {
+            return @_win32;
+        }
+    },
+
     // If tasks should be ran or not.
     runTasks: true,
+
+    // When building, we want to keep track of things.
+    FileCache: @{ return Cache("Files"); },
 
     // The targets to build, clean or install.
     targetList: [],
@@ -39,6 +69,15 @@ IceTea = extends _E {
         var step = IceTea.Step(inDef, outDef, stepOpts);
         IceTea.__steps.push(step);
     },
+    findStepForFile: function(file) {
+        for(var _,step in IceTea.__steps) {
+            if(step.accepts(file)) {
+                step.init();
+                return step;
+            }
+        }
+        return false;
+    },
 
     // Rules
     __rules: {},
@@ -56,6 +95,16 @@ IceTea = extends _E {
             print "WARNING: Target ${name} is already defined."
         }
         IceTea.__targets[name] = IceTea.Target(name, ruleObj, targetOpts);
+    },
+
+    // Display the steps in a container.
+    dumpSteps: function(container) {
+        for(var level, tasks in container) {
+            print "Level: ${level}";
+            for(var i,task in tasks) {
+                print "  - ${task.backend.display}: ${task.in} -> ${task.out}"
+            }
+        }
     },
 
     // Externals
@@ -130,24 +179,29 @@ IceTea = extends _E {
      * to see if they were built yet. If not, they're skipped for the time being.
      */
     __tasks = [],
-    addTask: function(level, task) {
+    addTask: function(level, task, taskContainer) {
+        // Used for sub-builds - like generators.
+        taskContainer = taskContainer || IceTea.__tasks;
         // Create level if it does not exist yet.
-        IceTea.__tasks[level] = IceTea.__tasks[level] || [];
-        IceTea.__tasks[level].push(task);
+        taskContainer[level] = taskContainer[level] || [];
+        taskContainer[level].push(task);
     },
 
     // Returns the currently highest level.
     // Add +1 to create a new level.
-    getLevel: function() {
-        return IceTea.__tasks.length-1;
+    getLevel: function(taskContainer) {
+        taskContainer = taskContainer || IceTea.__tasks;
+        return taskContainer.length-1;
     },
 
     // Get a count of the tasks.
-    getTaskCount: function() {
+    getTaskCount: function(taskContainer) {
+        taskContainer = taskContainer || IceTea.__tasks;
         var count = 0;
-        for(var level,tasks in IceTea.__tasks) {
+        for(var level,tasks in taskContainer) {
             for(var _,task in tasks) {
-                count++;
+                if(task.isHidden()) continue;
+                else                count++;
             }
         }
         return count;
@@ -163,19 +217,45 @@ IceTea = extends _E {
      * @param {Number} level  Starting level. Useful when post-adding tasks.
      * @return {Boolean} True on success, false on failure.
      */
-    createSteps: function(target, level) {
+    createSteps: function(target, taskContainer, level) {
+        taskContainer = taskContainer || IceTea.__tasks;
         var finalDeps = [];
         level = level || 0;
 
+        // Mark this target as made.
+        if("__isStepped" in target) {
+            // Already done with this one.
+            return true;
+        }
+        target.__isSteppd = true;
+
         debug "Level: ${level}"
 
+        if(target.rule.options.noExecute) {
+            debug "${target.rule.display}: noExecute found. Skipping."
+            return true;
+        }
+
         // Are we dealing with a raw rule?
-        if("options" in target.rule && "raw" in target.rule.options && target.rule.options.raw) {
-            debug "Assigning ${target.name} with ${taret.rule.display}"
+        if(target.rule.options.raw) {
+            debug "Assigning ${target.name} with ${target.rule.display}"
             IceTea.addTask(level, IceTea.Task({
                 type: "rule",
-                target: target
-            }));
+                target: target,
+                input: target.input
+            }), taskContainer);
+            return true;
+        }
+
+        if("needs" in target) {
+            debug "Processing dependencies of ${target.name}"
+            for(var _,depName in target.needs) {
+                var dep = IceTea.__targets[depName];
+                if(!("__isStepped" in dep)) {
+                    debug "Dep: ${depName}"
+                    IceTea.createSteps(dep, taskContainer, level);
+                }
+            }
         }
 
         // Nope. So process the steps.
@@ -211,7 +291,7 @@ IceTea = extends _E {
                         }
 
                         // Add the task to the current level.
-                        IceTea.addTask(levelBase++, t);
+                        IceTea.addTask(levelBase++, t, taskContainer);
                         currentFile = t.out;
                         stepFound = true;
                         lastTask = t;
@@ -244,7 +324,7 @@ IceTea = extends _E {
                 var outs = [];
                 for(var _,dep in finalDeps) {
                     if(dep.out == "null" || typeOf(dep.out) == "null") {
-                        throw "${dep}'s output is NULL!"
+                        throw "${dep}'s output is NULL! (${finalDeps})"
                     } else {
                         outs.push(dep.out);
                     }
@@ -252,7 +332,8 @@ IceTea = extends _E {
                 return outs;
             }
         });
-        IceTea.addTask(IceTea.getLevel()+1, finalTask);
+        target.__finalTask = finalTask;
+        IceTea.addTask(IceTea.getLevel()+1, finalTask, taskContainer);
 
         // All the previous tasks should point to the next task now.
         for(var _,dep in finalDeps) {
@@ -334,15 +415,24 @@ IceTea = extends _E {
             }
 
             var target = IceTea.__targets[targetName];
-            var configured = [];
 
+            // Prepare the dependency object.
             var needs = "needs" in target ? target.needs : [];
+
+            // A rule that exports needs probably wants to do something with it.
+            // So we copy it into the target, to sneakily have it build in the normal
+            // build chain.
+            if("needs" in target.rule) {
+                if(__.isArray(target.rule.needs)) {
+                    needs = needs + target.rule.needs;
+                }
+            }
+
             debug "Are we configuring dependencies? ${needs} (${target})"
             if(typeOf(needs) == "array") {
                 for(var _,depName in needs) {
                     debug "Configuring dependency: ${depName} of ${targetName}"
-                    var rt, depConfigured = configureTarget(depName, targetName);
-                    configured += depConfigured;
+                    var rt = configureTarget(depName, targetName);
 
                     // If this retuend false, return false.
                     if(typeOf(rt) == "boolean" && !rt) return rt, depConfigured;
@@ -353,45 +443,41 @@ IceTea = extends _E {
             if(!target.isConfigured()) {
                 var rt2 = target.configure();
                 if(typeOf(rt2) == "boolean" && !rt2) {
-                    return rt2, configured;
-                } else {
-                    configured.push(target);
+                    return rt2;
                 }
             }
 
             // And the rule.
-            if(target.rule.isConfigured()) {
+            if(!target.rule.isConfigured()) {
                 var rt3 = target.rule.configure(target);
                 if(typeOf(rt3) == "boolean" && !rt3) {
-                    return rt2, configured;
+                    return rt2;
                 }
             }
 
             if(typeOf(dependsOn) == "string") {
                 // We are being a child, so we should export ourself into parent.
                 var dependant = IceTea.__targets[dependsOn];
-                if(
-                    !dependant.hasMergedWith(targetName)
-                    && "exports" in target
-                    && "settings" in dependant
-                ) {
-                    debug "Merging exports from ${target.name} into settings of ${dependsOn}"
-                    debug dependant.settings
-                    debug target.exports
-                    dependant.settings = dependant.settings + target.exports;
+                if(!dependant.hasMergedWith(targetName)) {
+                    if(
+                        "exports" in target
+                        && "settings" in dependant
+                    ) {
+                        debug "Merging exports from ${target.name} into settings of ${dependsOn}"
+                        dependant.settings = dependant.settings + target.exports;
+                    }
                     dependant.setHasMergedWith(targetName);
                 }
                 debug "Done merging."
             }
             debug "Done configuring."
-            return true, configured;
+            return true;
         }
 
         for(_,tname in targetNames) {
             // Time for some recursion!
-            var rt, configured = configureTarget(tname);
+            var rt = configureTarget(tname);
         }
-        IceTea.targetListResolv = configured;
         return true;
     },
 
@@ -407,54 +493,127 @@ IceTea = extends _E {
         @see Preprocess
         @see Initializer
     */
-    Transformer: function(targetNames) {
+    Transformer: function(targetNames, taskContainer) {
         targetNames = targetNames || IceTea.targetList;
-        debug "Transformer: ${IceTea.targetList}"
+        debug "Transformer: ${targetNames}"
         for(var _,targetName in targetNames) {
             var target = IceTea.__targets[targetName];
             debug "Transforming ${targetName}";
-            IceTea.createSteps(target);
+            IceTea.createSteps(target, taskContainer);
         }
     },
 
-    Runner: function(){
+    Runner: function(taskContainer, printPrefix){
+        taskContainer = taskContainer || IceTea.__tasks;
+        printPrefix = __.isString(printPrefix)
+            ? " " .. printPrefix .. " "
+            : "";
         $.Cursor.hide();
         $.saveDefaultColor();
         var longOutput = cli.check("--debug") || cli.check("--detail-output");
         // function globals.
         var maxJobs = toNumber(cli["-j"]);
-        var taskCount = IceTea.getTaskCount();
+        var taskCount = IceTea.getTaskCount(taskContainer);
         var currCount = 0;
-        for(var level, tasks in IceTea.__tasks) {
+        var highestLevel = IceTea.getLevel(taskContainer);
+        for(var level, tasks in taskContainer) {
+            //print "Level: ${level}/${highestLevel}; Tasks: ${#tasks}"
+            var allHidden = true;
+            for(var i,task in tasks) {
+                if(!task.isHidden()) {
+                    allHidden = false;
+                    break;
+                }
+            }
+            if(allHidden) {
+                debug "All tasks are hidden. Skipping level ${level}"
+                continue;
+            }
+
             debug "Entering level: ${level}"
             var jobs = [];
             var taskId = 0;
             while(true) {
-                // Ensure that we have always as many jobs as possible in the job queue.
-                if(#jobs < maxJobs) {
-                    // Accept new jobs, till we cap, if possible.
-                    while(#jobs != maxJobs && typeOf(tasks[taskId]) != "null") {
-                        debug "Accepting new tasks now. taskId: ${taskId}"
-                        var task = tasks[taskId++];
-                        if(typeOf(task.previous) != "null") {
-                            debug "Testing if dependant target was or was not built yet."
-                            if(!task.previous.built) {
-                                // Skip this task and come back here later.
-                                continue;
-                            }
-                        }
 
-                        // If this job was built, skip it.
-                        if(task.built == true) {
+                // Ensure that we have always as many jobs as possible in the job queue.
+                while(#jobs < maxJobs) {
+                    if(taskId+1 >= #tasks) {
+                        taskId = 0;
+                    } else {
+                        taskId++;
+                    }
+                    var task = tasks[taskId];
+
+                    // Sanity check: All pending?
+                    var allPending = true;
+                    for(var _tid,_task in tasks) {
+                        var status = _task.status();
+                        debug "Status: ${status} (${typeOf(status)})"
+                        var T_PEN = IceTea.Task.Status.PENDING;
+                        if(__.isNull(status) || status != T_PEN) {
+                            allPending = false;
+                            break;
+                        }
+                    }
+                    if(allPending) {
+                        debug "Loop full of pens.";
+                        break;
+                    }
+                    // Sanity check: All built?
+                    var allBuilt = true;
+                    for(var _tid,_task in tasks) {
+                        if(!("built" in task)) {
+                            allBuilt = false;
+                            break;
+                        }
+                    }
+                    if(allBuilt) {
+                        debug "Loop full of builts.";
+                        break;
+                    }
+
+
+                    debug "Accepting new task now. (${taskId} / ${#tasks})"
+
+                    // If this is a hidden task, we can skip it.
+                    if(task.isHidden()) {
+                        debug "-> ... is hidden."
+                        continue;
+                    }
+
+                    if(typeOf(task.previous) != "null") {
+                        debug "Testing if dependant target was or was not built yet."
+                        if(!task.previous.built) {
+                            // Skip this task and come back here later.
                             continue;
                         }
+                    }
 
-                        debug "Running job ${level}.${taskId}"
-                        var buildStr = typeOf(task.in) == "array" ? task.out : task.in;
-                        var progStr = "${++currCount}/${taskCount}";
+                    // If this job was built, skip it.
+                    if(task.built == true) {
+                        debug "Already built."
+                        continue;
+                    }
+
+                    if(task.status() == IceTea.Task.Status.PENDING) {
+                        // We already have this job in.
+                        debug "Duplicate"
+                        continue;
+                    }
+
+                    debug "Running job ${level}.${taskId}"
+                    if(!("reported" in task)) {
+                        var buildStr = @{
+                            var orig = typeOf(task.in) == "array" ? task.out : task.in;
+                            if("_present" in task.backend) {
+                                orig = task.backend._present.call(task);
+                            }
+                            return orig;
+                        };
+                        var progStr = "${++currCount}/${taskCount} #${level}/#${#jobs}";
                         var targetStr = task.target.title;
                         var stepStr = task.backend.display;
-                        var baseStr = "[${progStr}] ${targetStr}(${stepStr}): ${buildStr}";
+                        var baseStr = "${printPrefix}[${progStr}] ${targetStr}(${stepStr}): ${buildStr}";
                         if(cli.check("--no-color")) {
                             if(!longOutput && #baseStr <= $.cols) {
                                 process.stdout.write("\r");
@@ -494,54 +653,59 @@ IceTea = extends _E {
                                 process.stdout.write("\n");
                             }
                         }
-                        var immediate = task.run();
-
-                        // Did the job possibly fail?
-                        if(task.status() == IceTea.Task.Status.FAIL) {
-                            // The task arleady failed. Print an error and break.
-                            // Also print the error message.
-                            // Note, that on compact output, we want to write a new line before, and after.
-                            debug "Job failed immediately.";
-                            $.Cursor.show(); // Reset.
-                            return task.exitCode();
-                        } else if(task.status() == IceTea.Task.Status.OK) {
-                            debug "Job was built successfuly."
-                            task.built = true;
-                        }
-
-                        if(!immediate) {
-                            debug "Delayed/async job added to queue."
-                            jobs.push(task);
-                        } else {
-                            debug "Job was immediate."
-                        }
+                        task.reported = true;
                     }
 
-                    if(#tasks <= taskId) {
-                        debug "Capped task count (${#tasks}). Resetting taskId."
-                        taskId = 0;
+
+                    // Run the task and determine its lifecycle.
+                    var immediate = task.run();
+
+                    // Did the job possibly fail?
+                    if(task.status() == IceTea.Task.Status.FAIL) {
+                        // The task arleady failed. Print an error and break.
+                        // Also print the error message.
+                        // Note, that on compact output, we want to write a new line before, and after.
+                        debug "Job failed immediately.";
+                        $.Cursor.show(); // Reset.
+                        return task.exitCode();
+                    } else if(task.status() == IceTea.Task.Status.OK) {
+                        debug "Job was built successfuly."
+                        task.cache();
+                        task.built = true;
+                    } else if(task.status() == IceTea.Task.Status.PENDING) {
+                        debug "Job is pending."
+                        jobs.push(task);
                     } else {
-                        debug "Cap not reached."
+                        throw "Unknown status ${task.status()}!"
                     }
                 }
 
                 // Test for the jobs.
                 var newJobs = [];
                 var exitNow = false;
-                for(var _,job in jobs) {
+                for(var n,job in jobs) {
                     var status = job.test();
+                    if(!__.isNumber(status)) {
+                        var t = typeOf(status);
+                        throw "The returned status must be one of IceTea.Task.Status, which is a number! Got: ${t}";
+                    }
                     var _Status = IceTea.Task.Status;
+                    debug "Getting status for ${job.name} (${job.out}) (${_Status} vs. ${status})"
                     switch(status) {
                         case _Status.OK:
+                            debug "${n}: OK"
                             // This task is done. mark it as built.
                             job.built = true;
+                            job.cache();
                         break;
                         case _Status.FAIL:
+                            debug "${n}: FAIL"
                             // This task actually failed. Break out and stop.
                             var exCode = job.exitCode();
                             return exCode;
                         break;
                         case _Status.PENDING:
+                            debug "${n}: Pending"
                             // Still pending...
                             newJobs.push(job);
                         break;
@@ -551,11 +715,20 @@ IceTea = extends _E {
                 // Overwrite the new jobs with the old ones.
                 jobs = newJobs;
 
-                if(#jobs == 0) {
-                    debug "Leaving level: ${level}"
+                // We can only leave if ALL tasks are built.
+                var leave = true;
+                for(var n,job in jobs) {
+                    debug "Querying: ${job.name}"
+                    if(!job.built || !job.isHidden()) {
+                        leave = false;
+                    }
+                }
+                if(leave) {
+                    debug "Leaving this level"
                     break;
                 } else {
-                    debug "Going: ${#jobs}"
+                    debug "Continuing on this level"
+                    continue;
                 }
             }
         }
@@ -564,7 +737,38 @@ IceTea = extends _E {
         $.Cursor.show();
     },
 
+    // Runs a target through a secondary build chain.
+    SubRunner: function(target) {
+        detect.info "Sub-Build: ${target.name}"
+        var taskContainer = [];
+        var rt;
+        var funcSteps = [
+            [
+                "Preprocessor (Configure)",
+                {|| IceTea.Preprocessor([ target.name ])}
+            ], [
+                "Transformer (Creating steps)",
+                {|| IceTea.Transformer([target.name], taskContainer)}
+            ], [
+                "Runner (Executing steps)",
+                {|| IceTea.Runner(taskContainer, "|")}
+            ]
+        ];
+        for(var i,set in funcSteps) {
+            var desc,func = set.unpack();
+            detect.line "Running:"
+            detect.status desc
+            rt = func();
+            if(__.isNull(rt)) {
+                rt = true;
+            }
+            if(!rt) return false;
+        }
+        return true, taskContainer;
+    },
+
     Main: function() {
+        $.saveDefaultColor();
         var rt;
         IceTea.CallEvent("beforeRun");
 
@@ -597,33 +801,19 @@ IceTea = extends _E {
         rt = IceTea.Preprocessor();
         if(typeOf(rt) == "boolean" && rt == false) return 1;
 
-        // Then transform them.
-        rt = IceTea.Transformer();
-        if(typeOf(rt) == "boolean" && rt == false) return 1;
+        if(!cli.check("--configure")) {
+            // Then transform them.
+            rt = IceTea.Transformer();
+            if(typeOf(rt) == "boolean" && rt == false) return 1;
 
-        /*
-        // Example printing.
-        var taskCount = IceTea.getTaskCount();
-        var localCount = 1;
-        for(var level,tasks in IceTea.__tasks) {
-            for(var _,task in tasks) {
-                var inStr;
-                if(typeOf(task.in) == "array") {
-                    inStr = task.in.join("; ");
-                } else {
-                    inStr = task.in;
-                }
-                var progStr = "${localCount++}/${taskCount}";
-                var targetStr = task.target.name;
-                var stepStr = task.backend.display;
-                var outStr = task.out;
-                print "[${progStr}] ${targetStr}(${stepStr}): ${inStr} -> ${outStr}"
-            }
+            // And run it too.
+            rt = IceTea.Runner();
         }
-        */
 
-       rt = IceTea.Runner();
-       return rt;
+        // Reset things.
+        $.resetColor();
+        $.Cursor.show();
+        return rt;
     },
 
     // Does common configuration stuff.
@@ -631,7 +821,7 @@ IceTea = extends _E {
         debug "Configuring..."
         var o = obj.__getStore();
         if("configure" in o && typeOf(o.configure) == "function") {
-            var rt = o.configure.call(obj);
+            var rt = o.configure.apply(obj, ...);
             obj.__isConfigured = true;
             return rt;
         }
@@ -835,10 +1025,8 @@ IceTea.Rule = extends IceTea.Storeable {
             throw "A rule must define a pattern."
         }
         @pattern = o.pattern;
-        @verify();
-    },
-    verify: function() {
-        var o = @__getStore();
+
+        // Berify things.
         var schemes = ["build", "clean"];
         for(var _,scheme in schemes) {
             if(!(scheme in o)) {
@@ -847,17 +1035,40 @@ IceTea.Rule = extends IceTea.Storeable {
                 throw IceTea.RuleException(@display,"A rule's scheme property must be a function.");
             }
         }
+
+        // Rules can have options.
+        if(!("options" in o)) {
+            o.options = {};
+        }
+        o.options = {
+            // A rule setting this to true receives the input as-is.
+            raw: false,
+
+            // If this is false, no file-exists checks are made.
+            filesRequired: true,
+
+            // With this option set, a rule is never really executed.
+            // Helpful for stuff like headers etc.
+            // Also, thi sallows dummy-files to be install-able.
+            noExecute: false
+        } + o.options;
     },
     isConfigured: function() {
         return this.__isConfigured;
     },
     configure: function() {
-        return IceTea.Configurer(this);
+        return IceTea.Configurer(this, target);
     },
-    estimate: function(target, input) {
+    modify: function(target) {
+        var o = @__getStore();
+        if("modify" in o) {
+            o.modify.call(this, target);
+        }
+    },
+    estimate: function(target) {
         var o = this.__getStore();
         if("estimate" in o && typeOf(o.estimate) == "function") {
-            o.estimate.call(this, target, file);
+            o.estimate.call(this, target);
         } else {
             return @pattern
                 .replace("%t", target.name)
@@ -869,13 +1080,14 @@ IceTea.Rule = extends IceTea.Storeable {
 
 IceTea.Target = extends IceTea.Storeable {
     __construct: function(name, rule, opts) {
-        debug "Creating Target ${name} with rule: ${rule}"
+        debug "Creating Target ${name} with rule: ${rule.name || rule.display}"
         @__setStore(opts);
         @name = name;
         @rule = rule;
+
         // Sanity checks
         var type = typeOf(opts.input);
-        if(typeOf(opts.input) != "array" && rule.validate(opts.input)) {
+        if(typeOf(opts.input) == "null") {
             throw "${name}'s input are of illegal type: ${type}.";
         }
         if("settings" in opts) {
@@ -883,8 +1095,33 @@ IceTea.Target = extends IceTea.Storeable {
         } else {
             @settings = {};
         }
+        if("exports" in opts) {
+            @exports = opts.exports;
+        } else {
+            @exports = {};
+        }
         @__isConfigured = false;
         @__mergedWith = [];
+
+        // If the rule requies files to exist, check it now.
+        if(@rule.options.filesRequired) {
+            if(!__.isArray(opts.input)) {
+                debug "${@name}: Input is not array. Skipping file-checks."
+            } else {
+                for(var i,file in opts.input) {
+                    if(!pfs.isPresent(file)) {
+                        if(!cli.check("--no-color"))
+                            $.setColor($.Colors.RED);
+                        print "${@name}: File ${file} not found!"
+                        $.resetColor();
+                        terminate(1);
+                    }
+                }
+            }
+        }
+
+        // Let the rule modify us.
+        @rule.modify(this);
     },
     __get@title: function() {
         var o = @__getStore();
@@ -971,6 +1208,83 @@ IceTea.Task = extends Object {
         }
     },
 
+    isHidden: function() {
+        if(!__.isArray(@in) && !__.isString(@in)) {
+            // We can't estimate this.
+            // It might be part of a generator, so rebuild.
+            debug "isHidden: Skipping: ${@in}"
+            return false;
+        }
+        if(!("previous" in this) && !("deps" in this)) {
+            debug "isHidden: On base target (${@in} -> ${@out})"
+            // This is a base target.
+            var ins = __.isArray(@in) ? @in : [@in];
+            for(var i,file in ins) {
+                debug "isHidden: ${file}"
+                var mtime = pfs.fileModified(file);
+                debug "isHidden: mtime: ${mtime} (${file})"
+                if(file in IceTea.FileCache) {
+                    var cv = IceTea.FileCache[file];
+                    var cv_n toNumber(cv);
+                    debug "isHidden: ${file} -> cv: ${cv} (${#cv}) -> cv_n: ${cv_n} (${#cv_n})"
+                    if(toNumber(cv_n) > mtime) {
+                        // The file was modified, we are no longer hidden.
+                        debug "isHidden: ${file} modified"
+                        return false;
+                    } else {
+                        debug "isHidden: ${file} Unmodified"
+                        return true;
+                    }
+                } else {
+                    debug "isHidden: ${file} not in cache at all."
+                    return false;
+                }
+            }
+            debug "Reached end of check."
+            // No modifications.
+            return true;
+        } else {
+            // Easy. We depend on our base! :)
+            if("deps" in this) {
+                debug "isHidden: On (probably) top-most target"
+                // If one of our deps is not hidden, we aren't either.
+                for(var i,file in @in) {
+                    // FIXME: Avoid CP, make a function instead.
+                    debug "isHidden: ${file}"
+                    var mtime = pfs.fileModified(file);
+                    debug "isHidden: mtime: ${mtime} (${file})"
+                    if(file in IceTea.FileCache) {
+                        var cv = IceTea.FileCache[file];
+                        var cv_n toNumber(cv);
+                        debug "isHidden: cv: ${cv} (${#cv}) -> cv_n: ${cv_n} (${#cv_n})"
+                        if(toNumber(cv_n) > mtime) {
+                            // The file was modified, we are no longer hidden.
+                            return false;
+                        }
+                    } else {
+                        debug "isHidden: ${file} not in cache at all."
+                        return false;
+                    }
+                }
+                return true;
+            } else {
+                debug "isHidden> Somewhere in the middle, checking child. ${@in}"
+                return @previous.isHidden();
+            }
+        }
+    },
+
+    cache: function() {
+        if(!__.isArray(@in) && !__.isString(@in)) {
+            return;
+        }
+        var input = __.isArray(@in) ? @in : [@in];
+        for(var i,file in input) {
+            var mtime = pfs.fileModified(file);
+            IceTea.FileCache[file] = mtime;
+        }
+    },
+
     // Get the status of the task.
     _setStatus: function(rt) {
         if(typeOf(rt) == "boolean") {
@@ -1004,9 +1318,12 @@ IceTea.Task = extends Object {
         if(this._status == @Status.PENDING) {
             try {
                 var rt = this.backend.status.call(this);
+                debug "${@backend.name}: Status is ${rt} (${typeOf(rt)})"
                 return rt;
             } catch(e) {
-                print "CRITICAL: Error while testing.";
+                print "CRITICAL: Error while testing (@name).";
+                unhandledException(e);
+                $.Cursor.show();
                 return @Status.FAIL;
             }
         } else {

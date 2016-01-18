@@ -7,6 +7,7 @@ function isDarwin() {
 
 target("icetea", "exe") {
     title: "IceTea",
+    needs: ["icetea-scripts"],
     input: pfs.glob("src", "*.cpp"),
     init: function() {
         cli.group "IceTea"
@@ -50,7 +51,7 @@ target("icetea", "exe") {
                 // Force IceTea into using INCBIN_EXTERNAL instead.
                 // Allows for the generated incbin script file to be used.
                 // Not needed on Windows.
-                //"ICETEA_INCBIN_FORCE_EXTERNAL"
+                "ICETEA_INCBIN_FORCE_EXTERNAL"
             ]
         },
         LINK: {
@@ -67,19 +68,31 @@ target("icetea", "exe") {
     },
 }
 
-action("dist"){|scheme|
-    print "Creating a distribution...";
-    if(sys.which("tar") != "") {
-        sys.cd(pfs.dirname(__FILE__));
-        shell "tar cvfz icetea.tar.gz icetea* README.md TODO.md *.it"
-    }
+target("icetea-scripts","incbin") {
+    title: "IceTea internal scripts",
+    input: {
+        STD:                    "lib/std.os",
+        Underscore:             "lib/underscore.os",
+        Configurable:           "lib/configurable.os",
+        Detector:               "lib/detect.os",
+        DetectorUtils:          "lib/detect.utils.os",
+        libIceTea:              "lib/IceTea.os",
+        InternalBootstrapIt:    "bootstrap.it"
+    },
+    settings: {
+        INCBIN: {
+            includeDirs: [__DIR__]
+        }
+    },
+    for: "icetea"
 }
 
 action("tests"){|scheme|
     require "tests/run_tests"
 }
 
-action("incbin") {
-    build: ["incbin"],
-    clear: ["incbin"]
+action("all") {
+    build: ["icetea"],
+    clean: ["icetea"],
+    install: ["icetea"]
 }

@@ -2,7 +2,6 @@
 
 #include "IceTea.h"
 #include "os-pfs.h"
-#include "os-detector.h"
 #include "file_system.hpp"
 #include "wildcard.hpp"
 #include "Plugin.h"
@@ -22,7 +21,17 @@ typedef vector<string> strVec;
 
 OS_FUNC(os_pfs_mkdir) {
     EXPECT_STRING(1)
-    os->pushBool( folder_create(os->toString(-params+0).toChar()) );
+    string folder = os->toString(-params+0).toChar();
+    bool rt;
+    if(is_folder(folder)) {
+        rt = true;
+    } else if(is_present(folder) && !is_folder(folder)) {
+        rt = false;
+    } else {
+        rt = folder_create(folder);
+    }
+
+    os->pushBool(rt);
     return 1;
 }
 OS_FUNC(os_pfs_mkdirp) {
@@ -81,31 +90,6 @@ OS_FUNC(os_pfs_copy) {
     }
     return 1;
 }
-
-
-/*
-OS_FUNC(os_pfs_open);
-    // Traditional file functions
-    OS_FUNC(os_pfs_file_read);
-    OS_FUNC(os_pfs_file_write);
-    OS_FUNC(os_pfs_file_tell);
-    OS_FUNC(os_pfs_file_seek);
-    OS_FUNC(os_pfs_file_eof);
-    OS_FUNC(os_pfs_file_flush);
-    // Non-traditional
-    OS_FUNC(os_pfs_file_seekRel);
-    OS_FUNC(os_pfs_file_getSize);
-    OS_FUNC(os_pfs_file_getBuf);
-OS_FUNC(os_pfs_file_close);
-
-OS_FUNC(os_pfs_openDir);
-    OS_FUNC(os_pfs_dir_load);
-    OS_FUNC(os_pfs_dir_getFile);
-    OS_FUNC(os_pfs_dir_getDir);
-    OS_FUNC(os_pfs_dir_getFiles);
-    OS_FUNC(os_pfs_dir_getDirs);
-OS_FUNC(os_pfs_dir_close);
-*/
 
 // TTVFS specific
 OS_FUNC(os_pfs_getFileList) {
@@ -250,15 +234,6 @@ OS_FUNC(os_pfs_join) {
     return 1;
 }
 
-OS_FUNC(os_pfs_writeFile) {
-    EXPECT_STRING(1)
-    EXPECT_STRING(2)
-    string content = os->toString(-params+0).toChar();
-    string filename = os->toString(-params+1).toChar();
-    os->pushBool(write_file(content, filename));
-    return 1;
-}
-
 bool initializePFS(IceTea* os) {
     OS::FuncDef pfsFuncs[] = {
         {OS_TEXT("mkdir"),              os_pfs_mkdir},
@@ -302,8 +277,6 @@ bool initializePFS(IceTea* os) {
 
         {OS_TEXT("lookup"),             os_pfs_lookup},
         {OS_TEXT("join"),               os_pfs_join},
-
-        {OS_TEXT("writeFile"),          os_pfs_writeFile},
         {}
     };
 

@@ -8,7 +8,7 @@ SettingsContainer = extends Object {
                 return store[key];
             }
         }
-        throw "Unable to find setting ${key} in specified containers.";
+        return null;
     },
     __isset: function(key) {
         for(var _,store in @stores) {
@@ -19,8 +19,10 @@ SettingsContainer = extends Object {
         return false;
     },
     __getCombined: function(key) {
+        debug "${@__name}::__getCombined: ${key}"
         var start = null;
-        for(var _,store in @stores) {
+        for(var id,store in @stores) {
+            debug "ID: ${id}"
             if(key in store) {
                 if(typeOf(start) == "null") {
                     start = store[key];
@@ -29,7 +31,9 @@ SettingsContainer = extends Object {
                     start += v;
                 }
             }
+            debug "Start: ${start}"
         }
+        debug "--> ${start}"
         return start;
     }
 }
@@ -43,151 +47,71 @@ NativeStep = extends Object {
 
     // All that this configure() function does, is to look for the compiler.
     configure: function() {
-        detect.compiler(@name);
+        return detect.findCompiler(detect.name2kind(@name));
     },
 
     // Build
     build: function() {
-        // Getting the key that we use to acces Detector stuff.
-        var key = detect.kind2key(@backend.name);
-
-        // The settings we'll work off.
-        var settings = SettingsContainer(
+        var kind = detect.name2kind(@backend.name);
+        var compiler = detect.activeCompilerMap[kind];
+        var container = SettingsContainer(
+            kind in IceTea.GlobalSettings ? IceTea.GlobalSettings[kind] : {},
             "native" in @target.settings ? @target.settings.native : {},
-            key in @target.settings ? @target.settings[key] : {}
+            kind in @target.settings ? @target.settings[kind] : {}
         );
 
-        // We will put the entire bulk of the command in here and join it up later.
-        var commandLine = [];
-        var compiler = detect.compiler(@backend.name);
-        commandLine.push(compiler);
+        var includeDirs = container.__getCombined("includeDirs");
+        var defines = container.__getCombined("defines");
+        var flags = container.__getCombined("flags");
+        var warnings = container.__getCombined("warnings");
+        var forceIncludes = container.__getCombined("forceIncludes");
+        var optimize = container.optimize || "none";
+        var shouldDebug = container.shouldDebug;
 
-        // FIXME: React on Windows or cl.exe, when being in Wine.
-        // Turn on C++ standard exceptions.
-        if(sys.type == "windows" || compiler == "cl") {
-            commandLine.push("/nologo");
-            if(!("WindowsExceptions" in settings)) {
-                commandLine.push("/EHsc");
+        pfs.mkdir(pfs.dirname(@out));
+
+        @cmd = compiler.buildCommand(
+            @in, @out,
+            includeDirs, warnings, defines,
+            flags, optimize, forceIncludes,
+            false, shouldDebug
+        );
+        debug "$ ${@cmd}"
+        // Let the fun begin! :P
+        @runner = SubProcess({async: true});
+        @spawned = @runner.execute(@cmd);
+        return null;
+    },
+    status: function() {
+        var T = IceTea.Task.Status;
+        if(@runner.tick()) {
+            return T.PENDING; // Not done yet.
+        } else {
+            var stdout = @runner.stdout();
+            var stderr = @runner.stderr();
+            var color = !cli.check("--no-color");
+            var headed = false;
+            var head = {|| if(!headed && !cli.check("--detail-output")) print ""; headed = true; }
+            if(#stdout > 0) {
+                head();
+                print stdout;
+            }
+            if(#stderr > 0) {
+                head();
+                color && @runner.exit_code() != 0 && $.setColor($.Colors.RED);
+                print stderr;
+                color && $.resetColor();
+            }
+            // Done. Check status.
+            if(@runner.exit_code() == 0) {
+                return T.OK;
             } else {
-                settings.WindowsExceptions
-                    && commandLine.push("/EHsc");
+                print "Failed command: $ ${@cmd}"
+                print "Exit code: ${@runner.exit_code()}"
+                $.Cursor.show();
+                return T.FAIL;
             }
         }
-
-        if("warningsAsErrors" in settings) {
-            commandLine.push((
-                sys.type == "unix"
-                ? "-Werror" // GCC/Clang
-                : "/WX"     // MSVC
-            ));
-        }
-
-        // Only for windows
-        if(sys.type == "windows" && "warningLevel" in settings) {
-            commandLine.push("/W"..settings.warningLevel);
-        }
-
-        var warnings = settings.__getCombined("warnings");
-        if(warnings != null) {
-            for(var _,warn in warnings) {
-                commandLine.push((
-                    sys.type == "unix"
-                    ? "-W"  // GCC-Style warnings - enables it.
-                    : "/w"  // MSVC-Style warnings. Turns on this very warning, on this level.
-                )..warn);
-            }
-        }
-
-        // Optimization?
-        if("optimization" in settings) {
-            switch(settings.optimization) {
-                case "none":
-                    commandLine.push((sys.type == "unix" ? "-O0" : ""));
-                break;
-
-                case "small":
-                    commandLine.push((sys.type == "unix" ? "-O1" : "/O1"));
-                break;
-
-                case "medium":
-                    commandLine.push((sys.type == "unix" ? "-O2" : "/O2"));
-                break;
-
-                case "max":
-                    commandLine.push((sys.type == "unix" ? "-O3" : "/O3"));
-                break;
-
-                case "size":
-                    commandLine.push((sys.type == "unix" ? "-Os" : "/Os"));
-                break;
-
-                default:
-                    // In case the user is being randomly custom.
-                    commandLine.push(settings.optimization);
-                break;
-            }
-        }
-
-        var includeDirs = settings.__getCombined("includeDirs");
-        for(var _,dir in includeDirs) {
-            commandLine.push((
-                sys.type == "unix"
-                ? "-I"   // GCC/Clang
-                : "/I"   // MSVC
-            )..dir);
-        }
-
-        var defines = settings.__getCombined("defines");
-        for(var _,def in defines) {
-            commandLine.push((
-                sys.type == "unix"
-                ? "-D"
-                : "/D"
-            )..def);
-        }
-
-        var extraFlags = settings.__getCombined("flags");
-        for(var _,flag in extraFlags) {
-            commandLine.push(flag);
-        }
-
-        if(DEBUG) {
-            commandLine.push((
-                sys.type == "unix"
-                ? "-g"
-                : "/Zi"
-            ));
-        }
-
-        // Now that all the flags are set, let us write the actual how-to-compile.
-        var compileFlag = (sys.type == "unix" ? "-c" : "/c");
-        var outFlag = (sys.type == 'unix' ? '-o' : '/Fo');
-        commandLine.push(compileFlag);
-        commandLine.push(@in);
-        commandLine.push([
-            outFlag, @out
-        ].join(""));
-
-        // Create the output folder for the object.
-        var outDir = pfs.dirname(@out);
-        debug "Mkdir: ${outDir}"
-        pfs.mkdir(outDir);
-
-        // FIXME: Make and use AsyncProcess.
-        var command = commandLine.join(" ");
-        debug "$ ${command}"
-        var spawned, exitCode, output = $(command);
-        if(exitCode != 0) {
-            // FIXME: IceTea should do this.
-            for(var _,line in output[1].trim().split("\n")) {
-                print "STDOUT:\t${line}"
-            }
-            for(var _,line in output[2].trim().split("\n")) {
-                print "STDERR:\t${line}"
-            }
-            return false;
-        }
-        return true;
     },
     clean: function() {
         return pfs.remove(@out);
@@ -226,83 +150,62 @@ rule("exe", "Executable") {
         : '%o/%t.exe'
     ),
     configure: function() {
-        // FIXME: We kinda need to think, if this is wise.
-        // Let's say someone only uses C sources. They will not need a C++ compiler.
-        // Alternatively, we should use ld or link.exe respectively.
-        // However, I have yet to learn ld...
-        detect.compiler("c++");
+        return detect.findLinker();
     },
     build: function() {
-        var commandLine = [];
-        var settings = ("LINK" in @target.settings
-            ? @target.settings.LINK
-            : {}
+        debug "build> Beginning"
+        var linker = detect.activeLinker;
+        debug "build> Linker: ${linker}"
+        var container = SettingsContainer(
+            "LINK" in IceTea.GlobalSettings ? IceTea.GlobalSettings.LINK : {},
+            "LINK" in @target.settings ? @target.settings.LINK : {}
         );
 
-        commandLine.push(detect.compiler("c++"));
+        var libraries = container.__getCombined("libraries") || [];
+        var libraryDirs = container.__getCombined("libraryDirs") || [];
+        var flags = container.__getCombined("flags");
 
-        if(sys.type == "windows") {
-            commandLine.push("/nologo");
-        }
-
-        var libFlag = (sys.type == "unix"
-            ? "-l" // GCC and Clang use -l as prefix. I.e.: -lfoo
-            : ""   // Windows has none.
+        @cmd = linker.linkCommand(
+            @in, @out,
+            libraries, libraryDirs,
+            flags, false, false
         );
-        var libDirFlag = (sys.type == "unix"
-            ? "-L"          // -L./folder
-            : "/LIBPATH:"   // Windows...
-        );
-
-        // The first one to add is the output folder.
-        // We might be building libs into this, too.
-        commandLine.push(libDirFlag .. __outputdir);
-
-        if("libraryDirs" in settings) {
-            for(var _,libDir in settings.libraryDirs) {
-                commandLine.push(libDirFlag .. libDir);
-            }
-        }
-
-        if("libraries" in settings) {
-            for(var _,lib in settings.libraries) {
-                // Be careful. This might actually be a full path.
-                // This check is not perfect, but it'll be in the future.
-                var libAsFile = pfs.join(__outputdir, lib);
-                if(pfs.isPresent(libAsFile)) {
-                    commandLine.push(libAsFile);
-                } else {
-                    commandLine.push(libFlag .. lib);
+        debug "$ ${@cmd}"
+        // Let the fun begin! :P
+        @runner = SubProcess({async: true});
+        @spawned = @runner.execute(@cmd);
+        return null;
+    },
+    status: function() {
+        var T = IceTea.Task.Status;
+        if(@runner.tick()) {
+            return T.PENDING; // Not done yet.
+        } else {
+            // Done. Check status.
+            if(@runner.exit_code() == 0) {
+                return T.OK;
+            } else {
+                var stdout = @runner.stdout();
+                var stderr = @runner.stderr();
+                if(!cli.check("--detail-output")) {
+                    print "";
                 }
+                var color = !cli.check("--no-color");
+                if(#stdout > 0) {
+                    color && $.setColor($.Colors.GREEN);
+                    print stdout;
+                    color && $.resetColor();
+                }
+                if(#stderr > 0) {
+                    color && $.setColor($.Colors.RED);
+                    print stderr;
+                    color && $.resetColor();
+                }
+                print "Failed command: ${@cmd}"
+                print "Exit code: ${@runner.exit_code()}"
+                return T.FAIL;
             }
         }
-
-        commandLine.push(@in.join(" ")); // As this is a rule, our input is an array.
-        commandLine.push((sys.type == "unix"
-            ? "-o"  // GCC and Clang
-            : "/Fe"
-        )..@out);
-
-        if("flags" in settings) {
-            for(var _,flag in settings.flags) {
-                commandLine.push(flag);
-            }
-        }
-
-        var command = commandLine.join(" ");
-        debug "$ ${command}"
-        var spawned, exitCode, output = $(command);
-        if(exitCode != 0) {
-            // FIXME: IceTea should do this.
-            for(var _,line in output[1].trim().split("\n")) {
-                print "STDOUT:\t${line}"
-            }
-            for(var _,line in output[2].trim().split("\n")) {
-                print "STDERR:\t${line}"
-            }
-            return false;
-        }
-        return true;
     },
     clean: function() {
         return true;
@@ -316,7 +219,17 @@ rule("lib", "Static Library") {
         : '%o/%t.lib'
     ),
     configure: function() {
+        // FIXME: Use StaticLibraryTool.
         return detect.tool("ar");
+    },
+    modify: function(target) {
+        detect.line "Adding library:"
+        detect.success "${target.name}"
+        target.exports = target.exports + {
+            LINK: {
+                libraries: [target.name]
+            }
+        };
     },
     build: function() {
         var command = [
@@ -346,6 +259,7 @@ rule("lib", "Static Library") {
             for(var _,line in output[2].trim().split("\n")) {
                 print "STDERR:\t${line}"
             }
+            print "Failed: ${command}"
             return false;
         }
         return true;

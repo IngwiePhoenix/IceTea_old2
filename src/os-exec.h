@@ -9,24 +9,24 @@
 #include "objectscript.h"
 #include "os-icetea.h"
 
-// This is a minimal interface...
-struct IceTeaProcess: public stlplus::subprocess {
-    std::string _stdout;
-    std::string _stderr;
+class SyncProcess: public stlplus::subprocess {
+private:
+    std::string stdout;
+    std::string stderr;
+public:
+    std::string getStdout();
+    std::string getStderr();
     bool callback();
 };
 
-struct CommandResult {
-    int            exit_code;
-    bool           spawned;
-    std::string    streams[3]; // 0, 1, 2
-    IceTeaProcess* p;
+class AsyncProcess: public stlplus::async_subprocess {
+private:
+    std::string stdout;
+    std::string stderr;
+public:
+    std::string getStdout();
+    std::string getStderr();
+    bool callback();
 };
-
-// This is the actual command function.
-CommandResult it_cmd(const std::string& cmd, const std::vector<std::string>& replaces);
-
-OS_FUNC(os_exec);
-OS_FUNC(os_system);
 
 #endif

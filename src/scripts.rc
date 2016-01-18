@@ -2,10 +2,13 @@
 
 #ifdef ICETEA_INCBIN_FORCE_EXTERNAL
 #undef INCBIN
-#define INCBIN INCBIN_EXTERNAL
+#define INCBIN(sym, file) INCBIN_EXTERN(sym)
 #endif
 
 INCBIN(STD, "lib/std.os");
+INCBIN(Underscore, "lib/underscore.os");
 INCBIN(Configurable, "lib/configurable.os");
+INCBIN(Detector, "lib/detect.os");
+INCBIN(DetectorUtils, "lib/detect.utils.os");
 INCBIN(libIceTea, "lib/IceTea.os");
 INCBIN(InternalBootstrapIt, "bootstrap.it");

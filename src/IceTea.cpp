@@ -150,10 +150,14 @@ bool IceTea::initializeModules() {
         const unsigned char*    script;
         int                     len;
     };
+    #define _s(file, symbol) {"(internal):" file, INCBIN_DATA(symbol), INCBIN_LEN(symbol)}
     ScriptMap_t scripts[] = {
-        {"std.os",          INCBIN_DATA(STD),           INCBIN_LEN(STD)},
-        {"Configurable.os", INCBIN_DATA(Configurable),  INCBIN_LEN(Configurable)},
-        {"IceTea.os",       INCBIN_DATA(libIceTea),     INCBIN_LEN(libIceTea)},
+        _s("std.os", STD),
+        _s("underscore.os", Underscore),
+        _s("configurable.os", Configurable),
+        _s("IceTea.os", libIceTea),
+        _s("detect.os", Detector),
+        _s("detect.utils.os", DetectorUtils),
         {}
     };
     ScriptMap_t* list = &scripts[0];
@@ -178,7 +182,11 @@ bool IceTea::initializeModules() {
         this->require(this->bootstrapit);
     } else {
         this->printDebug("No bootstrap.it file found. Using internal.");
-        this->evalFakeFile("bootstrap.it", INCBIN_DATA(InternalBootstrapIt), INCBIN_LEN(InternalBootstrapIt));
+        this->evalFakeFile(
+            "(internal):bootstrap.it",
+            INCBIN_DATA(InternalBootstrapIt),
+            INCBIN_LEN(InternalBootstrapIt)
+        );
     }
     if(this->hasEndedExecuting()) return false;
 
@@ -340,6 +348,13 @@ void IceTea::evalFakeFile(string fileName, const unsigned char* src, int len) {
 }
 void IceTea::evalFakeFile(const char* name, const char* source) {
     OS::evalFakeFile(name, source, 0, 0, OS_SOURCECODE_PLAIN, true, false);
+}
+
+bool IceTea::isBool(int offs) {
+    return this->getType(offs) == OS_VALUE_TYPE_BOOL;
+}
+bool IceTea::isBool() {
+    return this->getType() == OS_VALUE_TYPE_BOOL;
 }
 
 bool IceTea::startup() {

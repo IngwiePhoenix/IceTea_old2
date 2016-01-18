@@ -29,14 +29,20 @@ function Object.__add(operand) {
     }
 }
 
+function Object.merge(with) {
+    return this;
+    for(var k,v in with) {
+        this[k] = v;
+    }
+}
+
 function Array.__add(operand) {
     if(typeOf(operand) == "array") {
         for(var _,value in operand) {
             this.push(value);
         }
     } else {
-        var type = typeOf(operand);
-        throw "Array.__add: Expected Object, got ${type} instead: ${operand}";
+        this.push(operand);
     }
     return this;
 }
@@ -44,4 +50,33 @@ function Array.__add(operand) {
 function String.__add(operand) {
     var newThis = this .. operand;
     return newThis;
+}
+
+$.__instantiable = true;
+$.__newinstance = function(cmd) {
+    var p = SubProcess({async: false});
+    var replaces = ...;
+    while(typeOf(cmd.find("?")) != "null") {
+        var idx = cmd.find("?");
+        var tmpStr = cmd.sub(0, idx);
+        var afterStr = cmd.sub(idx+1);
+        if(#replaces >= idx) {
+            tmpStr = tmpStr + replaces[idx];
+            tmpStr = tmpStr + afterStr;
+            cmd = tmpStr;
+        }
+    }
+    debug "$ ${cmd}"
+    var spawned = p.execute(cmd, false, true, true);
+    var stdout = p.stdout();
+    var stderr = p.stderr();
+    var exit = p.exit_code();
+    return spawned, exit, [null, stdout, stderr];
+}
+
+File.writeWhole = function(contents, file) {
+    var fh = File(file, "w");
+    var rt = fh.write(contents);
+    fh.close();
+    return rt;
 }
