@@ -223,8 +223,7 @@ rule("lib", "Static Library") {
         return detect.tool("ar");
     },
     modify: function(target) {
-        detect.line "Adding library:"
-        detect.success "${target.name}"
+        target.exports = target.exports || {};
         target.exports = target.exports + {
             LINK: {
                 libraries: [target.name]
