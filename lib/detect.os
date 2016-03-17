@@ -19,12 +19,14 @@ CompilerInfo = extends Object {
         optimizeFlag,   // Flag prefix used to determine optimization.
         optimizeMap,    // Map of name to other half of optimize flag.
         positionIndep,  // Flag like -fPIC to produce position independent code. Shared libs.
-        debugFlag       // Flag to cause debug symbols
+        debugFlag,      // Flag to cause debug symbols
+        allErrors       // The flag to cause warnings to become errors. I.e.: -Werror
     ) {
         @name = name;
         @_toolName = toolName;
         @_includeDir = includeDir;
         @_warning = warning;
+        @_allErrors = allErrors;
         @_defineFlag = define;
         @_compileFlag = compileFlag;
         @_outputFlag = outputFlag;
@@ -88,7 +90,7 @@ CompilerInfo = extends Object {
         input, output,
         includes, warnings, defines,
         flags, optimize, forceInclude,
-        isShared, shouldDebug
+        isShared, shouldDebug, allError
     ) {
         if(typeOf(input) != "string") {
             var t = typeOf(input);
@@ -100,11 +102,12 @@ CompilerInfo = extends Object {
             @_toolName,
             (!__.isNull(includes)? @include(includes) : ""),
             (!__.isNull(warnings)? @warning(warnings) : ""),
+            (!__.isNull(allError)? @allErrors         : ""),
             (!__.isNull(defines) ? @define(defines)   : ""),
             (!__.isNull(optimize)? @optimize(optimize): ""),
             (__.isArray(flags)   ? flags.join(" ")    : (__.isString(flags) ? flags : "")),
-            (isShared           ? @_positionIndep    : ""),
-            (shouldDebug        ? @_debugFlag        : ""),
+            (isShared           ? @_positionIndep     : ""),
+            (shouldDebug        ? @_debugFlag         : ""),
             @_compileFlag .. input,
             @_outputFlag .. output
         ].join(" ");
@@ -266,25 +269,25 @@ detect.CommonCompilers = {
        "GNU C Compiler",
        "gcc", "-I", "-W", "-D", "-c ", "-o", "-include", "-O",
        unixOptimizeMap,
-       "-fPIC", "-g"
+       "-fPIC", "-g", "-Werror"
    ),
    ClangCC: CompilerInfo(
        "C-Language Frontend",
        "clang", "-I", "-W", "-D", "-c ", "-o", "-include", "-O",
        unixOptimizeMap,
-       "-fPIC", "-g"
+       "-fPIC", "-g", "-Werror"
    ),
    GCC_XX: CompilerInfo(
        "GNU C++ Compiler",
        "gcc", "-I", "-W", "-D", "-c ", "-o", "-include", "-O",
        unixOptimizeMap,
-       "-fPIC", "-g"
+       "-fPIC", "-g", "-Werror"
    ),
    ClangCXX: CompilerInfo(
        "C++-Language Frontend",
        "clang++", "-I", "-W", "-D", "-c ", "-o", "-include", "-O",
        unixOptimizeMap,
-       "-fPIC", "-g"
+       "-fPIC", "-g", "-Werror"
    )
 }
 var _c = detect.CommonCompilers;
@@ -307,7 +310,7 @@ detect.Compilers = {
             "Apple Swift Compiler",
             "swiftc", "-I", "-W", null, "-emit-object", "-o", "-module-link-name", "-O",
             unixOptimizeMap,
-            null, "-g"
+            null, "-g", ""
         )
     ],
     CSC: [
@@ -334,7 +337,7 @@ var cl_exe = CompilerInfo(
     "Microsoft Visual C compiler",
     "cl.exe", "/I", "/w", "/D", "/c", "/Fo", "/FI", "/O",
     win32OptimizeMap,
-    "", "/Zi"
+    "", "/Zi", "/WX"
 );
 detect.Win32Compilers = {
     ASM: [cl_exe],
@@ -551,7 +554,7 @@ detect = detect + {
         if(cached) {
             @activeCompilerMap[kind] = cachedEntry;
             @_hasReported[kind]=true;
-            return true;
+            return true, cachedEntry;
         }
 
         // Do we have a compiler in the environment?
@@ -564,14 +567,14 @@ detect = detect + {
         if(inEnv) {
             @activeCompilerMap[kind] = envEntry;
             @_hasReported[kind]=true;
-            return true;
+            return true, envEntry;
         }
 
         var found, compiler = @findToolViaList(kind, compilerList);
         if(found) {
             @activeCompilerMap[kind] = compiler;
             @_hasReported[kind]=true;
-            return true;
+            return true, compiler;
         }
 
         // No luck...
@@ -597,7 +600,7 @@ detect = detect + {
         if(inCache) {
             @activeLinker = cacheEntry;
             @_hasReported[kind]=true;
-            return true;
+            return true, cachedEntry;
         }
 
         // ENV?
@@ -605,14 +608,14 @@ detect = detect + {
         if(inEnv) {
             @activeLinker = envEntry;
             @_hasReported[kind]=true;
-            return true;
+            return true, envEntry;
         }
 
         var found, linker = @findToolViaList(kind, linkerList);
         if(found) {
             @activeLinker = linker;
             @_hasReported[kind]=true;
-            return true;
+            return true, linker;
         }
 
         if(!(kind in @_hasReported)) @fail "Unable find a linker!";

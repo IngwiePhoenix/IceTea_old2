@@ -449,9 +449,6 @@ IceTea = extends _E {
 
             var target = IceTea.__targets[targetName];
 
-            // Prepare the dependency object.
-            var needs = "needs" in target ? target.needs : [];
-
             // A rule that exports needs probably wants to do something with it.
             // So we copy it into the target, to sneakily have it build in the normal
             // build chain.
@@ -461,6 +458,17 @@ IceTea = extends _E {
                 }
             }
 
+            // Configure the target
+            if(!target.isConfigured()) {
+                var rt2 = target.configure();
+                if(typeOf(rt2) == "boolean" && !rt2) {
+                    return rt2;
+                }
+            }
+
+            // Prepare the dependency object.
+            var needs = "needs" in target ? target.needs : [];
+
             debug "Are we configuring dependencies? ${needs} (${target})"
             if(typeOf(needs) == "array") {
                 for(var _,depName in needs) {
@@ -469,14 +477,6 @@ IceTea = extends _E {
 
                     // If this retuend false, return false.
                     if(typeOf(rt) == "boolean" && !rt) return rt, depConfigured;
-                }
-            }
-
-            // Configure the target
-            if(!target.isConfigured()) {
-                var rt2 = target.configure();
-                if(typeOf(rt2) == "boolean" && !rt2) {
-                    return rt2;
                 }
             }
 
