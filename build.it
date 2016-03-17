@@ -35,6 +35,11 @@ target("icetea", "exe") {
         } else {
             print " No."
         }
+
+        if(detect.lib("dl")) {
+            @settings.LINK.libraries[] = "dl";
+        }
+
         return true;
     },
     settings: {
