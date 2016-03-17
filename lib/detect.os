@@ -600,7 +600,7 @@ detect = detect + {
         if(inCache) {
             @activeLinker = cacheEntry;
             @_hasReported[kind]=true;
-            return true, cachedEntry;
+            return true, cacheEntry;
         }
 
         // ENV?
