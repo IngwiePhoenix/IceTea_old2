@@ -64,6 +64,7 @@ NativeStep = extends Object {
         var defines = container.__getCombined("defines");
         var flags = container.__getCombined("flags");
         var warnings = container.__getCombined("warnings");
+        var allErrors = container.allErrors;
         var forceIncludes = container.__getCombined("forceIncludes");
         var optimize = container.optimize || "none";
         var shouldDebug = container.shouldDebug;
@@ -74,7 +75,7 @@ NativeStep = extends Object {
             @in, @out,
             includeDirs, warnings, defines,
             flags, optimize, forceIncludes,
-            false, shouldDebug
+            false, shouldDebug, allErrors
         );
         debug "$ ${@cmd}"
         // Let the fun begin! :P
