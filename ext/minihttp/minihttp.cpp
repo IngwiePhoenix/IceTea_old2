@@ -33,6 +33,10 @@ class IceTeaHTTP: public IceTeaPlugin {
     }
 
     bool configure(IceTea* os) {
+        os->getModule("minihttp");
+        int minihttpOffs = os->getAbsoluteOffs(-1);
+
+        /*
         OS::NumberDef SSLResult_Nums[] = {
             {OS_TEXT("SSLR_OK"), minihttp::SSLResult::SSLR_OK},
             {OS_TEXT("SSLR_NO_SSL"), minihttp::SSLResult::SSLR_NO_SSL},
@@ -54,9 +58,6 @@ class IceTeaHTTP: public IceTeaPlugin {
             {}
         };
 
-        os->getModule("minihttp");
-        int minihttpOffs = os->getAbsoluteOffs(-1);
-
         os->newObject();
             os->setNumbers(SSLResult_Nums);
         os->setProperty(minihttpOffs, "SSLResult");
@@ -64,6 +65,7 @@ class IceTeaHTTP: public IceTeaPlugin {
         os->newObject();
             os->setNumbers(HttpCode_Nums);
         os->setProperty(minihttpOffs, "HttpCode");
+        */
 
         return true;
     }
