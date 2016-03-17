@@ -75,7 +75,7 @@ target("icetea", "exe") {
                 "-all_load"
             ] : (sys.type == "unix" ? [
                 // UNIX: --whole-archive ; fingers crossed.
-                "--whole-archive"
+                "-Wl,--whole-archive"
             ] : []))
         }
     },
