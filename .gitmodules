@@ -7,3 +7,7 @@
 [submodule "deps/mbedtls"]
 	path = deps/mbedtls
 	url = https://github.com/ARMmbed/mbedtls.git
+[submodule "minihttp"]
+	path = deps/minihttp
+	url = https://github.com/fgenesis/minihttp.git
+	branch = ssl

@@ -3,7 +3,7 @@
 
 #include "IceTea.h"
 #include "os-icetea.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -31,18 +31,33 @@ OS_FUNC(osd_footer) {
     return 1;
 }
 
-bool initializeDetector(IceTea* os) {
-    OS::FuncDef dtFuncs[] = {
-        // Display and output
-        {OS_TEXT("__get@head"), osd_head},
-        {OS_TEXT("__get@out"), osd_out},
-        {OS_TEXT("__get@footer"), osd_footer},
-        {}
-    };
-    os->getModule("detect");
-    os->setFuncs(dtFuncs);
-    os->pop();
+class IceTeaDetector: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        OS::FuncDef dtFuncs[] = {
+            // Display and output
+            {OS_TEXT("__get@head"), osd_head},
+            {OS_TEXT("__get@out"), osd_out},
+            {OS_TEXT("__get@footer"), osd_footer},
+            {}
+        };
+        os->getModule("detect");
+        os->setFuncs(dtFuncs);
+        os->pop();
 
-    return true;
-}
-ICETEA_MODULE(detector, initializeDetector);
+        return true;
+    }
+    string getName() {
+        return "Detector";
+    }
+    string getDescription() {
+        return  "Provides means of testing and poking the current maschine.\n"
+                "Most of this plugin is actually written in ObjectScript itself. See the lib/ folder in the source.\n"
+                "Some notable features:\n"
+                "- Check for headers\n"
+                "- Check for libraries\n"
+                "- Check for functions in libraries or headers\n"
+                "- Find and execute tools such as pkg-config or alike";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaDetector);

@@ -14,7 +14,7 @@
 #include "os-stacker.h"
 
 #include "wildcard.hpp"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -45,21 +45,34 @@ OS_FUNC(os_die) {
     return 0;
 }
 
-bool initializeStdlib(IceTea* os) {
-    os->pushCFunction(os_exit);
-    os->setGlobal("exit");
+class IceTeaSTD: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        os->pushCFunction(os_exit);
+        os->setGlobal("exit");
 
-    os->pushCFunction(os_die);
-    os->setGlobal("abort");
+        os->pushCFunction(os_die);
+        os->setGlobal("abort");
 
-    OS::FuncDef wcFuncs[] = {
-        {OS_TEXT("match"), wildcard_match},
-        {}
-    };
-    os->getModule("wildcard");
-    os->setFuncs(wcFuncs);
-    os->pop();
+        OS::FuncDef wcFuncs[] = {
+            {OS_TEXT("match"), wildcard_match},
+            {}
+        };
+        os->getModule("wildcard");
+        os->setFuncs(wcFuncs);
+        os->pop();
 
-    return true;
-}
-ICETEA_MODULE(stdlib, initializeStdlib);
+        return true;
+    }
+    string getName() {
+        return "Standard Library Extension";
+    }
+    string getDescription() {
+        return  "Partially native, partially in OS itself, this extends ObjectScript's primitives.\n"
+                "For example:\n"
+                "- Add += support for arrays and objects\n"
+                "- Add a public wildcard() function for glob-like matching\n"
+                "- Provide exit() and abort()";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaSTD);

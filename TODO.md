@@ -11,6 +11,8 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [X] Somehow introduce console colors for all platforms.
 - [X] Introduce pre-inclusion (`require()`ing all files within a specified subfolder)
 - [ ] Introduce addition to `require()` to automatically include a project. I.e.: `require.project "submodule/"`
+    - And what if the project has a custom `bootstrap.it`? o.o It shouldn't, but that might actually matter.
+    Therefore, this feature should come along with actual Project support.
 - [X] Begin using the `prepare()` method for rules.
 - [X] Implement the `tag()` mechanism for usage inside targets/externals and the function to do a proper lookup.
 - [X] Introduce the array `+` operator. I.e.: `var a=["foo"] + ["bar"]`. `o` should now contain: `["foo","bar"]`
@@ -23,10 +25,11 @@ I have set up myself to make an awesome build tool. But as each project's nature
 - [X] Add `+` operator for `Object`.
 - [X] Better error handling if OS actually crashed. Currently `int main(int,char**)` will report that no targets were built whilst it actually has an exception written ontop of it.
 - [ ] Separate debug/non-debug builds
+    - Should allow some options to be set for output folder, etc... Maybe use a Profile kinda thing?
 - [X] Better Windows linker support / flag passing / warning handling.
 - [X] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
 - [ ] Make rules able to depend upon targets also.
-- [ ] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
+- [X] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
 
 ### Added 25th Dec. 2014, 1.27PM
 - [X] Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
@@ -43,7 +46,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
     * Component: A generic module
     * Concat: Combine inputs into single output
     * Shared libraries
-    * Static libraries
+    * Static libraries (Partialy)
 - [X] Implement these settings: [Rules now use the settings, so they are userland-defined.]
     * native.framework_dirs: OBJC, OBJCXX
     * OBJC/XX.GC/ARC: Settings for garbage collection or ARC
@@ -68,6 +71,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
     * Luckily, advice was retrived here: http://stackoverflow.com/a/30249477/2423150
 - [ ] Possibly generate a graph.
 - [ ] Maybe introduce RegEx support.
+    - I can, via extensions.
 
 ### Added 10th Janurary 2016, 6:42AM
 - [ ] Re-implement a `describe/it` style testing framework as seen in:
@@ -95,7 +99,10 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - [ ] `OS::resolveFile(OS::String)` -> `require.resolve`: Resolve a file.
 - [ ] Utilize `OS::Core` to get ahold of the backtrace.
     - Useful for finding the currently executed file!
-- [ ] Introduce `Template`. A class to take `.in` files and transform them.
+- [X] Introduce `Template`. A class to take `.in` files and transform them.
+    - No extra class needed. Simply using OS now.
+    - However, I should add `@NAME@` substitutions...
+    - But that would require Regex O.o so I might not.
 - [X] Export cached values into ObjectScript, so that we can process `.in` files.
 
 
@@ -104,5 +111,23 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Compile a file directly, utilize IceTea's functionality to properly resolve the compiler and any settings. Provide a "Template target" to serve all the various settings.
     - Simplify the usage of sub-builds.
 - [ ] Find better ways to merge as many tasks together as possible.
+    - Idea: Look-ahead. See if topmost task in next level has any unbuilt deps, and if not, lower it to current.
 - [ ] Improve caching and step-minimizing.
+    - File hashing is only one thing...
 - [ ] A way to have sub-builds trigger changes in upstream. So that generated code gets re-compiled into an executable.
+    - This actually should happen, since the hash would change. Hm...
+
+### Added 13th March 2016, 4:40am
+- [ ] Overhaul `Task`:
+    - [ ] Implement `profiles` property. Each function corresponds to a scheme.
+    - [ ] Use double-underscore to indicate private methods.
+- [ ] `Project`s:
+    - [ ] Name, description, version.
+    - [ ] Each project can have it's own steps/rules. Falls back to global ones.
+    - [ ] Projects can import steps/rules from others.
+    - [ ] Projects are imported with their `bootstrap.it` file first.
+    - [ ] A included project's `.IceTea` folder becomes available only to the project - call it private resources.
+
+### Added 17th March 2016, 7:09am
+- [ ] Default paths for Pluma based plugins
+- [ ] Introduce "install" step for IceTea!

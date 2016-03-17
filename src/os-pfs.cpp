@@ -4,7 +4,7 @@
 #include "os-pfs.h"
 #include "file_system.hpp"
 #include "wildcard.hpp"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 #if defined(PREDEF_PLATFORM_WIN32)
     #define ICETEA_DIRSEP "\\"
@@ -234,59 +234,68 @@ OS_FUNC(os_pfs_join) {
     return 1;
 }
 
-bool initializePFS(IceTea* os) {
-    OS::FuncDef pfsFuncs[] = {
-        {OS_TEXT("mkdir"),              os_pfs_mkdir},
-        {OS_TEXT("mkdirp"),             os_pfs_mkdirp},
-        {OS_TEXT("delete"),             os_pfs_delete},
-        {OS_TEXT("copy"),               os_pfs_copy},
-        {OS_TEXT("move"),               os_pfs_move},
+class IceTeaPFS: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        OS::FuncDef pfsFuncs[] = {
+            {OS_TEXT("mkdir"),              os_pfs_mkdir},
+            {OS_TEXT("mkdirp"),             os_pfs_mkdirp},
+            {OS_TEXT("delete"),             os_pfs_delete},
+            {OS_TEXT("copy"),               os_pfs_copy},
+            {OS_TEXT("move"),               os_pfs_move},
 
-        //{OS_TEXT("open"),               os_pfs_open},
+            //{OS_TEXT("open"),               os_pfs_open},
 
-        {OS_TEXT("getFileList"),        os_pfs_getFileList},
-        {OS_TEXT("getDirList"),         os_pfs_getDirList},
-        {OS_TEXT("getAllList"),         os_pfs_getAllList},
-        {OS_TEXT("glob"),               os_pfs_glob},
+            {OS_TEXT("getFileList"),        os_pfs_getFileList},
+            {OS_TEXT("getDirList"),         os_pfs_getDirList},
+            {OS_TEXT("getAllList"),         os_pfs_getAllList},
+            {OS_TEXT("glob"),               os_pfs_glob},
 
-        {OS_TEXT("fileExists"),         os_pfs_fileExists},
-        {OS_TEXT("dirExists"),          os_pfs_dirExists},
+            {OS_TEXT("fileExists"),         os_pfs_fileExists},
+            {OS_TEXT("dirExists"),          os_pfs_dirExists},
 
-        {OS_TEXT("isDir"),              os_pfs_isDir},
-        {OS_TEXT("isFile"),             os_pfs_isFile},
-        {OS_TEXT("isPresent"),          os_pfs_isPresent},
+            {OS_TEXT("isDir"),              os_pfs_isDir},
+            {OS_TEXT("isFile"),             os_pfs_isFile},
+            {OS_TEXT("isPresent"),          os_pfs_isPresent},
 
-        {OS_TEXT("getFileSize"),        os_pfs_getFileSize},
-        {OS_TEXT("fileReadable"),       os_pfs_fileReadable},
-        {OS_TEXT("fileWritable"),       os_pfs_fileWritable},
-        {OS_TEXT("fileCreated"),        os_pfs_fileCreated},
-        {OS_TEXT("fileModified"),       os_pfs_fileModified},
-        {OS_TEXT("fileAccessed"),       os_pfs_fileAccessed},
+            {OS_TEXT("getFileSize"),        os_pfs_getFileSize},
+            {OS_TEXT("fileReadable"),       os_pfs_fileReadable},
+            {OS_TEXT("fileWritable"),       os_pfs_fileWritable},
+            {OS_TEXT("fileCreated"),        os_pfs_fileCreated},
+            {OS_TEXT("fileModified"),       os_pfs_fileModified},
+            {OS_TEXT("fileAccessed"),       os_pfs_fileAccessed},
 
-        {OS_TEXT("dirReadable"),        os_pfs_dirReadable},
-        {OS_TEXT("dirWritable"),        os_pfs_dirWritable},
-        {OS_TEXT("dirEmpty"),           os_pfs_dirEmpty},
+            {OS_TEXT("dirReadable"),        os_pfs_dirReadable},
+            {OS_TEXT("dirWritable"),        os_pfs_dirWritable},
+            {OS_TEXT("dirEmpty"),           os_pfs_dirEmpty},
 
-        {OS_TEXT("basename"),           os_pfs_basename},
-        {OS_TEXT("extname"),            os_pfs_extname},
-        {OS_TEXT("dirname"),            os_pfs_dirname},
-        {OS_TEXT("filename"),           os_pfs_filename},
+            {OS_TEXT("basename"),           os_pfs_basename},
+            {OS_TEXT("extname"),            os_pfs_extname},
+            {OS_TEXT("dirname"),            os_pfs_dirname},
+            {OS_TEXT("filename"),           os_pfs_filename},
 
-        {OS_TEXT("isFullPath"),         os_pfs_isFullPath},
-        {OS_TEXT("isRelativePath"),     os_pfs_isRelativePath},
+            {OS_TEXT("isFullPath"),         os_pfs_isFullPath},
+            {OS_TEXT("isRelativePath"),     os_pfs_isRelativePath},
 
-        {OS_TEXT("lookup"),             os_pfs_lookup},
-        {OS_TEXT("join"),               os_pfs_join},
-        {}
-    };
+            {OS_TEXT("lookup"),             os_pfs_lookup},
+            {OS_TEXT("join"),               os_pfs_join},
+            {}
+        };
 
-    os->pushCFunction(os_pfs_wildcardMatch);
-    os->setGlobal("wildcard");
+        os->pushCFunction(os_pfs_wildcardMatch);
+        os->setGlobal("wildcard");
 
-    os->getModule("pfs");
-    os->setFuncs(pfsFuncs);
-    os->pop();
+        os->getModule("pfs");
+        os->setFuncs(pfsFuncs);
+        os->pop();
 
-    return true;
-}
-ICETEA_MODULE(pfs, initializePFS);
+        return true;
+    }
+    string getName() {
+        return "PFS: FileSystem+";
+    }
+    string getDescription() {
+        return  "FileSystem functionality provided through STLPlus.";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaPFS);

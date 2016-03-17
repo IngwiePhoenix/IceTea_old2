@@ -9,22 +9,27 @@
 #include "cli.h"
 #include "filecache.hpp"
 
+#include "Pluma.hpp"
+#include "IceTeaPlugin.h"
+
+#include "it-version.h"
+
 // File related things
 #define ICETEA_SCRIPT_EXT ".it"
 #define ICETEA_TEMPLATE_EXT ".in"
 
 // Copyright and such.
-#define ICETEA_VERSION "1.0.0"
-#define ICETEA_VERSION_TAG "-dev"
 #define ICETEA_AUTHOR "Kevin \"Ingwie Phoenix\" Ingwersen <ingwie2000@gmail.com>"
 #define ICETEA_VERSION_STR \
-    "IceTea " ICETEA_VERSION ICETEA_VERSION_TAG \
+    "IceTea " ICETEA_VERSION \
     "by " ICETEA_AUTHOR
 
 class IceTea : public ObjectScript::OS {
 // Aliases:
     typedef std::string string;
     typedef std::stringstream sstream;
+    typedef pluma::Pluma Pluma;
+    typedef std::vector<IceTeaPlugin*> ITPlugins;
 
 private:
     sstream     cpr;        ///< Copyright string
@@ -36,6 +41,8 @@ private:
     string      outputDir;  ///< Path to the putput folder.
     string      cacheFile;  ///< Path to the file containing the cache.
     bool        shouldDebug;///< Should we print debug messages?
+    Pluma       manager;    ///< Plugin manager
+    ITPlugins   plugins;    ///< Internal storage of all loaded, compiled-in plugins.
 
     // Setup CLI arguments.
     void setupArguments();
@@ -78,6 +85,9 @@ public:
 
     // Decide to run the help menu or not.
     bool checkAndRunHelp();
+
+    // Listing for the modules
+    bool checkAndListModules(int&);
 
     // Handle termination and exceptions
     bool hasEndedExecuting(int&);

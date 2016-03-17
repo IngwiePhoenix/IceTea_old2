@@ -5,7 +5,7 @@
 #include "os-icetea.h"
 #include "filecache.hpp"
 #include "SimpleIni.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace ObjectScript;
 using namespace std;
@@ -133,23 +133,34 @@ struct OSFileCache {
     }
 };
 
-bool InitializeCache(IceTea* it) {
-    OS::FuncDef cacheFuncs[] = {
-        {OS_TEXT("__construct"),    OSFileCache::__construct},
-        {OS_TEXT("__get"),          OSFileCache::__get},
-        {OS_TEXT("__set"),          OSFileCache::__set},
-        {OS_TEXT("__del"),          OSFileCache::__del},
-        {OS_TEXT("__isset"),        OSFileCache::__isset},
-        {OS_TEXT("__get@keys"),     OSFileCache::getKeys},
-        {OS_TEXT("getKeys"),        OSFileCache::getKeys},
-        {OS_TEXT("sync"),           OSFileCache::sync},
-        {}
-    };
+class IceTeaCache: public IceTeaPlugin {
+public:
+    bool configure(IceTea* it) {
+        OS::FuncDef cacheFuncs[] = {
+            {OS_TEXT("__construct"),    OSFileCache::__construct},
+            {OS_TEXT("__get"),          OSFileCache::__get},
+            {OS_TEXT("__set"),          OSFileCache::__set},
+            {OS_TEXT("__del"),          OSFileCache::__del},
+            {OS_TEXT("__isset"),        OSFileCache::__isset},
+            {OS_TEXT("__get@keys"),     OSFileCache::getKeys},
+            {OS_TEXT("getKeys"),        OSFileCache::getKeys},
+            {OS_TEXT("sync"),           OSFileCache::sync},
+            {}
+        };
 
-    it->getGlobalObject("Cache");
-    it->setFuncs(cacheFuncs, false);
-    it->pop();
+        it->getGlobalObject("Cache");
+        it->setFuncs(cacheFuncs, false);
+        it->pop();
 
-    return true;
-}
-ICETEA_MODULE(Cache, InitializeCache);
+        return true;
+    }
+    string getName() {
+        return "Cache";
+    }
+    string getDescription() {
+        return  "This plugin allows IceTea to cache data on disk.\n"
+                "It uses a file within the output directory to do so.";
+    }
+};
+
+ICETEA_INTERNAL_MODULE(IceTeaCache);

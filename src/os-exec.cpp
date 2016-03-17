@@ -4,7 +4,7 @@
 #include "IceTea.h"
 #include "os-exec.h"
 #include "subprocesses.hpp"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -306,34 +306,43 @@ struct OSSubProcess {
     }
 };
 
-bool initSubProcess(IceTea* it) {
-    #define _M(name) {OS_TEXT(#name), OSSubProcess::name}
-    OS::FuncDef methods[] = {
-        _M(__construct),
-        _M(__destruct),
-        _M(set_env),
-        _M(del_env),
-        _M(get_env),
-        _M(write_stdin),
-        _M(close_stdin),
-        _M(close_stdout),
-        _M(close_stderr),
-        _M(stdout),
-        _M(stderr),
-        _M(error),
-        _M(error_number),
-        _M(error_text),
-        _M(exit_code),
-        _M(kill),
-        _M(execute),
-        _M(tick),
-        //{OS_TEXT("__callinstance"), OSSubProcess::execute},
-        {}
-    };
+class IceTeaSubProcess: public IceTeaPlugin {
+public:
+    bool configure(IceTea* it) {
+        #define _M(name) {OS_TEXT(#name), OSSubProcess::name}
+        OS::FuncDef methods[] = {
+            _M(__construct),
+            _M(__destruct),
+            _M(set_env),
+            _M(del_env),
+            _M(get_env),
+            _M(write_stdin),
+            _M(close_stdin),
+            _M(close_stdout),
+            _M(close_stderr),
+            _M(stdout),
+            _M(stderr),
+            _M(error),
+            _M(error_number),
+            _M(error_text),
+            _M(exit_code),
+            _M(kill),
+            _M(execute),
+            _M(tick),
+            //{OS_TEXT("__callinstance"), OSSubProcess::execute},
+            {}
+        };
 
-    it->getGlobalObject("SubProcess");
-    it->setFuncs(methods);
+        it->getGlobalObject("SubProcess");
+        it->setFuncs(methods);
 
-    return true;
-}
-ICETEA_MODULE(SubProcess, initSubProcess);
+        return true;
+    }
+    string getName() {
+        return "SubProcess";
+    }
+    string getDescription() {
+        return "Powered by STLPlus' SubProcess flavors, this plugin let's you run commands, sync or async.";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaSubProcess);

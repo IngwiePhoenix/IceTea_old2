@@ -7,7 +7,7 @@
 #include "picosha2.h"
 
 #include "predef.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 #include "cli.h"
 
 using namespace std;
@@ -148,46 +148,59 @@ OS_FUNC(os_system) {
     return 1;
 }
 
-bool initIceTeaExt(IceTea* os) {
-    // Grab a reference to the CLI instance.
-    CLI* cli = os->getCliHandle();
+class IceTeaGeneral: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        // Grab a reference to the CLI instance.
+        CLI* cli = os->getCliHandle();
 
-    // Make it a value.
-    os->getModule("$");
-    os->pop();
+        // Make it a value.
+        os->getModule("$");
+        os->pop();
 
-    os->pushCFunction(os_system);
-    os->setGlobal("shell");
+        os->pushCFunction(os_system);
+        os->setGlobal("shell");
 
-    // Option parsing/passing
-    OS::FuncDef cliFuncs[] = {
-        {OS_TEXT("insert"), cli_insert, (void*)cli},
-        {OS_TEXT("value"), cli_value, (void*)cli},
-        {OS_TEXT("__get"), cli_value, (void*)cli},
-        {OS_TEXT("check"), cli_check, (void*)cli},
-        {OS_TEXT("group"), cli_group, (void*)cli},
-        {OS_TEXT("parse"), cli_parse, (void*)cli},
-        {OS_TEXT("usage"), cli_usage, (void*)cli},
-        {OS_TEXT("__get@stray"), cli_getStrayArgs, (void*)cli},
-        {OS_TEXT("getStrayArgs"), cli_getStrayArgs, (void*)cli},
-        {}
-    };
-    os->getModule("cli");
-    os->setFuncs(cliFuncs);
-    os->pop();
+        // Option parsing/passing
+        OS::FuncDef cliFuncs[] = {
+            {OS_TEXT("insert"), cli_insert, (void*)cli},
+            {OS_TEXT("value"), cli_value, (void*)cli},
+            {OS_TEXT("__get"), cli_value, (void*)cli},
+            {OS_TEXT("check"), cli_check, (void*)cli},
+            {OS_TEXT("group"), cli_group, (void*)cli},
+            {OS_TEXT("parse"), cli_parse, (void*)cli},
+            {OS_TEXT("usage"), cli_usage, (void*)cli},
+            {OS_TEXT("__get@stray"), cli_getStrayArgs, (void*)cli},
+            {OS_TEXT("getStrayArgs"), cli_getStrayArgs, (void*)cli},
+            {}
+        };
+        os->getModule("cli");
+        os->setFuncs(cliFuncs);
+        os->pop();
 
-    // Hashing
-    OS::FuncDef sh2Funcs[] = {
-        {OS_TEXT("string"), os_sh2_string},
-        {}
-    };
-    os->getModule("sha2");
-    os->setFuncs(sh2Funcs);
-    os->pop();
+        // Hashing
+        OS::FuncDef sh2Funcs[] = {
+            {OS_TEXT("string"), os_sh2_string},
+            {}
+        };
+        os->getModule("sha2");
+        os->setFuncs(sh2Funcs);
+        os->pop();
 
-    os->pushCFunction(print_debug);
-    os->setGlobal("debug");
+        os->pushCFunction(print_debug);
+        os->setGlobal("debug");
 
-    return true;
-}
-ICETEA_MODULE(IceTeaShell, initIceTeaExt);
+        return true;
+    }
+    string getName() {
+        return "Generic";
+    }
+    string getDescription() {
+        return  "This plugin provides multiple things that are considered 'generic':\n"
+                "- CLI access\n"
+                "- SHA2 hashing\n"
+                "- debug() function\n"
+                "- Basic shell command execution";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaGeneral);

@@ -93,8 +93,15 @@ NativeStep = extends Object {
             var stderr = @runner.stderr();
             var color = !cli.check("--no-color");
             var headed = false;
-            if(#stdout>0) echo stdout;
-            if(#stderr>0) echo stderr;
+            if(#stdout>0) echo "\n" .. stdout.trim();
+            if(#stderr>0) {
+                var lines = stderr.trim().split("\n");
+                for(var i=0; i<#lines; i++) {
+                    lines[i] = "> " .. lines[i];
+                }
+                echo "\n" .. lines.join("\n").trim();
+            }
+            if(#stdout>0 || #stderr>0) echo "\n";
             // Done. Check status.
             if(@runner.exit_code() == 0) {
                 return T.OK;

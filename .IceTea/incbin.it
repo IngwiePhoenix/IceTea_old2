@@ -41,7 +41,7 @@ target("incbin", "exe") {
  *
  * 		1. Build a temporary file in out/ - for instance "MyApp_Scripts.incbin.h"
  * 		2. Once the incbin tool is compiled: out/icnbin out/MyApp_Scripts.incbin.h -o @out (where @out is the result of estimate)
- * 		3. After the build, the files are added as a task, and added to the target's final task.
+ * 		3. Once built, the file is processed through steps and then attached as a regular input to the requesting target's output.
  *
  * To make sure that both, the .h and .c file are avilable, they're forced in:
  * - MyApp_Scripts.incbin.h : We add -include to the target's native.flags settings.
@@ -159,7 +159,7 @@ rule("incbin", "Include Binary") {
 
                     if(#output[1]>0) echo output[1];
                     if(#output[2]>0) echo output[2];
-                    detect.line "The build was..."
+                    detect.line "The build was"
                     if(spawned && exitCode == 0) {
                         detect.success "Successful!"
                         // Attach new dependencies.

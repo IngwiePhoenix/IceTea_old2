@@ -2,7 +2,7 @@
 
 #include "IceTea.h"
 #include "os-icetea.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace std;
 using namespace ObjectScript;
@@ -27,31 +27,40 @@ OS_FUNC(stderr_flush) {
     return 0;
 }
 
-bool initializeProcess(IceTea* os) {
-    OS::FuncDef stdoutFuncs[] = {
-        {OS_TEXT("write"), stdout_write},
-        {OS_TEXT("flush"), stdout_flush},
-        {}
-    };
-    OS::FuncDef stderrFuncs[] = {
-        {OS_TEXT("write"), stderr_write},
-        {OS_TEXT("flush"), stderr_flush},
-        {}
-    };
+class IceTeaProcess: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        OS::FuncDef stdoutFuncs[] = {
+            {OS_TEXT("write"), stdout_write},
+            {OS_TEXT("flush"), stdout_flush},
+            {}
+        };
+        OS::FuncDef stderrFuncs[] = {
+            {OS_TEXT("write"), stderr_write},
+            {OS_TEXT("flush"), stderr_flush},
+            {}
+        };
 
-    os->getModule("process");
-    int processObj = os->getAbsoluteOffs(-1);
+        os->getModule("process");
+        int processObj = os->getAbsoluteOffs(-1);
 
-    os->newObject();
-    os->setFuncs(stdoutFuncs);
-    os->setProperty(processObj, "stdout");
+        os->newObject();
+        os->setFuncs(stdoutFuncs);
+        os->setProperty(processObj, "stdout");
 
-    os->newObject();
-    os->setFuncs(stderrFuncs);
-    os->setProperty(processObj, "stderr");
+        os->newObject();
+        os->setFuncs(stderrFuncs);
+        os->setProperty(processObj, "stderr");
 
-    os->pop();
+        os->pop();
 
-    return true;
-}
-ICETEA_MODULE(process, initializeProcess);
+        return true;
+    }
+    string getName() {
+        return "Process";
+    }
+    string getDescription() {
+        return "Provides stdout and stderr raw access. Might do more in the future...";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaProcess);

@@ -4,7 +4,7 @@
 #include "os-pfs.h" // CALL_STLPLUS_*()
 #include "file_system.hpp"
 #include "predef.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 using namespace stlplus;
 using namespace ObjectScript;
@@ -103,27 +103,38 @@ OS_FUNC(os_sys_putenv) {
     return 1;
 }
 
-bool initializeSYS(IceTea* os) {
-    OS::FuncDef sysFuncs[] = {
-        {OS_TEXT("cd"),             os_sys_cd},
-        {OS_TEXT("which"),          os_sys_which},
-        {OS_TEXT("__get@cwd"),      os_sys_cwd},
-        {OS_TEXT("__get@fullCwd"),  os_sys_fullCwd},
-        {OS_TEXT("__get@userDir"),  os_sys_getUserDir},
-        {OS_TEXT("__get@pathSep"),  os_sys_pathSep},
-        {OS_TEXT("__get@dirSep"),   os_sys_dirSep},
-        {OS_TEXT("__get@type"),     os_sys_osType},
-        {OS_TEXT("__get@name"),     os_sys_osName},
-        // Env
-        {OS_TEXT("getenv"),         os_sys_getenv},
-        {OS_TEXT("putenv"),         os_sys_putenv},
-        {}
-    };
+class IceTeaSystem: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        OS::FuncDef sysFuncs[] = {
+            {OS_TEXT("cd"),             os_sys_cd},
+            {OS_TEXT("which"),          os_sys_which},
+            {OS_TEXT("__get@cwd"),      os_sys_cwd},
+            {OS_TEXT("__get@fullCwd"),  os_sys_fullCwd},
+            {OS_TEXT("__get@userDir"),  os_sys_getUserDir},
+            {OS_TEXT("__get@pathSep"),  os_sys_pathSep},
+            {OS_TEXT("__get@dirSep"),   os_sys_dirSep},
+            {OS_TEXT("__get@type"),     os_sys_osType},
+            {OS_TEXT("__get@name"),     os_sys_osName},
+            // Env
+            {OS_TEXT("getenv"),         os_sys_getenv},
+            {OS_TEXT("putenv"),         os_sys_putenv},
+            {}
+        };
 
-    os->getModule("sys");
-    os->setFuncs(sysFuncs);
-    os->pop();
+        os->getModule("sys");
+        os->setFuncs(sysFuncs);
+        os->pop();
 
-    return true;
-}
-ICETEA_MODULE(sys, initializeSYS);
+        return true;
+    }
+    string getName() {
+        return "System";
+    }
+    string getDescription() {
+        return  "Get this current system's informations.\n"
+                "IMPORTANT: Some information is currently aquired at compile-time! That means \n"
+                "that some information can be INCORRECT. I will introduce better checks later!";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaSystem);

@@ -178,10 +178,10 @@ IceTea = extends _E {
      * Each time a task in a higher level is resolved, it's child/ren is/are checked,
      * to see if they were built yet. If not, they're skipped for the time being.
      */
-    __tasks = [],
+    get@__tasks: function() {
+        throw "IceTea.__tasks is deprecated. Use a taskContainer instead!";
+    },
     addTask: function(level, task, taskContainer) {
-        // Used for sub-builds - like generators.
-        taskContainer = taskContainer || IceTea.__tasks;
         // Create level if it does not exist yet.
         taskContainer[level] = taskContainer[level] || [];
         taskContainer[level].push(task);
@@ -190,13 +190,13 @@ IceTea = extends _E {
     // Returns the currently highest level.
     // Add +1 to create a new level.
     getLevel: function(taskContainer) {
-        taskContainer = taskContainer || IceTea.__tasks;
+        taskContainer = taskContainer;
         return taskContainer.length-1;
     },
 
     // Get a count of the tasks.
     getTaskCount: function(taskContainer) {
-        taskContainer = taskContainer || IceTea.__tasks;
+        taskContainer = taskContainer;
         var count = 0;
         for(var level,tasks in taskContainer) {
             for(var _,task in tasks) {
@@ -252,7 +252,7 @@ IceTea = extends _E {
      * @return {Boolean} True on success, false on failure.
      */
     createSteps: function(target, taskContainer, level) {
-        taskContainer = taskContainer || IceTea.__tasks;
+        taskContainer = taskContainer;
         var finalDeps = [];
         level = level || 0;
 
@@ -367,7 +367,7 @@ IceTea = extends _E {
             }
         });
         target.__finalTask = finalTask;
-        IceTea.addTask(IceTea.getLevel()+1, finalTask, taskContainer);
+        IceTea.addTask(IceTea.getLevel(taskContainer)+1, finalTask, taskContainer);
 
         // All the previous tasks should point to the next task now.
         for(var _,dep in finalDeps) {
@@ -437,7 +437,6 @@ IceTea = extends _E {
     */
     Preprocessor: function(targetNames) {
         // Determine how to build.
-        targetNames = targetNames || IceTea.targetList;
         // Recursively configure a target and it's needs.
         var configureTarget = function(targetName, dependsOn) {
             if(!(targetName in IceTea.__targets)) {
@@ -528,7 +527,6 @@ IceTea = extends _E {
         @see Initializer
     */
     Transformer: function(targetNames, taskContainer) {
-        targetNames = targetNames || IceTea.targetList;
         debug "Transformer: ${targetNames}"
         for(var _,targetName in targetNames) {
             var target = IceTea.__targets[targetName];
@@ -537,10 +535,10 @@ IceTea = extends _E {
         }
     },
 
-    Runner: function(taskContainer, outputPrefix, forceDetail){
+    Runner: function(taskContainer, buildTargets, outputPrefix, forceDetail){
         // Global or custom task-container?
         // FIXME: Syntactic shuggar, use matrix.
-        taskContainer = taskContainer || IceTea.__tasks;
+        taskContainer = taskContainer;
 
         // normalize the third, now new flag.
         forceDetail = forceDetail || false;
@@ -551,7 +549,7 @@ IceTea = extends _E {
                 forceDetail
                 || cli.check("--debug")
                 || cli.check("--detail-output")
-                //|| Is this a TTY?
+                //|| Is this a TTY? FIXME: $.isTTY() to check for TTY.
             ) {
                 return false;
             } else {
@@ -576,6 +574,7 @@ IceTea = extends _E {
 
             // Clear the current line before printing into it.
             if(isCompact) {
+                _write "\r"
                 for(var i=0; i<$.cols-2; i++) {
                     _write " "
                 }
@@ -583,21 +582,24 @@ IceTea = extends _E {
             }
 
             // Print logic... fancy, eh?
+            // If you zoom out and look at it from far, far away...
+            // ... it looks kinda like ASM ;)
             outputPrefix = outputPrefix || ""
-            if(outputPrefix != "") outputPrefix = outputPrefix .. " ";
+            if(outputPrefix != "" && typeOf(outputPrefix.find(" ")) == "null") {
+                outputPrefix += " ";
+            }
 
                             _write outputPrefix;
             if(isColorful)  $.saveDefaultColor();
             if(isColorful)  $.setColor($.Colors.CYAN);
-                            _write "#${level} [${currentIdx}/${maxIdx}] ";
+                            _write "[${currentIdx}/${maxIdx}] ";
             if(isColorful)  $.resetColor();
                             _write targetTitle .. "(";
             if(isColorful)  $.setColor($.Colors.MAGENTA);
                             _write stepDisplay;
             if(isColorful)  $.resetColor();
                             _write "): ${buildstr}";
-            if(isCompact)   _write "\r"
-            else            _write "\n"
+            if(!isCompact)  _write "\n"
         }
 
         // The n-th task we're running
@@ -644,7 +646,7 @@ IceTea = extends _E {
                     case S.FAIL:
                         // Signal everyone that this is failure.
                         debug "Status: FAIL (Preparing for shutdown.)"
-                        shouldExit;
+                        shouldExit = true;
                         break;
                     case S.PENDING:
                         // We want to add this job to the background.
@@ -753,7 +755,13 @@ IceTea = extends _E {
             return 1;
         }*/
 
-        debug "Reached end of control"
+        debug "Reached end of control. Beginning finalization...";
+        for(var _,target in buildTargets) {
+            if("finalize" in target) {
+                detect.line "Finalizing: ${target.name}"
+                target.finalize();
+            }
+        }
         if(isCompact) print "";
         return 0;
     },
@@ -772,7 +780,7 @@ IceTea = extends _E {
                 {|| IceTea.Transformer([target.name], taskContainer)}
             ], [
                 "Runner (Executing steps)",
-                {|| IceTea.Runner(taskContainer, "|")}
+                {|| IceTea.Runner(taskContainer, [target], "|")}
             ]
         ];
         for(var i,set in funcSteps) {
@@ -791,11 +799,13 @@ IceTea = extends _E {
     Main: function() {
         $.saveDefaultColor();
         var rt;
+        var targetNames = [];
+        var taskContainer = [];
         IceTea.CallEvent("beforeRun");
 
         // Execute the actions.
         if(cli.check("--target")) {
-            IceTea.targetList = cli["--target"].split(",");
+            targetNames = cli["--target"].split(",");
         } else {
             for(var _,name in IceTea.toExecute) {
                 if(!(name in IceTea.__actions)) {
@@ -805,7 +815,7 @@ IceTea = extends _E {
                 var list = action.execute(null);
                 if(typeOf(list) == "array") {
                     // We got a list of target names.
-                    IceTea.targetList += list;
+                    targetNames += list;
                 } else if(typeOf(list) == "number") {
                     // The action returned an exit code.
                     return list;
@@ -813,24 +823,30 @@ IceTea = extends _E {
             }
         }
 
-        if(#IceTea.targetList == 0) {
+        if(#targetNames == 0) {
             // If empty, we can assume that the action did something on it's own.
             return 0;
         }
 
         // Preprocess all the things.
-        rt = IceTea.Preprocessor();
+        rt = IceTea.Preprocessor(targetNames);
         if(typeOf(rt) == "boolean" && rt == false) return 1;
 
         if(!cli.check("--configure")) {
             // Then transform them.
-            rt = IceTea.Transformer();
+            rt = IceTea.Transformer(targetNames, taskContainer);
             if(typeOf(rt) == "boolean" && rt == false) return 1;
 
             // And run it too.
             $.Cursor.hide();
             try {
-                rt = IceTea.Runner();
+                rt = IceTea.Runner(taskContainer, @{
+                    var ts = [];
+                    for(var _,name in targetNames) {
+                        ts.push(IceTea.__targets[name]);
+                    }
+                    return ts;
+                });
             } catch(e) {
                 unhandledException(e);
                 rt = 1;

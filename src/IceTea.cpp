@@ -12,7 +12,8 @@
 #include "portability_fixes.hpp"
 #include "stlplus_version.hpp"
 #include "rlutil.h"
-#include "PluginStore.h"
+#include "IceTeaPlugin.h"
+#include "InternalIceTeaPlugin.h"
 
 // Embed
 #include "scripts.rc"
@@ -57,6 +58,16 @@ IceTea::IceTea() : OS() {
     // Fetch thread number beforehand!
     thrs_sst << thread::hardware_concurrency();
 
+    // Tell Pluma about our provider.
+    manager.acceptProviderType<IceTeaPluginProvider>();
+
+    // Attach the compiled-in modules...
+    IceTeaInternalPlugins* int_plugins = InternalPluginStore::getStore();
+    IceTeaInternalPlugins::iterator it;
+    for(it = int_plugins->begin(); it!=int_plugins->end(); ++it) {
+        manager.addProvider(*it);
+    }
+
     // Should we debug?
     const char* envDebug = getenv("DEBUG");
     this->setDebug(envDebug != NULL);
@@ -75,6 +86,11 @@ void IceTea::initSettings() {
 }
 
 IceTea::~IceTea() {
+    while(!plugins.empty()) {
+        IceTeaPlugin* p = plugins.back();
+        plugins.pop_back(); // Why is this not one single method?...
+        delete p;
+    }
     delete this->cli;
     delete this->fc;
     // OS::~OS();
@@ -130,17 +146,28 @@ void IceTea::setupArguments() {
         this->cli->insert("-F", "--force", "", "Run without a mandatory build.it file.");
     }
 
+    this->cli->group("Informations");
+    {
+        this->cli->insert("-V", "--version", "", "Get version");
+        this->cli->insert("-m", "--modules", "", "Get compiled-in modules");
+        this->cli->insert("-M", "--modules-info", "", "Get compiled-in modules plus description");
+    }
+
     this->cli->setStrayArgs("Action", "Action to execute. Defaults to: all");
 
     this->cli->parse();
 }
 
 bool IceTea::initializeModules() {
-    // Print the modules, for debugging.
-    PluginList* plugins = PluginStore::get();
-    PluginList::iterator it;
-    for(it = plugins->begin(); it!=plugins->end(); ++it) {
-        (*it).cb(this);
+    vector<IceTeaPluginProvider*> providers;
+    manager.getProviders(providers);
+    vector<IceTeaPluginProvider*>::iterator it;
+    for (it = providers.begin() ; it != providers.end() ; ++it){
+        IceTeaPlugin* p = (*it)->create();
+        plugins.push_back(p);
+        if(! p->configure(this)) {
+            return false;
+        }
     }
 
     // Initialize the scripted modules
@@ -309,6 +336,30 @@ bool IceTea::checkAndRunHelp() {
     return false;
 }
 
+bool IceTea::checkAndListModules(int& rt) {
+    if(cli->check("-m") || cli->check("-M")) {
+        rt = 0;
+        ITPlugins::iterator it;
+        for(it=plugins.begin(); it!=plugins.end(); it++) {
+            // How should we print?
+            IceTeaPlugin* p = *it;
+            if(cli->check("-m")) {
+                // Name only.
+                cout << p->getName() << endl;
+            } else if(cli->check("-M")) {
+                // Detailed
+                cout    << p->getName() << ":" << endl
+                        << "---------" << endl
+                        << p->getDescription() << endl
+                        << endl;
+            }
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
 // Handle termination and exceptions
 bool IceTea::hasEndedExecuting(int &rtVal) {
     if(this->isExceptionSet()) {
@@ -415,6 +466,8 @@ int IceTea::run() {
         return 0;
     } if(this->checkAndRunInline(rt)) {
         // We ran an inline script, return.
+        return rt;
+    } if(this->checkAndListModules(rt)) {
         return rt;
     }
 

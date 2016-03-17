@@ -1,7 +1,7 @@
 #include "IceTea.h"
 #include "os-icetea.h"
 #include "rlutil.h"
-#include "Plugin.h"
+#include "InternalIceTeaPlugin.h"
 
 #include <iostream>
 
@@ -132,129 +132,144 @@ OS_FUNC(console_getCols) {
 }
 
 // Now comes the fun part!
-bool extendDollar(IceTea* os) {
-    OS::FuncDef consoleFuncs[] = {
-        // Misc
-        {OS_TEXT("msleep"),                 console_msleep},
-        // Keyboard
-        {OS_TEXT("anyKey"),                 console_anyKey},
-        {OS_TEXT("getch"),                  console_getch},
-        {OS_TEXT("getKey"),                 console_getKey},
-        {OS_TEXT("__get@key"),              console_getKey},
+class IceTeaConsole: public IceTeaPlugin {
+public:
+    bool configure(IceTea* os) {
+        OS::FuncDef consoleFuncs[] = {
+            // Misc
+            {OS_TEXT("msleep"),                 console_msleep},
+            // Keyboard
+            {OS_TEXT("anyKey"),                 console_anyKey},
+            {OS_TEXT("getch"),                  console_getch},
+            {OS_TEXT("getKey"),                 console_getKey},
+            {OS_TEXT("__get@key"),              console_getKey},
 
-        // Color
-        {OS_TEXT("setColor"),               console_setColor},
-        {OS_TEXT("saveDefaultColor"),       console_saveDefaultColor},
-        {OS_TEXT("resetColor"),             console_resetColor},
+            // Color
+            {OS_TEXT("setColor"),               console_setColor},
+            {OS_TEXT("saveDefaultColor"),       console_saveDefaultColor},
+            {OS_TEXT("resetColor"),             console_resetColor},
 
-        // Screen
-        {OS_TEXT("cls"),                    console_cls},
+            // Screen
+            {OS_TEXT("cls"),                    console_cls},
 
+            // Cursor
+            {OS_TEXT("locate"),                 console_locate},
+
+            // Rows and cols, getters
+            {OS_TEXT("__get@rows"),             console_getRows},
+            {OS_TEXT("getRows"),                console_getRows},
+            {OS_TEXT("__get@cols"),             console_getCols},
+            {OS_TEXT("getCols"),                console_getCols},
+            {}
+        };
         // Cursor
-        {OS_TEXT("locate"),                 console_locate},
+        OS::FuncDef cursorFuncs[] = {
+            {OS_TEXT("show"),   console_cursor_show},
+            {OS_TEXT("hide"),   console_cursor_hide},
+            {}
+        };
 
-        // Rows and cols, getters
-        {OS_TEXT("__get@rows"),             console_getRows},
-        {OS_TEXT("getRows"),                console_getRows},
-        {OS_TEXT("__get@cols"),             console_getCols},
-        {OS_TEXT("getCols"),                console_getCols},
-        {}
-    };
-    // Cursor
-    OS::FuncDef cursorFuncs[] = {
-        {OS_TEXT("show"),   console_cursor_show},
-        {OS_TEXT("hide"),   console_cursor_hide},
-        {}
-    };
+        // Keyboard keys
+        OS::NumberDef keyboardKeys[] = {
+            {OS_TEXT("ESCAPE"), KEY_ESCAPE},
+            {OS_TEXT("ENTER"), KEY_ENTER},
+            {OS_TEXT("SPACE"), KEY_SPACE},
 
-    // Keyboard keys
-    OS::NumberDef keyboardKeys[] = {
-        {OS_TEXT("ESCAPE"), KEY_ESCAPE},
-        {OS_TEXT("ENTER"), KEY_ENTER},
-        {OS_TEXT("SPACE"), KEY_SPACE},
+            {OS_TEXT("INSERT"), KEY_INSERT},
+            {OS_TEXT("HOME"), KEY_HOME},
+            {OS_TEXT("PGUP"), KEY_PGUP},
+            {OS_TEXT("DELETE"), KEY_DELETE},
+            {OS_TEXT("END"), KEY_END},
+            {OS_TEXT("PGDOWN"), KEY_PGDOWN},
 
-        {OS_TEXT("INSERT"), KEY_INSERT},
-        {OS_TEXT("HOME"), KEY_HOME},
-        {OS_TEXT("PGUP"), KEY_PGUP},
-        {OS_TEXT("DELETE"), KEY_DELETE},
-        {OS_TEXT("END"), KEY_END},
-        {OS_TEXT("PGDOWN"), KEY_PGDOWN},
+            {OS_TEXT("UP"), KEY_UP},
+            {OS_TEXT("DOWN"), KEY_DOWN},
+            {OS_TEXT("LEFT"), KEY_LEFT},
+            {OS_TEXT("RIGHT"), KEY_RIGHT},
 
-        {OS_TEXT("UP"), KEY_UP},
-        {OS_TEXT("DOWN"), KEY_DOWN},
-        {OS_TEXT("LEFT"), KEY_LEFT},
-        {OS_TEXT("RIGHT"), KEY_RIGHT},
+            {OS_TEXT("F1"), KEY_F1},
+            {OS_TEXT("F2"), KEY_F2},
+            {OS_TEXT("F3"), KEY_F3},
+            {OS_TEXT("F4"), KEY_F4},
+            {OS_TEXT("F5"), KEY_F5},
+            {OS_TEXT("F6"), KEY_F6},
+            {OS_TEXT("F7"), KEY_F7},
+            {OS_TEXT("F8"), KEY_F8},
+            {OS_TEXT("F9"), KEY_F9},
+            {OS_TEXT("F10"), KEY_F10},
+            {OS_TEXT("F11"), KEY_F11},
+            {OS_TEXT("F12"), KEY_F12},
 
-        {OS_TEXT("F1"), KEY_F1},
-        {OS_TEXT("F2"), KEY_F2},
-        {OS_TEXT("F3"), KEY_F3},
-        {OS_TEXT("F4"), KEY_F4},
-        {OS_TEXT("F5"), KEY_F5},
-        {OS_TEXT("F6"), KEY_F6},
-        {OS_TEXT("F7"), KEY_F7},
-        {OS_TEXT("F8"), KEY_F8},
-        {OS_TEXT("F9"), KEY_F9},
-        {OS_TEXT("F10"), KEY_F10},
-        {OS_TEXT("F11"), KEY_F11},
-        {OS_TEXT("F12"), KEY_F12},
+            {OS_TEXT("NUMDEL"), KEY_NUMDEL},
+            {OS_TEXT("NUMPAD0"), KEY_NUMPAD0},
+            {OS_TEXT("NUMPAD1"), KEY_NUMPAD1},
+            {OS_TEXT("NUMPAD2"), KEY_NUMPAD2},
+            {OS_TEXT("NUMPAD3"), KEY_NUMPAD3},
+            {OS_TEXT("NUMPAD4"), KEY_NUMPAD4},
+            {OS_TEXT("NUMPAD5"), KEY_NUMPAD5},
+            {OS_TEXT("NUMPAD6"), KEY_NUMPAD6},
+            {OS_TEXT("NUMPAD7"), KEY_NUMPAD7},
+            {OS_TEXT("NUMPAD8"), KEY_NUMPAD8},
+            {OS_TEXT("NUMPAD9"), KEY_NUMPAD9},
+            {}
+        };
 
-        {OS_TEXT("NUMDEL"), KEY_NUMDEL},
-        {OS_TEXT("NUMPAD0"), KEY_NUMPAD0},
-        {OS_TEXT("NUMPAD1"), KEY_NUMPAD1},
-        {OS_TEXT("NUMPAD2"), KEY_NUMPAD2},
-        {OS_TEXT("NUMPAD3"), KEY_NUMPAD3},
-        {OS_TEXT("NUMPAD4"), KEY_NUMPAD4},
-        {OS_TEXT("NUMPAD5"), KEY_NUMPAD5},
-        {OS_TEXT("NUMPAD6"), KEY_NUMPAD6},
-        {OS_TEXT("NUMPAD7"), KEY_NUMPAD7},
-        {OS_TEXT("NUMPAD8"), KEY_NUMPAD8},
-        {OS_TEXT("NUMPAD9"), KEY_NUMPAD9},
-        {}
-    };
+        // Color codes
+        OS::NumberDef colorCodes[] = {
+            {OS_TEXT("BLACK"),          BLACK},
+            {OS_TEXT("BLUE"),           BLUE},
+            {OS_TEXT("GREEN"),          GREEN},
+            {OS_TEXT("CYAN"),           CYAN},
+            {OS_TEXT("RED"),            RED},
+            {OS_TEXT("MAGENTA"),        MAGENTA},
+            {OS_TEXT("BROWN"),          BROWN},
+            {OS_TEXT("GREY"),           GREY},
+            {OS_TEXT("DARKGREY"),       DARKGREY},
+            {OS_TEXT("LIGHTBLUE"),      LIGHTBLUE},
+            {OS_TEXT("LIGHTGREEN"),     LIGHTGREEN},
+            {OS_TEXT("LIGHTCYAN"),      LIGHTCYAN},
+            {OS_TEXT("LIGHTRED"),       LIGHTRED},
+            {OS_TEXT("LIGHTMAGENTA"),   LIGHTMAGENTA},
+            {OS_TEXT("YELLOW"),         YELLOW},
+            {OS_TEXT("WHITE"),          WHITE},
+            {}
+        };
 
-    // Color codes
-    OS::NumberDef colorCodes[] = {
-        {OS_TEXT("BLACK"),          BLACK},
-        {OS_TEXT("BLUE"),           BLUE},
-        {OS_TEXT("GREEN"),          GREEN},
-        {OS_TEXT("CYAN"),           CYAN},
-        {OS_TEXT("RED"),            RED},
-        {OS_TEXT("MAGENTA"),        MAGENTA},
-        {OS_TEXT("BROWN"),          BROWN},
-        {OS_TEXT("GREY"),           GREY},
-        {OS_TEXT("DARKGREY"),       DARKGREY},
-        {OS_TEXT("LIGHTBLUE"),      LIGHTBLUE},
-        {OS_TEXT("LIGHTGREEN"),     LIGHTGREEN},
-        {OS_TEXT("LIGHTCYAN"),      LIGHTCYAN},
-        {OS_TEXT("LIGHTRED"),       LIGHTRED},
-        {OS_TEXT("LIGHTMAGENTA"),   LIGHTMAGENTA},
-        {OS_TEXT("YELLOW"),         YELLOW},
-        {OS_TEXT("WHITE"),          WHITE},
-        {}
-    };
+        os->getModule("$");
+        int dollar = os->getAbsoluteOffs(-1);
 
-    os->getModule("$");
-    int dollar = os->getAbsoluteOffs(-1);
+        // Console funcs
+        os->setFuncs(consoleFuncs);
 
-    // Console funcs
-    os->setFuncs(consoleFuncs);
+        // Cursor funcs
+        os->newObject();
+            os->setFuncs(cursorFuncs);
+        os->setProperty(dollar, "Cursor");
 
-    // Cursor funcs
-    os->newObject();
-        os->setFuncs(cursorFuncs);
-    os->setProperty(dollar, "Cursor");
+        // Keyboard props
+        os->newObject();
+            os->setNumbers(keyboardKeys);
+        os->setProperty(dollar, "Keyboard");
 
-    // Keyboard props
-    os->newObject();
-        os->setNumbers(keyboardKeys);
-    os->setProperty(dollar, "Keyboard");
+        // Color codes
+        os->newObject();
+            os->setNumbers(colorCodes);
+        os->setProperty(dollar, "Colors");
 
-    // Color codes
-    os->newObject();
-        os->setNumbers(colorCodes);
-    os->setProperty(dollar, "Colors");
-
-    os->pop();
-    return true;
-}
-ICETEA_MODULE(Console, extendDollar);
+        os->pop();
+        return true;
+    }
+    string getName() {
+        return "Console";
+    }
+    string getDescription() {
+        return  "Provides console-level access for IceTea.\n"
+                "It allows you to run all functions provided by rlutil (https://github.com/tapio/rlutil)!\n"
+                "That includes:\n"
+                "- Hiding/Showing the cursor\n"
+                "- Obtaining keyboard input (Useful for interactive configures)\n"
+                "- Colorizing the text\n"
+                "- Sleeping execution with msleep()";
+    }
+};
+ICETEA_INTERNAL_MODULE(IceTeaConsole);

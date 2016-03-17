@@ -1178,7 +1178,7 @@ detect = detect + {
 
     // Use the C/C++/ObjC/ObjC++ preprocessor.
     transform: function(inFile, outFile){
-        outFile = outFile || pfs.basename(inFile);
+        outFile = outFile || pfs.basename(inFile); // strips .in...in an evil way.
         @info "Transforming: ${inFile} -> ${outFile}"
         var c = compileFile(inFile);
         var output = Buffer();
