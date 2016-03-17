@@ -9,6 +9,7 @@ class IceTea;
 
 class IceTeaPlugin {
 public:
+    virtual ~IceTeaPlugin() {};
     virtual bool configure(IceTea*)  =0;
     virtual std::string getName()  =0;
     virtual std::string getDescription() =0;
