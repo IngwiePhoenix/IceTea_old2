@@ -1,3 +1,5 @@
+require "./ext/Extensions.it";
+
 function isDarwin() {
     return @{
         var s,e,o = $("uname");
@@ -7,7 +9,7 @@ function isDarwin() {
 
 target("icetea", "exe") {
     title: "IceTea",
-    needs: ["icetea-scripts"],
+    needs: ["icetea-scripts"] + IceTeaInternal.getExtensions(),
     input: pfs.glob("src", "*.cpp"),
     init: function() {
         cli.group "IceTea"
@@ -61,14 +63,20 @@ target("icetea", "exe") {
         },
         LINK: {
             libraries: [],
-            flags: (!DEBUG && sys.type == "unix" && isDarwin ? [
+            flags: (!DEBUG && sys.type == "unix" && isDarwin() ? [
                 // OS X: Strip dead symbols.
                 "-dead_strip"
             ] : []) + (sys.type == "unix" ? [
                 // UNIX: Use -pthread - for now.
                 // FIXME: Teach detect to check for the proper flag to use pThreads.
                 "-pthread"
-            ] : [])
+            ] : []) + (isDarwin() ? [
+                // OS X: -all_load must be used due to the plugin architecture...oddly.
+                "-all_load"
+            ] : (sys.type == "unix" ? [
+                // UNIX: --whole-archive ; fingers crossed.
+                "--whole-archive"
+            ] : []))
         }
     },
 }

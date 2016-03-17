@@ -1,0 +1,33 @@
+// All that this file does is to include all the various extensions.
+//
+// Rules:
+// - Each extension is in one folder.
+// - Extensions should be as small as possible, following the IceTea philosophy.
+// - Every extension's build file has the same name as it's folder.
+// - Every extension that wants to make it into IceTea has to define a target,
+// - ...and add itself via IceTeaInternal.addExtension(name)
+
+IceTeaInternal = extends Object {
+    __names: [],
+    addExtension: function(name) {
+        @__names[] = name;
+    },
+    getExtensions: function() {
+        return @__names;
+    },
+    CommonSettings: {
+        CXX: {
+            includeDirs: [
+                pfs.join(__DIR__, "../src")
+            ]
+        },
+        LINK: {
+            flags: ["--whole-archive"]
+        }
+    }
+}
+
+var exts = pfs.getDirList(__DIR__);
+for(var _,ext in exts) {
+    require("./${ext}/${ext}.it");
+}
