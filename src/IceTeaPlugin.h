@@ -12,6 +12,9 @@ public:
     virtual bool configure(IceTea*)  =0;
     virtual std::string getName()  =0;
     virtual std::string getDescription() =0;
+    // Missing:
+    // - getVersion()
+    // - getIdentifier() to check via IceTea.isPluginLoaded(...)
 };
 
 PLUMA_PROVIDER_HEADER(IceTeaPlugin);

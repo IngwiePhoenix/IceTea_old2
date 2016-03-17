@@ -1,0 +1,38 @@
+var minihttp_dir = pfs.join(__DIR__, "../deps/minihttp");
+
+target("minihttp", "lib") {
+    input: [pfs.join(
+        minihttp_dir,
+        "minihttp.cpp"
+    )],
+    needs: [],
+    init: function() {
+        cli.group "minihttp: Tiny HTTP(S) client with mbedTLS support"
+        cli.insert {
+            longopt: "--no-ssl",
+            desc: "Build minihttp without SSL support (will use included mbedTLS otherwise)"
+        }
+    },
+    configure: function() {
+        if(!cli.check("--no-ssl")) {
+            @needs[] = "mbedtls";
+            @settings.CXX.defines[] = "MINIHTTP_USE_MBEDTLS";
+        }
+
+        if(sys.type == "windows") {
+            @settings.LINK.libraries[] = "ws2_32";
+        }
+
+        // Export everything.
+        @exports = @settings;
+    },
+    settings: {
+        CXX: {
+            includeDirs: [minihttp_dir],
+            defines: []
+        },
+        LINK: {
+            libraries: []
+        }
+    }
+}

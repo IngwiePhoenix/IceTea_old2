@@ -1,0 +1,282 @@
+var mbedtls_dir = pfs.join(__DIR__, "../deps/mbedtls");
+
+target("mbedtls", "lib") {
+    input: pfs.glob(
+        pfs.join(mbedtls_dir, "library"),
+        "*.c"
+    ),
+    init: function(){
+        cli.group "mbedTLS"
+        detect.enable(
+            "pkcs11-helper",
+            "Build mbed TLS with the pkcs11-helper library."
+        );
+        detect.enable(
+            "mbedtls-zlib-support",
+            "Build mbed TLS with zlib library."
+        );
+        cli.insert {
+            longopt: "--mbedtls-profile",
+            arg: "<profile>",
+            desc: "Select profile: Release, Debug, Coverage, ASan, ASanDbg, MemSan, MemSanDbg, Check, CheckFull",
+            default: "Release"
+        };
+        cli.insert {
+            longopt: "--mbedtls-explicit-pthread",
+            desc: "Explicitly link to pthread",
+            arg: "<on|off>",
+            default: "off"
+        }
+    },
+    configure: function() {
+        function isCCompiler(type, name) {
+            // TODO: I might need regex support for this.
+            var found = detect.findCompiler("CC");
+            detect.line "Is this C Compiler: ${name}?";
+            if(found) {
+                var cc = detect.toolCache.CC; // C Compiler
+                var name = pfs.basename(cc);
+                if(
+                    // Direct comparsion
+                    name == type
+                    // gcc-N
+                    || wildcard.match("${type}-*", name)
+                    // arch-gcc
+                    || wildcard.match("*-${type}", name)
+                    // arch-gcc-N
+                    || wildcard.match("*-${type}-*", name)
+                ) {
+                    detect.success "Yes."
+                    return true;
+                } else {
+                    detect.fail "No."
+                    return false;
+                }
+            } else {
+                throw "No C compiler available!";
+            }
+        }
+        // Porting offical CMakeLists...
+        var COMPILER_IS_GNUCC = isCCompiler("gcc", "GNU CC");
+        var COMPILER_IS_CLANG = isCCompiler("clang", "Clang");
+        var COMPILER_IS_MSVC = isCCompiler("cl", "MSVC");
+        if(COMPILER_IS_GNUCC) {
+            var cc = detect.toolCache.CC;
+            var spawned, exitCode, streams
+                = $("${cc} -dumpversion");
+            var version = streams[1].trim().split(".");
+            if(Number(version[0]) == 4) {
+                var minor = Number(version[1]);
+                if(minor <= 5) {
+                    @settings.CC.flags[] = "-Wlogical-op";
+                }
+                if(minor <= 8) {
+                    @settings.CC.flags[] = "-Wshadow";
+                }
+                // TODO: Proper "build type" support.
+                switch(cli.value("--mbedtls-profile")) {
+                    case "Release":
+                        @settings.CC.optimize = 2;
+                    break;
+                    case "Debug":
+                        @settings.CC.optimize = 0;
+                        @settings.CC.shouldDebug = true;
+                        @settings.CC.flags[] = "-g3";
+                    break;
+                    case "Coverage":
+                        @settings.CC.optimize = 0;
+                        @settings.CC.shouldDebug = true;
+                        @settings.CC.flags += ["-g3", "-coverage"];
+                    break;
+                    case "ASan":
+                        @settings.CC.allErrors = true;
+                        @settings.CC.optimize = 3;
+                        @settings.CC.flags += [
+                            "-fsanitize=address",
+                            "-fno-common"
+                        ];
+                    break;
+                    case "ASanDbg":
+                        @settings.CC.allErrors = true;
+                        @settings.CC.shouldDebug = true;
+                        @settings.CC.optimize = 3;
+                        @settings.CC.flags += [
+                            "-fsanitize=address",
+                            "-fno-common",
+                            "-g3",
+                            "-fno-omit-frame-pointer",
+                            "-fno-optimize-sibling-calls"
+                        ];
+                    break;
+                    case "Check":
+                        @settings.CC.allErrors = true;
+                        @settings.CC.optimize = "size";
+                    break;
+                    case "CheckAll":
+                        @settings.CC.warnings[] = "cast-qual";
+                    break;
+                    default:
+                        throw "Invalid profile! ${cli.value('--mbedtls-profile')}"
+                }
+            }
+        } else if(COMPILER_IS_CLANG) {
+            @settings.CC.flags[] = "-W";
+            @settings.CC.warnings += [
+                "all", "extra", "declaration-after-statement", "write-strings",
+                "pointer-arith", "implicit-fallthrough", "shadow"
+            ];
+            switch(cli.value("--mbedtls-profile")) {
+                case "Release":
+                    @settings.CC.optimize = 2;
+                break;
+                case "Debug":
+                    @settings.CC.optimize = 0;
+                    @settings.CC.shouldDebug = true;
+                    @settings.CC.flags[] = "-g3";
+                break;
+                case "Coverage":
+                    @settings.CC.optimize = 0;
+                    @settings.CC.shouldDebug = true;
+                    @settings.CC.flags += ["-g3", "-coverage"];
+                break;
+                case "ASan":
+                    @settings.CC.allErrors = true;
+                    @settings.CC.optimize = 3;
+                    @settings.CC.flags += [
+                        "-fsanitize=address",
+                        "-fno-common",
+                        "-fsanitize=undefined",
+                        "-fno-sanitize-recover"
+                    ];
+                break;
+                case "ASanDbg":
+                    @settings.CC.allErrors = true;
+                    @settings.CC.shouldDebug = true;
+                    @settings.CC.optimize = 3;
+                    @settings.CC.flags += [
+                        "-fsanitize=address",
+                        "-fno-common",
+                        "-fsanitize=undefined",
+                        "-fno-sanitize-recover",
+                        "-g3",
+                        "-fno-omit-frame-pointer",
+                        "-fno-optimize-sibling-calls"
+                    ];
+                break;
+                case "MemSan":
+                    @settings.CC.allErrors = true;
+                    @settings.CC.optimize = 3;
+                    @settings.CC.flags[] = "-fsanitize=memory";
+                break;
+                case "MemSanDbg":
+                    @settings.CC.allErrors = true;
+                    @settings.CC.optimize = 1;
+                    @settings.CC.flags += [
+                        "-fsanitize=memory",
+                        "-fno-omit-frame-pointer",
+                        "-fno-optimize-sibling-calls",
+                        "-fsanitize-memory-track-origins=2"
+                    ];
+                break;
+                case "Check":
+                    @settings.CC.allErrors = true;
+                    @settings.CC.optimize = "size";
+                break;
+                case "CheckAll":
+                    @settings.CC.warnings[] = "cast-qual";
+                break;
+                default:
+                    throw "Invalid profile! ${cli.value('--mbedtls-profile')}"
+            }
+        } else if(COMPILER_IS_MSVC) {
+            if(cli.value("--mbedtls-profile") == "Check") {
+                @settings.CC.allErrors = true;
+             }
+        }
+        if(cli.value("--mbedtls-profile") == "Coverage") {
+            if(COMPILER_IS_GNUCC || COMPILER_IS_CLANG) {
+                @settings.LINK.flags[] = "--coverage";
+            }
+        }
+
+        // Zlib
+        if(detect.isWith("mbedtls-zlib-support")) {
+            var zInIceTea =
+                IceTea.tag("libz").length > 0
+                || IceTea.tag("zlib").length > 0;
+            var hasZ =
+                // Maybe zlib is already a target?
+                zInIceTea
+                // Default from system
+                || detect.lib("z");
+            if(zInIceTea) {
+                // Try to import an existing target.
+                @needs += []
+                    + IceTea.tag("libz")
+                    + IceTea.tag("zlib");
+            } else {
+                // Just link to it the usual way.
+                @settings.LINK.libraries[] = "z";
+            }
+        }
+
+        // library/CMakeLists.txt
+        if(COMPILER_IS_GNUCC) {
+            @settings.CC.warnings += [
+                "missing-declarations",
+                "missing-prototypes"
+            ];
+        }
+        if(COMPILER_IS_CLANG) {
+            @settings.CC.warnings += [
+                "missing-declarations",
+                "missing-prototypes",
+                "documentation",
+                "no-documentation-deprecated-sync",
+                "unreachable-code"
+            ];
+        }
+        if(sys.type == "windows") {
+            @settings.LINK.libraries[] = "ws2_32";
+        }
+        if(detect.enabled("pkcs11-helper")) {
+            @settings.LINK.libraries[] = "pkcs11-helper";
+        }
+        if(cli.value("--mbedtls-explicit-pthread") == "on") {
+            var pthread = detect.lib("pthread");
+            if(!pthread) {
+                detect.abort "Pthread not found!"
+                throw "Error"
+            } else {
+                @settings.LINK.libraries[] = "pthread";
+            }
+        }
+    },
+    settings: {
+        native: {
+            includeDirs: [
+                pfs.join(mbedtls_dir, "include"),
+                pfs.join(mbedtls_dir, "library")
+            ]
+        },
+        CC: {
+            flags: [],
+            warnings: []
+        },
+        LINK: {
+            libraries: []
+        }
+    },
+    exports: {
+        native: {
+            includeDirs: [pfs.join(mbedtls_dir, "include")]
+        }
+    },
+    // TODO: Install step
+    install: {
+        native_headers: pfs.glob(
+            pfs.join(mbedtls_dir, "include"),
+            "*.h"
+        )
+    }
+}
