@@ -538,7 +538,7 @@ detect = detect + {
 
     _hasReported: {},
     findCompiler: function(kind) {
-        if(!(kind in @_hasReported)) @line "Looking for a ${@nameMap[kind]} compiler...";
+        if(!(kind in @_hasReported)) @line "Looking for a ${@nameMap[kind]} (${kind}) compiler...";
         // Make a list...
         var compilerCollection = detect.Compilers;
         if(IceTea.searchWin32()) {
