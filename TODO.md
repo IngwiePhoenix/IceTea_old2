@@ -28,7 +28,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Should allow some options to be set for output folder, etc... Maybe use a Profile kinda thing?
 - [X] Better Windows linker support / flag passing / warning handling.
 - [X] Implement a `build(Array)` method to allow scripted builds (i.e. from within a function, add tasks to the queue.)
-- [ ] Make rules able to depend upon targets also.
+- [X] Make rules able to depend upon targets also.
 - [X] Let targets finalize themselves (i.e. copy resulting binary to root folder - or link it at least)
 
 ### Added 25th Dec. 2014, 1.27PM
@@ -86,6 +86,7 @@ I have set up myself to make an awesome build tool. But as each project's nature
     - Get extra settings in or trigger other configure steps.
 - [Never] Build the same target for multiple rules. I.e. as shared and static library.
     - This might result in chaos. Rather, just copy the input object to multiple targets.
+    - Or just depend on the parent as a lirary and go from there.
 - [X] Write proper process classes. `$()` is nice, but more complex classes are needed.
     - `SubProcess`: Pass`{async:}` with either `true` or `false`.
     - `shell` will not be affected by this. It uses an entirely different routine anyway.
@@ -131,3 +132,16 @@ I have set up myself to make an awesome build tool. But as each project's nature
 ### Added 17th March 2016, 7:09am
 - [ ] Default paths for Pluma based plugins
 - [ ] Introduce "install" step for IceTea!
+### Later that day
+- [New concept] Flag targets, allowing them to:
+    - Specify the kind of tooling they want. (Native, Emscripten, Cheerp, ...)
+    - Give steps the ability to be not applied. Even if the pattern matches, but a flag is not set, dont use it.
+- [ ] Recursive dependency traversal. Ouch.
+    - Target A depends on B, which depends on C.
+    - Merge C into B, into A.
+
+### Added 17th March 2016, 7:09am
+- [-] Add compiler `-target` support.
+    - Might not work on Windows.
+    - Will allow for stuff like Cheerp to work.
+    * Partially implemented when Toolchains become a thing. Just use an extra flag.
