@@ -1183,20 +1183,22 @@ detect = detect + {
     transform: function(inFile, outFile){
         outFile = outFile || pfs.basename(inFile); // strips .in...in an evil way.
         @info "Transforming: ${inFile} -> ${outFile}"
-        var c = compileFile(inFile);
+        var c = compileFile(inFile, true, SOURCECODE_TEMPLATE, true);
         var output = Buffer();
-        c.callEnv({
-            echo: {|str| output.append(str); }
-        }, _G);
+        var _echo = _G.echo;
+        _G.echo = output.append.bind(output);
+        c();
+        _G.echo = _echo;
         return File.writeWhole(toString(output), outFile);
     },
     transformInline: function(str, env){
         env = env || {};
-        var c = compileString(str);
+        var c = compileText(str, SOURCECODE_TEMPLATE);
         var output = Buffer();
-        c.callEnv(env + {
-            echo: {|str| output.append(str); }
-        }, _G);
+        var _echo = _G.echo;
+        _G.echo = output.append.bind(output);
+        c();
+        _G.echo = _echo;
         return toString(output);
     },
 
