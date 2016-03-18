@@ -9,7 +9,7 @@ function isDarwin() {
 
 target("icetea", "exe") {
     title: "IceTea",
-    needs: ["icetea-scripts"] + IceTeaInternal.getExtensions(),
+    needs: ["icetea-scripts"],
     input: pfs.glob("src", "*.cpp"),
     init: function() {
         cli.group "IceTea"
@@ -61,6 +61,12 @@ target("icetea", "exe") {
         // TODO: Generate plugin listing and load that, instead of this.
         if(detect.tryCompilerFlag("-all_load", "CXX")) {
             @settings.LINK.flags[] = "-all_load";
+        }
+
+        var exts = IceTeaInternal.getExtensions();
+        for(var _,ext in exts) {
+            var extName = "icetea-${ext}";
+            @needs[] = extName;
         }
 
         return true;
