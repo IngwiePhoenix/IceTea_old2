@@ -23,30 +23,45 @@ target("icetea", "exe") {
         };
     },
     configure: function() {
-        echo detect.out .. "Do we want to optimize IceTea (aka. release build)?";
+        detect.line "Do we want to optimize IceTea (aka. release build)?";
         if(DEBUG && cli.check("--it-optimize")) {
-            print " Can not optimize on debug build."
+            detect.fail "Can not optimize on debug build."
         } else if(!DEBUG && cli.check("--it-optimize")) {
-            print " Yes.";
+            detect.success "Yes.";
+            @settings.CXX.optimization = "size";
             if(sys.type == "unix") {
-                @settings.CXX.optimization = "size";
-                if(isDarwin()) {
-                    // FIXME: Are they OS X only, and could we possibly use them on *NIX?
-                    @settings.CXX.flags += [
-                        "-ffunction-sections",
-                        "-fdata-sections"
-                    ];
+                for(var _,flag in [
+                    "-ffunction-sections",
+                    "-fdata-sections",
+                    "-dead_strip"
+                ]) {
+                    if(detect.tryCompilerFlag(flag, "CXX")) {
+                        @settings.LINK.flags[] = flag;
+                    }
                 }
             }
         } else {
-            print " No."
+            detect.status "No."
         }
 
         if(detect.lib("dl")) {
             @settings.LINK.libraries[] = "dl";
         }
 
-        @settings.CXX.shouldDebug = (DEBUG || cli.check("--minihttp-debug"));
+        @settings.CXX.shouldDebug = (DEBUG || cli.check("--it-debug"));
+
+        if(detect.lib("pthread")) {
+            @settings.LINK.libraries[] = "pthread";
+        } else if(detect.lib("pthreads")) {
+            @settings.LINK.libraries[] = "pthreads";
+        } else if(detect.tryCompilerFlag("-pthread", "CXX")) {
+            @settings.LINK.flags[] = "-pthread";
+        }
+
+        // TODO: Generate plugin listing and load that, instead of this.
+        if(detect.tryCompilerFlag("-all_load", "CXX")) {
+            @settings.LINK.flags[] = "-all_load";
+        }
 
         return true;
     },
@@ -70,19 +85,7 @@ target("icetea", "exe") {
         },
         LINK: {
             libraries: [],
-            flags: (!DEBUG && sys.type == "unix" && isDarwin() ? [
-                // OS X: Strip dead symbols.
-                "-dead_strip",
-                "-all_load"
-            ] : []) + (sys.type == "unix" ? [
-                // UNIX: Use -pthread - for now.
-                // FIXME: Teach detect to check for the proper flag to use pThreads.
-                "-pthread"
-            ] : []) + (sys.type == "unix" && !isDarwin() ? [
-                // UNIX: --whole-archive ; fingers crossed.
-                // FIXME: I give up, GCC, you win.
-                //"-Wl,--whole-archive"
-            ] : [])
+            flags: []
         }
     },
 }
