@@ -20,19 +20,45 @@ SettingsContainer = extends Object {
     },
     __getCombined: function(key) {
         debug "${@__name}::__getCombined: ${key}"
-        var start = null;
+        var start = [];
         for(var id,store in @stores) {
-            debug "ID: ${id}"
+            start[id] = null;
             if(key in store) {
-                if(typeOf(start) == "null") {
-                    start = store[key];
+                if(typeOf(start[id]) == "null") {
+                    start[id] = store[key];
                 } else {
-                    var v = store[key];
-                    start += v;
+                    var value = store[key];
+                    if(typeOf(value) == "null") {
+                        continue;
+                    } else if(
+                        __.isArray(value)
+                        || __.isObject(value)
+                    ) {
+                        start[id][] = value;
+                    } else {
+                        // We cant contatenate anything else.
+                        // So we return the first result. o.o
+                        return value;
+                    }
                 }
             }
-            debug "Start: ${start}"
         }
+        var out = null;
+        for(var i,value in start) {
+            if(typeOf(value) == "null") {
+                continue;
+            }
+            if(typeOf(out) == "null") {
+                out = value;
+            } else {
+                if(__.isArray(out)) {
+                    out = [] + out + value;
+                } else if(__.isObject(out)) {
+                    out = {} + out + value;
+                }
+            }
+        }
+        return out;
         debug "--> ${start}"
         return start;
     }
@@ -70,7 +96,6 @@ NativeStep = extends Object {
         var shouldDebug = container.shouldDebug;
 
         pfs.mkdir(pfs.dirname(@out));
-
         @cmd = compiler.buildCommand(
             @in, @out,
             includeDirs, warnings, defines,
