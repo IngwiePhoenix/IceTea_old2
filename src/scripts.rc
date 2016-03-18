@@ -1,9 +1,5 @@
 #include "incbin.h"
-
-#ifdef ICETEA_INCBIN_FORCE_EXTERNAL
-#undef INCBIN
-#define INCBIN(sym, file) INCBIN_EXTERN(sym)
-#endif
+#include "incbin.ext.h"
 
 INCBIN(STD, "lib/std.os");
 INCBIN(Underscore, "lib/underscore.os");
