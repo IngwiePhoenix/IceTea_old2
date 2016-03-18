@@ -448,6 +448,7 @@ IceTea = extends _E {
             }
 
             var target = IceTea.__targets[targetName];
+            var needs = [];
 
             // A rule that exports needs probably wants to do something with it.
             // So we copy it into the target, to sneakily have it build in the normal
@@ -467,7 +468,7 @@ IceTea = extends _E {
             }
 
             // Prepare the dependency object.
-            var needs = "needs" in target ? target.needs : [];
+            needs = "needs" in target ? needs + target.needs : needs;
 
             debug "Are we configuring dependencies? ${needs} (${target})"
             if(typeOf(needs) == "array") {
@@ -476,7 +477,11 @@ IceTea = extends _E {
                     var rt = configureTarget(depName, targetName);
 
                     // If this retuend false, return false.
-                    if(typeOf(rt) == "boolean" && !rt) return rt, depConfigured;
+                    if(typeOf(rt) == "boolean" && !rt) {
+                        detect.line "Configuration of targe ${depName}"
+                        detect.fail "Failed."
+                        return rt;
+                    }
                 }
             }
 
@@ -510,6 +515,7 @@ IceTea = extends _E {
         for(_,tname in targetNames) {
             // Time for some recursion!
             var rt = configureTarget(tname);
+            if(typeOf(rt) == "boolean" && !rt) return rt;
         }
         return true;
     },
@@ -558,6 +564,13 @@ IceTea = extends _E {
         };
         var isColorful = !cli.check("--no-color");
         var reportTarget = function(currentIdx, maxIdx, level, task) {
+            // If the user said --verbose, then we dont actually
+            // need to report. The target will just dump the current build command.
+            // That, in most cases, is more than enough.
+            if(cli.check("--verbose")) {
+                return;
+            }
+            
             // Shorthand:
             var _write = process.stdout.write;
 

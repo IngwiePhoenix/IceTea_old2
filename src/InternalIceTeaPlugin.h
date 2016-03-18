@@ -14,7 +14,7 @@ public:
 
 #define ICETEA_INTERNAL_MODULE(name) \
     ICETEA_MODULE(name) \
-    const class name##InternalPlugin { \
+    volatile class name##InternalPlugin { \
     private: \
         name##Provider* provider; \
     public: \

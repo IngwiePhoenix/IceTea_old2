@@ -1,4 +1,5 @@
 target("incbin", "exe") {
+    title: "IncBin",
     input: ["deps/incbin/incbin.c"],
     exports: {
         native: {

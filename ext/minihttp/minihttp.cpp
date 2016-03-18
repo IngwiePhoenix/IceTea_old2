@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 
 #include "InternalIceTeaPlugin.h"
 #include "os-icetea.h" // OS_FUNC
@@ -9,7 +10,7 @@ using namespace std;
 using namespace ObjectScript;
 
 class IceTeaHTTP: public IceTeaPlugin {
-    OS_FUNC(download) {
+    static OS_FUNC(Download) {
         if(params <= 0) {
             os->setException("http::download: Expected parameter 1 to be string.");
             return 0;
@@ -20,7 +21,7 @@ class IceTeaHTTP: public IceTeaPlugin {
         os->pushString(content);
         return 1;
     }
-    OS_FUNC(URLEncode) {
+    static OS_FUNC(URLEncode) {
         if(params <= 0) {
             os->setException("http::URLEncode: Expected parameter 1 to be string.");
             return 0;
@@ -35,6 +36,13 @@ class IceTeaHTTP: public IceTeaPlugin {
     bool configure(IceTea* os) {
         os->getModule("minihttp");
         int minihttpOffs = os->getAbsoluteOffs(-1);
+
+        OS::FuncDef globalFuncs[] = {
+            {OS_TEXT("Download"), Download},
+            {OS_TEXT("URLEncode"), URLEncode},
+            {}
+        };
+        os->setFuncs(globalFuncs);
 
         /*
         OS::NumberDef SSLResult_Nums[] = {

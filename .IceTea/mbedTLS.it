@@ -1,6 +1,7 @@
 var mbedtls_dir = pfs.join(__DIR__, "../deps/mbedtls");
 
 target("mbedtls", "lib") {
+    title: "ARM Ltd. mbedTLS",
     input: pfs.glob(
         pfs.join(mbedtls_dir, "library"),
         "*.c"
@@ -251,6 +252,7 @@ target("mbedtls", "lib") {
                 @settings.LINK.libraries[] = "pthread";
             }
         }
+        return true;
     },
     settings: {
         native: {
