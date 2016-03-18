@@ -53,6 +53,7 @@ target("icetea", "exe") {
     settings: {
         CXX: {
             includeDirs: ["src"],
+            flags: [],
             warnings: (sys.type == "unix" ? [
                 // ObjectScript
                 "no-switch"
