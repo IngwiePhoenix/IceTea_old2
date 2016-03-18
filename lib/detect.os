@@ -1187,7 +1187,7 @@ detect = detect + {
         var output = Buffer();
         var _echo = _G.echo;
         _G.echo = output.append.bind(output);
-        c();
+        c.applyEnv(detect.cache);
         _G.echo = _echo;
         return File.writeWhole(toString(output), outFile);
     },
@@ -1197,7 +1197,7 @@ detect = detect + {
         var output = Buffer();
         var _echo = _G.echo;
         _G.echo = output.append.bind(output);
-        c();
+        c.applyEnv(detect.cache);
         _G.echo = _echo;
         return toString(output);
     },
