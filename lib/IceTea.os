@@ -493,28 +493,42 @@ IceTea = extends _E {
                 }
             }
 
-            if(typeOf(dependsOn) == "string") {
-                // We are being a child, so we should export ourself into parent.
-                var dependant = IceTea.__targets[dependsOn];
-                if(!dependant.hasMergedWith(targetName)) {
-                    if(
-                        "exports" in target
-                        && "settings" in dependant
-                    ) {
-                        debug "Merging exports from ${target.name} into settings of ${dependsOn}"
-                        dependant.settings = dependant.settings + target.exports;
-                    }
-                    dependant.setHasMergedWith(targetName);
-                }
-                debug "Done merging."
-            }
             debug "Done configuring."
             return true;
+        }
+
+        function mergeExports(targetName) {
+            var target = IceTea.__targets[targetName];
+            if("needs" in target) {
+                if(!("settings" in target)) {
+                    target.settings = {};
+                }
+                for(var i,need in target.needs) {
+                    var dep = IceTea.__targets[need];
+                    if(!target.hasMergedWith(need)) {
+                        if("exports" in dep) {
+                            target.settings += dep.exports;
+                            if("needs" in dep) {
+                                // Also inherit the needs,
+                                // so that sub-needs are carried over.
+                                // Very needy, mhm!
+                                target.needs += dep.needs;
+                            }
+                        }
+                        target.setHasMergedWith(need);
+                    }
+                }
+                // Second run: Now do the children...
+                for(var i,need in target.needs) {
+                    mergeExports(need);
+                }
+            }
         }
 
         for(_,tname in targetNames) {
             // Time for some recursion!
             var rt = configureTarget(tname);
+            mergeExports(tname);
             if(typeOf(rt) == "boolean" && !rt) return rt;
         }
         return true;
@@ -570,7 +584,7 @@ IceTea = extends _E {
             if(cli.check("--verbose")) {
                 return;
             }
-            
+
             // Shorthand:
             var _write = process.stdout.write;
 
