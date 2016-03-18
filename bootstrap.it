@@ -78,6 +78,8 @@ NativeStep = extends Object {
             false, shouldDebug, allErrors
         );
         debug "$ ${@cmd}"
+        if(cli.check("--verbose")) print @cmd;
+
         // Let the fun begin! :P
         @runner = SubProcess({async: true});
         @spawned = @runner.execute(@cmd);
@@ -170,7 +172,10 @@ rule("exe", "Executable") {
             libraries, libraryDirs,
             flags, false, false
         );
+
         debug "$ ${@cmd}"
+        if(cli.check("--verbose")) print @cmd;
+
         // Let the fun begin! :P
         @runner = SubProcess({async: true});
         @spawned = @runner.execute(@cmd);

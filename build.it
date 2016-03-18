@@ -16,7 +16,11 @@ target("icetea", "exe") {
         cli.insert {
             longopt: "--it-optimize",
             desc: "Run optimizations when compiling."
-        }
+        };
+        cli.insert {
+            longopt: "--it-debug",
+            desc: "Build IceTea with debug symbols enabled."
+        };
     },
     configure: function() {
         echo detect.out .. "Do we want to optimize IceTea (aka. release build)?";
@@ -42,6 +46,8 @@ target("icetea", "exe") {
             @settings.LINK.libraries[] = "dl";
         }
 
+        @settings.CXX.shouldDebug = (DEBUG || cli.check("--minihttp-debug"));
+
         return true;
     },
     settings: {
@@ -65,19 +71,17 @@ target("icetea", "exe") {
             libraries: [],
             flags: (!DEBUG && sys.type == "unix" && isDarwin() ? [
                 // OS X: Strip dead symbols.
-                "-dead_strip"
+                "-dead_strip",
+                "-all_load"
             ] : []) + (sys.type == "unix" ? [
                 // UNIX: Use -pthread - for now.
                 // FIXME: Teach detect to check for the proper flag to use pThreads.
                 "-pthread"
-            ] : []) + (isDarwin() ? [
-                // OS X: -all_load must be used due to the plugin architecture...oddly.
-                "-all_load"
-            ] : (sys.type == "unix" ? [
+            ] : []) + (sys.type == "unix" && !isDarwin() ? [
                 // UNIX: --whole-archive ; fingers crossed.
                 // FIXME: I give up, GCC, you win.
                 //"-Wl,--whole-archive"
-            ] : []))
+            ] : [])
         }
     },
 }
