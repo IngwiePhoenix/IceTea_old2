@@ -52,6 +52,15 @@ function String.__add(operand) {
     return newThis;
 }
 
+// Implement .bind:
+function Function.bind(to) {
+    var self = this;
+    return function() {
+        self.apply(to, ...);
+    }
+}
+
+// Extension for $
 $.__instantiable = true;
 $.__newinstance = function(cmd) {
     var p = SubProcess({async: false});
