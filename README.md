@@ -40,6 +40,18 @@ Windows:
     > incbin src/scripts.rc -o scripts.cpp
     > cl /EHsc src/*.cpp scripts.cpp /Feicetea
 
+### A note about Emscripten
+Yes, IceTea can theoretically be built with Emscripten. Unfortunately, it can't build anything yet due to missing `fork()` support. I will have to code a lot of inline-javascript and utilize `child_process.execSync` or other things in order to get execution going. It won't be easy, but if you want to help me port STLPlus' `SubProcess` classes to support Emscripten, then please let me know!
+
+You can, however, build it as a PoC and run ObjectScript scripts. Do it so:
+
+    $ gcc -I dep/incbin dep/incbin/incbin.c -o incbin
+    $ ./incbin -o scripts.c src/scripts.rc
+    $ emcc scripts.c src/*.cpp -DICETEA_INCBIN_FORCE_EXTERNAL -DOS_EMSCRIPTEN -Wno-switch -o icetea.js
+
+I still need to find a good way to teach `incbin` how to best work on Emscripten... :)
+
+
 ### Note!
 In order for the files to resolve correctly, make sure you navigated into the IceTea folder first. If you are using another program to run this, make sure to set the CWD of that of the IceTea root. For instance, you can pull down and start building like so:
 

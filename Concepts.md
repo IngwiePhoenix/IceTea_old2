@@ -403,3 +403,43 @@ target("mylib", "shlib") {
     }
 }
 ```
+
+## NodeJS integration
+Emscripten is neat. In fact, IceTea can now almost compile in it too! The only problem: Well, there is no `fork()`.
+
+I want to distribute IceTea in JS format to NPM and use it as the build script to build itself.
+```json
+{
+    "name": "icetea",
+    "version": "0.2.0",
+    "main": "js-lib/main",
+    "scripts": {
+        "build": "node dist/icetea.js node",
+        "pre-publish": "node build.js --dist"
+    }
+}
+```
+
+Then we could expose an actual NodeJS API to utilize IceTea as a build tool for..well, whatever! Use IceTea as the build engine, but write your stuff in JavaScript/ObjectScript... huh, interesting, no? Just think about it; you could provide plugins to IceTea, extending it a lot. We'd expose the IceTea class, which is an ObjectScript instance...aaaand would allow this:
+
+```javascript
+var IceTea = require("icetea");
+var it = IceTea.create();
+
+// Setup argc/argv
+it.setupCli(
+    process.argv.length,
+    process.argv
+);
+
+// Export a function.
+function Foo(it) {
+    it.pushString("bar");
+    return 1;
+}
+it.getModule("jS");
+it.pushJSFunction(Foo);
+it.setProperty(-2, "Foo");
+
+it.eval("JS.Foo()");
+```

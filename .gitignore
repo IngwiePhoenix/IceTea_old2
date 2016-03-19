@@ -1,7 +1,8 @@
 /*.os
-src/os-scripts.cpp
+/src/os-scripts.cpp
 /icetea
-*.dSYM
-./config.h
+/*.dSYM
+/config.h
 out/
-*.json
+/icetea.js
+/incbin
