@@ -412,11 +412,16 @@ IceTea = extends _E {
         @note This should actually change depending on specified actions...
     */
     Initializer: function() {
+        debug "Starting Initializer..."
         for(name,target in IceTea.__targets) {
             if(typeOf(target.init) == "function") {
+                debug "Initializing: ${target.name}"
                 var rt = target.init();
                 // Returning false halts the initialization, thus cancels anything else.
-                if(typeOf(rt) == "boolean" && !rt) return rt;
+                if(typeOf(rt) == "boolean" && !rt) {
+                    debug "Failed!"
+                    return rt;
+                }
             }
         }
         // Re-parse the CLI.
@@ -900,9 +905,13 @@ IceTea = extends _E {
 
     events: {
         beforeInitialize: function() {
+            debug "Initializing on: ${__sourcedir}"
             var fullPath = pfs.join(__sourcedir, ".IceTea");
             if(pfs.isPresent(fullPath)) {
+                debug "Attaching ${fullPath}"
                 require.paths.push(fullPath);
+            } else {
+                debug "Not attaching ${fullPath}"
             }
 
             var moduleFolder = "icetea_modules";

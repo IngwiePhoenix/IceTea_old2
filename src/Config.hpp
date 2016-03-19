@@ -53,7 +53,7 @@
         #define NOMINMAX
     #endif
 
-#elif defined(linux) || defined(__linux)
+#elif defined(linux) || defined(__linux) || defined(EMSCRIPTEN)
 
     // Linux
     #define PLUMA_SYS_LINUX

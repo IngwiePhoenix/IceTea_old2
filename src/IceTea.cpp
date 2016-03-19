@@ -280,14 +280,16 @@ IceTea* IceTea::setupCli(int argc, const char** argv) {
     }
 
     // Generic
+    string CWD = folder_current_full();
     OS::StringDef strs[] = {
         {OS_TEXT("__buildit"),     OS_TEXT(buildit.c_str())},
         {OS_TEXT("__bootstrapit"), OS_TEXT(bootstrapit.c_str())},
         {OS_TEXT("__outputdir"),   OS_TEXT(outputDir.c_str())},
         {OS_TEXT("__cachefile"),   OS_TEXT(cacheFile.c_str())},
-        {OS_TEXT("__sourcedir"),   OS_TEXT(folder_current_full().c_str())},
+        {OS_TEXT("__sourcedir"),   OS_TEXT(CWD.c_str())},
         {}
     };
+
     this->pushGlobals();
     this->setStrings(strs);
     this->pop();
@@ -446,6 +448,14 @@ int IceTea::run() {
     // Return code tracker
     int rt = 0;
 
+    // Startup notice
+    stringstream ss;
+    ss  << "Starting up. CWD: "
+        << folder_current_full()
+        << " : "
+        << folder_current();
+    this->printDebug(ss.str());
+
     // Setup everything.
     if(!this->startup()) {
         this->printDebug("Startup failed.");
@@ -453,6 +463,7 @@ int IceTea::run() {
     }
 
     // Initialize all the targets, rules, actions, and possibly more.
+    this->printDebug("Calling IceTea.Initializer...");
     callObjectFunction(this, "IceTea", "Initializer", 0, 0, false);
     if(this->hasEndedExecuting(rt)) {
         this->printDebug("Initializer failed.");

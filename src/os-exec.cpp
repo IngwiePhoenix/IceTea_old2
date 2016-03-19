@@ -6,6 +6,8 @@
 #include "subprocesses.hpp"
 #include "InternalIceTeaPlugin.h"
 
+#include "icetea-emscripten.h"
+
 using namespace std;
 using namespace ObjectScript;
 using namespace stlplus;
