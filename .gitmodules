@@ -11,3 +11,6 @@
 	path = deps/minihttp
 	url = https://github.com/fgenesis/minihttp.git
 	branch = ssl
+[submodule "deps/curl"]
+	path = deps/curl
+	url = https://github.com/curl/curl.git
