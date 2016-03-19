@@ -2,6 +2,6 @@
 src/os-scripts.cpp
 /icetea
 *.dSYM
-config.h
+./config.h
 out/
 *.json
