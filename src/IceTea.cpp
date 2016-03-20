@@ -185,6 +185,7 @@ bool IceTea::initializeModules() {
         _s("IceTea.os", libIceTea),
         _s("detect.os", Detector),
         _s("detect.utils.os", DetectorUtils),
+        _s("autoconf.os", Autoconf),
         {}
     };
     ScriptMap_t* list = &scripts[0];

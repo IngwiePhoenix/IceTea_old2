@@ -103,6 +103,7 @@ target("icetea-scripts","incbin") {
         Underscore:             "lib/underscore.os",
         Configurable:           "lib/configurable.os",
         Detector:               "lib/detect.os",
+        Autoconf:               "lib/autoconf.os",
         DetectorUtils:          "lib/detect.utils.os",
         libIceTea:              "lib/IceTea.os",
         InternalBootstrapIt:    "bootstrap.it"
