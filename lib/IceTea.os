@@ -96,6 +96,15 @@ IceTea = extends _E {
         }
         IceTea.__targets[name] = IceTea.Target(name, ruleObj, targetOpts);
     },
+    hasTarget: function(name) {
+        // future-proof API for testing a target.
+        // If I extend IceTea, I can just update this function, and I'd be done!
+        if(name in Icetea.__targets) {
+            return true;
+        } else {
+            return false;
+        }
+    },
 
     // Display the steps in a container.
     dumpSteps: function(container) {

@@ -431,6 +431,21 @@ detect = detect + {
         return toBoolean(val); // 0=false, 1=true, "abc"=true, ...
     },
 
+    // Settings object.
+    // Simplified in comparsion to the others.
+    settings: {
+        // This source is always added before any test.
+        // The configuring target should not pollute this,
+        // but if it does, should clean it after it'S done.
+        preSource:      "",
+
+        defines:        [],
+        flags:          [],
+        libraries:      [],
+        linkFlags:      [],
+        includeDirs:    []
+    },
+
     kindMap = extends _E {
         ASM: ["asm"],
         CC: ["c", "cc"],
@@ -682,6 +697,7 @@ detect = detect + {
         }
 
         var src_c = [
+            @settings.preSource,
             "#include <${header}>",
             "int main(int argc, char** argv) {",
             "   return 0;",
@@ -694,6 +710,43 @@ detect = detect + {
             return true;
         } else {
             @fail "Not found.";
+            @cache[cacheKey] = "0";
+            return false;
+        }
+    },
+    macro: function(macro, name) {
+        name = name || "c";
+        var kind = @name2kind(name);
+        name = @kind2name(kind);
+        var src = [
+            @settings.preSource,
+            "int main(int argc, char** argv) {  ",
+            "   #ifdef ${macro}                 ",
+            "       return 1                    ",
+            "   #else                           ",
+            "       return 2                    ",
+            "   #endif                          ",
+            "}                                  "
+        ];
+        @line "Checking if ${name} macro ${macro} is defined"
+
+        var cacheKey = @haveMacro(macro);
+        if(cacheKey in @cache) {
+            if(@truthyCache(cacheKey)) {
+                @success "Yes. (Cached)"
+                return true;
+            } else {
+                @fail "No. (Cached)"
+                return false;
+            }
+        }
+        // Try to build. On success, true.
+        if(@tryCompile(src_c, kind, runArgs)) {
+            @success "Yes.";
+            @cache[cacheKey] = "1";
+            return true;
+        } else {
+            @fail "NO.";
             @cache[cacheKey] = "0";
             return false;
         }
@@ -739,6 +792,7 @@ detect = detect + {
         @findCompiler(kind);
         @line "Checking: ${func}(${argStr})...";
         var src = [
+            @settings.preSource,
             "int main(int argc, char** argv){",
             "   ${func}(${argStr});",
             "   return 0;",
@@ -769,6 +823,7 @@ detect = detect + {
         @findCompiler(kind);
         @findLinker();
         var src = [
+            @settings.preSource,
             "// We first need to #def us a means of making a library name.",
             "#ifdef _WIN32",
             "   #include <windows.h>",
@@ -893,6 +948,7 @@ detect = detect + {
         var funcCacheKey = @haveFunc(func);
         @findCompiler(kind);
         var src = [
+            @settings.preSource,
             "#include <${header}>",
             "int main(int argc, char** argv){",
             "   void* fp = (void*)${func};",
@@ -928,6 +984,7 @@ detect = detect + {
             ? "(" .. args.join(", ") .. ")"
             : __.isString(args) ? args : "";
         var src = [
+            @settings.preSource,
             "int main(int argc, char** argv) {",
             "   ${typeName} x" .. argStr .. ";",
             "   return 0;",
@@ -953,6 +1010,56 @@ detect = detect + {
             return false;
         }
     },
+    sizeof: function(typeName, name, headers, runArgs){
+        name = name || "C";
+        var kind = @name2kind(name);
+        @findCompiler(kind);
+        var cacheKey = @haveSizeof(typeName);
+        var headerStr;
+        if(__.isArray(headers)) {
+            var headerStrings = []
+            for(var _,hdr in headers) {
+                headerStrings[] = "#include <${hdr}>";
+            }
+            headerStr = headerStrings.join("\n");
+        } else if(__.isString(headers)) {
+            headerStr = headers;
+        }
+        var src = [
+            @settings.preSource,
+            headerStr,
+            "int main(int argc, char** argv) {",
+            "   return (int)(sizeof(${typeName}));",
+            "}"
+        ].join("\n");
+
+        @line "Checking size of ${name} type ${typeName}...";
+
+        if(cacheKey in @cache) {
+            if(@truthyCache(cacheKey)) {
+                @success "Size: ${@cache[cacheKey]}. (Cached)"
+            } else {
+                @fail "Not available. (Cached)"
+            }
+            return true, @cache[cacheKey];
+        } else {
+            // Abusing the exit code as a size meter...
+            // I know, I should probably printf() it in C,
+            // but why? An exit code can go up to 255.
+            // Tell me ONE size that exceeds that ;)
+            var built, spawned, exitCode, streams
+                = @tryRun(src, kind, runArgs);
+            if(built && spawned) {
+                @success "Size: ${exitCode}";
+                @cache[cacheKey] = exitCode;
+                return true, exitCode;
+            } else {
+                @fail "Not available."
+                @cache[cacheKey] = 0;
+                return false;
+            }
+        }
+    },
     typeHeader: function(typeName, header, name, args){
         name = name || "CC";
         var kind = @name2kind(name);
@@ -962,6 +1069,7 @@ detect = detect + {
             ? "(" .. args.join(", ") .. ")"
             : __.isString(args) ? args : "";
         var src = [
+            @settings.preSource,
             "#include <${header}>",
             "int main(int argc, char** argv) {",
             "   ${typeName} x" .. argStr .. ";",
@@ -1176,8 +1284,14 @@ detect = detect + {
     },
 
     define: function(key, value) {
-        @cache[key] = value;
+        @cache[key] = value || "1";
     },
+    defineQuoted: function(key, value) {
+        value = value || "";
+        @cache[key] = "\"${value}\"";
+    },
+    // Wrapper
+    defineUnquoted: {|k,v| @define(k,v)},
 
     // Use the C/C++/ObjC/ObjC++ preprocessor.
     transform: function(inFile, outFile){
@@ -1206,28 +1320,21 @@ detect = detect + {
         var data = {};
         var cacheKeys = @cache.keys;
         for(var _,key in cacheKeys) {
-            var val = @cache[key];
-            if(toBoolean(val)) {
-                data[key] = val;
-            }
+            data[key] = @cache[key];
         }
         return data;
     },
+    getDefinesString: function() {
+        var defines = @getDefines();
+        var parts = [];
+        for(var key, value in defines) {
+            parts[] = "#define ${key} ${value}";
+        }
+        return parts.join("\n");
+    },
     writeHeader: function(where) {
         @info "Writing header: ${where}"
-        var defines = @getDefines();
-        var src = [];
-        for(var k,v in defines) {
-            if(__.isString(v)) {
-                // FIXME: Better checks.
-                // Or, just put falsy stuff in a different container...
-                if(v == "0") {
-                    continue;
-                }
-            }
-            src[] = "#define ${k} ${v}"
-        }
-        var source = src.join("\n");
+        var source = @getDefinesString();
         var hash = sha2.string(source);
         var id = "ICETEA__${hash}__CONFIG_H";
         var head = "#ifndef ${id}\n#define ${id}\n";

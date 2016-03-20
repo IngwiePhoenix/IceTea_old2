@@ -1,9 +1,11 @@
 // Prefixes
 detect = detect + {
-    P_HEADER: "HAVE_",
-    P_TYPE:   "HAVE_",
-    P_FUNC:   "HAVE_",
-    P_LIB:    "HAVE_LIB"
+    P_HEADER:   "HAVE_",
+    P_TYPE:     "HAVE_",
+    P_SIZEOF:   "SIZEOF_",
+    P_MACRO:    "IS_DEFINED_",
+    P_FUNC:     "HAVE_",
+    P_LIB:      "HAVE_LIB"
 };
 
 detect = detect + {
@@ -20,6 +22,18 @@ detect = detect + {
         return detect.P_TYPE .. type
             .replace(" ","_")
             .upper();
+    },
+
+    haveSizeof: function(type) {
+        return detect.P_SIZEOF .. type
+            .replace(" ","")    // Thou shalt not use spaces!
+            .replace("::","__") // C++ types
+            .replace("*","")    // Pointers. Should I use P instead?
+            .upper();
+    },
+
+    haveMacro: function(macro) {
+        return detect.P_MACRO .. macro;
     },
 
     haveTypeInHeader: function(type, header) {
@@ -86,7 +100,7 @@ detect = detect + {
         @coloredStatus($.Colors.GREEN, str);
     },
     status: function(str) {
-        @coloredStatus($.Colors.MAGENTA, str);        
+        @coloredStatus($.Colors.MAGENTA, str);
     },
     write: function(str) {
         echo " ${str}"
