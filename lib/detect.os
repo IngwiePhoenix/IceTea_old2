@@ -1351,11 +1351,12 @@ detect = detect + {
     // CLI shortcuts
     // TODO: Get parent target's name,
     // or just the currently configured one?
-    with: function(name, desc, arg) {
+    with: function(name, desc, arg, def) {
         cli.insert {
             longopt: "--with-${name}",
             desc: __.isNull(desc) ? "With: ${name}" : desc,
-            arg: __.isNull(arg) ? "<...>" : arg
+            arg: __.isNull(arg) ? "<...>" : arg,
+            "default": def
         }
     },
     enable: function(name, desc) {

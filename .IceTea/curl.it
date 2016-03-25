@@ -34,10 +34,10 @@ target("curl", "lib") {
         otherLibs: [
             "libssh2",
             "zlib",
-            "gssapi",
             "librtmp",
             "libmetalink",
-            "libpsl"
+            "libpsl",
+            "libgcc"
         ],
         windowsLibs: [
             "libidn",
@@ -47,7 +47,14 @@ target("curl", "lib") {
             "ipv6",
             "unix-sockets",
             "sspi",
-            "rtsp"
+            "libcurl_option"
+        ],
+        protocols: [
+            "http", "ftp", "file",
+            "ldap", "ldaps", "rtsp",
+            "proxy", "dict", "telnet",
+            "tftp", "pop3", "imap", "smb",
+            "smtp", "gopher",
         ],
 
         CURL_INCLUDES_INTTYPES: function() {
@@ -70,7 +77,7 @@ target("curl", "lib") {
                 "sys/types.h",
                 "stdint.h",
                 "inttypes.h"
-            ]) detect.header(hdr);
+            ]) detect.header("c", hdr);
         },
 
         // Methods
@@ -138,21 +145,18 @@ target("curl", "lib") {
             var x_pull_headers;
             if(@curl_format_curl_off_t != "unknown") {
                 x_pull_headers = true;
-                var quickSed = function(val, sed) {
-                    var spawned, exitCode, streams
-                        = $("echo \"${val}\" | sed '${sed}'");
-                    if(spawned && exitCode == 0) {
-                        return streams[1].trim();
-                    }
+                var quickSed = function(val, sed, repStr) {
+                    var rt, matches = SLRE.match(sed, val);
+                    return val.replace(matches[0], repStr);
                 }
                 @curl_format_curl_off_t
-                    = quickSed(@curl_format_curl_off_t, 's/[["]]//g');
+                    = quickSed(@curl_format_curl_off_t, '([["]])', "");
                 @curl_format_curl_off_tu
-                    = quickSed(@curl_format_curl_off_t, 's/i$/u/');
+                    = quickSed(@curl_format_curl_off_t, '(i)$', 'u');
                 @curl_format_curl_off_tu
-                    = quickSed(@curl_format_curl_off_tu, 's/d$/u/');
+                    = quickSed(@curl_format_curl_off_tu, '(d)$', 'u');
                 @curl_format_curl_off_tu
-                    = quickSed(@curl_format_curl_off_tu, 's/D$/U/');
+                    = quickSed(@curl_format_curl_off_tu, '(D)$', 'U');
             } else {
                 x_pull_headers = false;
                 switch(@curl_typeof_curl_off_t) {
@@ -429,6 +433,9 @@ target("curl", "lib") {
                     // I dont exactly understand AC_EGREP_CPP.
                     // So here is my take of testing if function is available,
                     // when _REENTRANT is defined.
+                    // NOTE: Now I do. It checks if "cc -E" contains something.
+                    // Huh, I could use String.indexOf! ...well, the stuff here works,
+                    // so ill just note it for the future.
                     var headerString = @{
                         var parts = [];
                         for(var n,hdr in headers) {
@@ -609,7 +616,8 @@ target("curl", "lib") {
             detect.settings.preSource += [
                 "#ifndef _REENTRANT     ",
                 "#  define _REENTRANT   ",
-                "#endif                 "
+                "#endif                 ",
+                "" // Additional newline
             ].join("\n");
             this[cacheKey] = true;
         },
@@ -665,7 +673,7 @@ target("curl", "lib") {
                 "sys/types.h",
                 "poll.h",
                 "sys/poll.h"
-            ]) detect.header(hdr);
+            ]) detect.header("c", hdr);
         },
         CURL_CONFIGURE_PULL_SYS_POLL: function() {
             @CURL_INCLUDES_POLL();
@@ -684,7 +692,7 @@ target("curl", "lib") {
             ].join("\n"), "CC");
             @tst_poll_events_macro_defined = compiled;
             if(@tst_poll_events_macro_defined) {
-                if(detect.header("sys/poll.h")) {
+                if(detect.header("c", "sys/poll.h")) {
                     detect.defineUnquoted("CURL_PULL_SYS_POLL_H",1);
                 }
             }
@@ -778,7 +786,8 @@ target("curl", "lib") {
             detect.settings.preSource += [
                 "#ifndef _THREAD_SAFE   ",
                 "#  define _THREAD_SAFE ",
-                "#endif                 "
+                "#endif                 ",
+                "", // Additional newline
             ].join("\n");
             this[cacheKey] = true;
         },
@@ -1306,7 +1315,7 @@ target("curl", "lib") {
                 "sys/types.h",
                 "sys/time.h",
                 "time.h"
-            ]) detect.header(hdr);
+            ]) detect.header("c", hdr);
 
             detect.line "Checking for monotonic clock_gettime";
             if(@CURL_RT == false) {
@@ -1438,6 +1447,161 @@ target("curl", "lib") {
                 }
                 return this[cacheKey];
             }
+        },
+        CURL_CONFIGURE_GSSAPI: function() {
+            @GSSAPI_ROOT = "/usr";
+            if(
+                detect.isWith("curl-gssapi-libs")
+                || detect.isWith("curl-gssapi-includes")
+                || detect.isWith("curl-gssapi")
+            ) {
+                @CURL_GSSAPI = true;
+
+                var isWith, gssapiDir = detect.isWith("curl-gssapi");
+                if(isWith && gssapiDir != "") {
+                    @GSSAPI_ROOT = gssapiDir;
+                }
+            }
+            @KRB5CONFIG = "${@GSSAPI_ROOT}/bin/krb5-config";
+            detect.line "Checking if GSS-API support is requested"
+            if(@CURL_GSSAPI) {
+                detect.success "Yes"
+                var withDirs, incDirs = detect.isWith("curl-gssapi-includes");
+                var withLibs, libDirs = detect.isWith("curl-gssapi-libs");
+                // Following is a copy of an autoconf check:
+                // QUOTE
+                // if test -z "$GSSAPI_INCS"; then
+                //      if test -n "$host_alias" -a -f "$GSSAPI_ROOT/bin/$host_alias-krb5-config"; then
+                //          GSSAPI_INCS=`$GSSAPI_ROOT/bin/$host_alias-krb5-config --cflags gssapi`
+                //      elif test -f "$KRB5CONFIG"; then
+                //          GSSAPI_INCS=`$KRB5CONFIG --cflags gssapi`
+                //      elif test "$GSSAPI_ROOT" != "yes"; then
+                //          GSSAPI_INCS="-I$GSSAPI_ROOT/include"
+                //      fi
+                // fi
+                // /QUOTE
+                // Unless I know how to obtain $host_alias, I won't be making this check. completely.
+                if(!withDirs) {
+                    var dirFlags;
+                    /*var aliasedKrbConf = pfs.join(
+                        @GSSAPI_ROOT,
+                        "bin",
+                        "${host_apias}-krb5-config"
+                    );
+                    // ... = -n $host_alias -a -> I dont know these, yet.
+                    if(... && pfs.isFile(aliasedKrbConf)) {
+                        var spawned, exitCode, streams
+                            = $("${aliasedKrbConf} --cflags gssapi");
+                        if(spawned && exitCode == 0) {
+                            // Since we're exporting the .native object into exports,
+                            // we'd better ensure that captured CFlags are added!
+                            // After all, they might be used _not just_ in libcurl,
+                            // but also on dependant targets.
+                            target("curl").settings.native.flags[] = streams[1].trim();
+                        }
+                    } else*/ if(pfs.isFile(@KRB5CONFIG)) {
+                        var spawned, exitCode, streams
+                            = $("${@KRB5CONFIG} --cflags gssapi");
+                        if(spawned && exitCode == 0) {
+                            dirFlags = streams[1].trim();
+                        }
+                    } else {
+                        // Well, let's just hope this works!
+                        // @see: http://xkcd.com/292/
+                        dirFlags = "-I" .. [
+                            @GSSAPI_ROOT,
+                            "include"
+                        ].join(sys.dirSep);
+                    }
+                    if(detect.header("c", "gss.h", dirFlags)) {
+                        // Regular GSS-API
+                        detect.define("HAVE_GSSGNU", 1);
+                        @not_mit = false;
+                    } else if(detect.header("c", "gss/gss.h", dirFlags)) {
+                        @not_mit = true;
+                    } else if(
+                        detect.header("c", "gssapi/gssapi_generic.h", dirFlags)
+                        && detect.header("c", "gssapi/gssapi_krb5.h", dirflags)
+                    ) {
+                        @not_mit = true;
+                    }
+                    if(@not_mit) {
+                        // Not MIT, so we look for Heimdal.
+                        if(detect.header("c","gssapi.h", dirFlags)) {
+                            detect.define("HAVE_GSSHEIMDAL", 1);
+                        } else {
+                            @CURL_GSSAPI = false;
+                            detect.warn "disabling GSS-API support since no header files were found"
+                        }
+                    } else {
+                        // MIT!
+                        detect.define("HAVE_GSSMIT", 1);
+                        detect.line "Checking if GSS-API headers declare GSS_C_NT_HOSTBASED_SERVICE"
+                        if(detect.tryCompile([
+                            "#include <gssapi/gssapi.h>         ",
+                            "#include <gssapi/gssapi_generic.h> ",
+                            "#include <gssapi/gssapi_krb5.h>    ",
+                            "int main() {                       ",
+                            "   gss_import_name(                ",
+                            "       (OM_uint32 *)0,             ",
+                            "       (gss_buffer_t)0,            ",
+                            "       GSS_C_NT_HOSTBASED_SERVICE, ",
+                            "       (gss_name_t *)0             ",
+                            "   );                              ",
+                            "}                                  "
+                        ].join("\n"), "CC")) {
+                            detect.success "Yes"
+                        } else {
+                            detect.fail "No"
+                            detect.define("HAVE_OLD_GSSMIT", 1);
+                        }
+                    }
+                }
+            } else {
+                detect.fail "No."
+            }
+            if(@CURL_GSSAPI) {
+                detect.define("HAVE_GSSAPI", 1);
+                @curl_gss_msg = "enabled (MIT Kerberos/Heimdal)";
+                // Oops? Did I miss something?
+                if(@gnu_gss) {
+                    @curl_gss_msg = "enabled (GNU GSS)";
+                    target("curl").settings.LINK.libraryDirs[] = @GSSAPI_LIB_DIR;
+                    target("curl").settings.LINK.libraries[] = "gss";
+                } else if(!@GSSAPI_LIB_DIR) {
+                    // Ugh. This thing I need to do..
+                    var host = detect.host();
+                    if(wildcard.match("*-*-darwin*", host)) {
+                        target("curl").settings.LINK.libraries += [
+                            "gssapi_krb5",
+                            "resolv"
+                        ];
+                    } else {
+                        // var host_alias = ...;
+                        // if(-n "$host_alias" -a -f "$GSSAPI_ROOT/bin/$host_alias-krb5-config")
+                        // QUOTE
+                        //      krb5-config doesn't have --libs-only-L or similar, put everything
+                        //      into LIBS
+                        //      gss_libs=`$GSSAPI_ROOT/bin/$host_alias-krb5-config --libs gssapi`
+                        //      LIBS="$gss_libs $LIBS"
+                        // /QUOTE
+                        // } else
+                        if(pfs.isFile(@KRB5CONFIG)) {
+                            target("curl").settings.LINK.flags[] = system(
+                                "${@KRB5CONFIG} --libs gssapi"
+                            ) || "";
+                        }
+                        else {
+                            var host = detect.host();
+                            if(wilcard.match("*-hp-hpux*", host)) {
+                                target("curl").settings.LINK.libraries[] = "gss";
+                            } else {
+                                target("curl").settings.LINK.libraries[] = "gssapi";
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     init: function() {
@@ -1467,6 +1631,9 @@ target("curl", "lib") {
             // librt
             rt:             "dependance on librt",
         }) eda(name, desc);
+        for(var n,proto in @CURL.protocols) {
+            eda(proto, "${name} protocol support");
+        }
         // Libraries.
         // Once again: Scripting languages are hella powerful.
         for(var _,lib in @CURL.sslLibs) {
@@ -1491,12 +1658,33 @@ target("curl", "lib") {
             detect.enable("curl-${word}", "Enable: ${word}")
         }
 
+        detect.with(
+            "curl-lber-lib",
+            "Specify path to lber library"
+        );
+
+        detect.with(
+            "curl-gssapi-includes",
+            "Specify GSSAPI includes for cURL to use.",
+            "<Dir>"
+        );
+        detect.with(
+            "curl-gssapi-libs",
+            "Specify GSSAPI libs for cURL to use.",
+            "<Dir>"
+        );
+        detect.with(
+            "curl-gssapi",
+            "Specify folder where to look for GSS-API stuff",
+            "<Dir>"
+        );
+
         // Autoconf-like
         autoconf.AC_SYS_LARGEFILE_INIT();
     },
     configure: function() {
         // Save current pre-source.
-        var __PRE_SOURCE = detect.settings.preSource;
+        var __DCT_SETTINGS = detect.settings;
 
         // FIXME's:
         // - include/curl/curlbuild.h.in : Make an IceTea variant.
@@ -1609,9 +1797,12 @@ target("curl", "lib") {
 
             // # Tools
             var CURL_TOOLS = {
-                GREP: "grep",
-                SED: "sed",
-                EGREP: "egrep",
+                // NO. MORE. We have SLRE!
+                // Actually I think I can trash this whole section now. :o
+                // GREP: "grep",
+                // SED: "sed",
+                // EGREP: "egrep",
+
                 // Hm. These tools could be problematic on other platforms.
                 // So, ill just comment them out for now.
                 //AR: "ar"
@@ -1636,24 +1827,28 @@ target("curl", "lib") {
             }
 
             // # cURL version.
-            // If I had a regex parser, this would've actually been easier.
-            // So for now Ill rely on the UNIX method,
-            // but I'll have to find a regex lib if I want to self-contain this build!
             @CURL.CURL_VERSION = null;
             @CURL.CURL_VERSION_NUM = null;
+            var curlver_h = File.readWhole(
+                "${CURL_SOURCEDIR}/include/curl/curlver.h"
+            );
             ;{
-                var spawned, exitCode, streams
-                    = $("sed -ne 's/^#define LIBCURL_VERSION \"\(.*\)\"/\1/p' ${CURL_SOURCEDIR}/include/curl/curlver.h");
-                if(spawned && exitCode == 0) {
-                    @CURL.CURL_VERSION = streams[0].trim();
+                var rt, matches = SLRE.match(
+                    '#define LIBCURL_VERSION "(.*)"',
+                    curlver_h
+                );
+                if(#matches > 0) {
+                    @CURL.CURL_VERSION = matches[0];
                     detect.define("CURLVERSION", @CURL.CURL_VERSION);
                 }
             }
             ;{
-                var spawned, exitCode, streams
-                    = $("sed -ne 's/^#define LIBCURL_VERSION_NUM 0x\(.*\)/\1/p' ${srcdir}/include/curl/curlver.h");
-                if(spawned && exitCode == 0) {
-                    @CURL.CURL_VERSION_NUM = streams[0].trim();
+                var rt, matches = SLRE.match(
+                    "#define LIBCURL_VERSION_NUM 0x([^\n]*)",
+                    curlver_h
+                );
+                if(#matches > 0) {
+                    @CURL.CURL_VERSION_NUM = matches[0];
                     detect.define("VERSIONNUM", @CURL.CURL_VERSION_NUM);
                 }
             }
@@ -2051,7 +2246,7 @@ target("curl", "lib") {
                         }
                     } else {
                         // Search the usual way.
-                        if(detect.header("zlib.h") && detect.libfunc("z", "inflateEnd")) {
+                        if(detect.header("c", "zlib.h") && detect.libfunc("z", "inflateEnd")) {
                             // Well, since IceTea defines stuff already,
                             // and since only both can pass, it's pretty straight forward.
                             // We do: nothing.
@@ -2062,11 +2257,701 @@ target("curl", "lib") {
                 };
             }
 
+            @CURL.LBERLIBNAME = cli.value("--with-curl-lber-lib");
+            @CURL.LDAPLIBNAME = false;
+            detect.line "Testing LADP usability via: ${@CURL.LDAPLIBNAME}\n"
+            if(detect.isWith("curl-lber-lib")) {
+                if(!("CURL_DISABLE_LDAP" in detect.cache)) {
+                    // FIXME: detect.hasDefine(macro) - would help a lot o.o;
+                    // TBD:
+                    // @CURL.CURL_CHECK_HEADER_LBER();
+                    // @CURL.CURL_CHECK_HEADER_LDAP();
+                    // @CURL.CURL_CHECK_HEADER_LDAPSSL();
+                    // @CURL.CURL_CHECK_HEADER_LDAP_SSL();
+                    if(@CURL.LDAPLIBNAME == false) {
+                        if(@CURL.ac_cv_native_windows) {
+                            print detect.out;
+                            detect.success "Using Win32 LDAP stuff"
+                            // Native windows, there actually is a set library.
+                            @settings.LINK.libraries[] = "wldap32";
+                            @CURL.LDAPLIBNAME = "wldap32";
+                            @CURL.LBERLIBNAME = false;
+                        }
+                    }
+                    if(@CURL.LDAPLIBNAME != false) {
+                        // I need a better "is not empty" check. But I'm lazy o.o
+                        if(! detect.libfunc(@CURL.LDAPLIBNAME, "ldap_init")) {
+                            print detect.out;
+                            detect.fail "\"${@CURL.LDAPLIBNAME}\" is not an LDAP library: LDAP disabled"
+                            detect.define("CURL_DISABLE_LDAP", 1);
+                            detect.define("CURL_DISABLE_LDAPS", 1);
+                        }
+                    } else {
+                        // Do an actual search instead of relying on the user.
+                        // TBD:
+                        // @CURL.CURL_CHECK_LIBS_LDAP();
+                        if(! @CURL.curl_cv_ldap_LIBS) {
+                            print detect.out;
+                            detect.fail "Cannot find libraries for LDAP support: LDAP disabled"
+                            detect.define("CURL_DISABLE_LDAP", 1);
+                            detect.define("CURL_DISABLE_LDAPS", 1);
+                        }
+                    }
+                }
+            }
+            if(@CURL.LBERLIBNAME != false && @CURL.LBERLIBNAME != "") {
+                // Normally we'd see if it reads "no".
+                // But since cli.value() returns an empty string otherwise,
+                // we can't really do that.
+                if(detect.libfunc(@CURL.LBERLIBNAME, "ber_free")) {
+                    print detect.out;
+                    detect.fail "${@CURL.LBERLIBNAME} is not an LBER library: LDAP disabled"
+                    detect.define("CURL_DISABLE_LDAP", 1);
+                    detect.define("CURL_DISABLE_LDAPS", 1);
+                }
+            }
+            if(!("CURL_DISABLE_LDAP" in detect.cache)) {
+                // Shouldn't I be using some sort of library here?
+                // It isn't clear, if the library (inside the AC context)
+                // is added to LDFLAGS by now?
+                detect.func("ldap_url_parse");
+                detect.func("ldap_init_fd");
 
+                if(@CURL.LDAPLIBNAME == "wldap32") {
+                    @CURL.curl_ldap_msg = "enabled (wldap32)"
+                    detect.define("USE_WIN32_LDAP", 1);
+                } else {
+                    @CURL.curl_ldap_msg = "enabled (OpenLDAP)";
+                    detect.define("USE_OPENLDAP", 1);
+                }
+            }
+
+            if(!("CURL_DISABLE_LDAPS" in detect.cache)) {
+                @CURL.curl_ldaps_msg = "enabled";
+            }
+
+            // # ipv6
+            // Finally away from this LDAP stuff. Although there are TBDs...
+            // so I have to return to it later. *gulp*.
+            detect.line "Checking whether to enable IPv6";
+            if(detect.enabled("curl-ipv6") && !detect.disabled("curl-ipv6")) {
+                detect.success "Yes."
+                @CURL.ipv6 = true;
+            } else {
+                detect.fail "No."
+                @CURL.ipv6 = false;
+            }
+            if(@CURL.ipv6) {
+                detect.line "Is AF_INET6 available?"
+                if(detect.tryCompile([
+                    detect.getDefinesString(),
+                    "/* is AF_INET6 available? */   ",
+                    "#include <sys/types.h>         ",
+                    "#ifdef HAVE_WINSOCK2_H         ",
+                    "#include <winsock2.h>          ",
+                    "#else                          ",
+                    "#include <sys/socket.h>        ",
+                    "#endif                         ",
+                    "#include <stdlib.h> /*exit()*/ ",
+                    "int main() {                   ",
+                    "if (socket(                    ",
+                    "       AF_INET6,               ",
+                    "       SOCK_STREAM,            ",
+                    "       0                       ",
+                    ") < 0) exit(1);                ",
+                    "else exit(0);                  ",
+                    "}                              "
+                ].join("\n"), "CC")) {
+                    detect.success "Yes";
+                    // Definitively keep ipv6 on!
+                    @CURL.ipv6 = true;
+                } else {
+                    detect.fail "No"
+                    @CURL.ipv6 = false;
+                }
+            }
+            if(@CURL.ipv6) {
+                @CURL.curl_ipv6_msg = "enabled";
+            } else {
+                @CURL.curl_ipv6_msg = "disabled";
+            }
+            if(@CURL.ipv6) {
+                detect.line "Checking if struct sockaddr_in6 has sin6_scope_id member"
+                if(detect.tryCompile([
+                    "#include <sys/types.h> ",
+                    "#ifdef HAVE_WINSOCK2_H ",
+                    "#include <winsock2.h>  ",
+                    "#include <ws2tcpip.h>  ",
+                    "#else                  ",
+                    "#include <netinet/in.h>",
+                    "#endif                 ",
+                    "int main() {           ",
+                    " struct sockaddr_in6 s;",
+                    " s.sin6_scope_id = 0;  ",
+                    "}                      "
+                ].join("\n"), "CC")) {
+                    detect.success "Yes."
+                    @CURL.have_sin6_scope_id = true;
+                    detect.define("HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID", 1);
+                } else {
+                    detect.fail "No."
+                }
+            }
+
+            detect.line "Checking if argv can be written to"
+            var built, spawned, exitCode = detect.tryCompile([
+                "int main(int argc, char ** argv) { ",
+                "    argv[0][0] = ' ';              ",
+                "    return (argv[0][0] == ' ')?0:1;",
+                "}                                  "
+            ].join("\n"), "CC");
+            if(built && spawned) {
+                if(exitCode == 0) {
+                    detect.success "Yes"
+                    @CURL.curl_cv_writable_argv = true;
+                    detect.define("HAVE_WRITABLE_ARGV", 1);
+                } else if(exitCode == 1) {
+                    detect.success "No"
+                    @CURL.curl_cv_writable_argv = false;
+                }
+            } else {
+                detect.warn "the previous check could not be made default was used"
+            }
+
+            // # GSS-API
+            // TODO: Implementing all the checks neccessary for this to work.
+            // Workaround: GSS-API is disabled by default, for now.
+            //@CURL.CURL_CONFIGURE_GSSAPI();
+
+            // # SSL
+            // Here we will check all the things SSL!
+            @CURL.SSL_CONFIGURED = false;
+
+            // ## Windows SSL
+            detect.line "Checking whether to enable Windows native SSL/TLS (Windows native builds only)"
+            if(detect.isWith("curl-winssl") && !@CURL.SSL_CONFIGURED) {
+                if(@CURL.ac_cv_native_windows) {
+                    detect.success "Yes.";
+                    @CURL.SSL_CONFIGURED = true;
+                    detect.define("USE_SCHANNEL", 1);
+                    @CURL.curl_ssl_msg = "enabled (Windows-native)";
+                    detect.define("USE_WINDOWS_SSPI", 1);
+                    @CURL.curl_sspi_msg = "enabled";
+                } else {
+                    detect.fail "No."
+                }
+            } else detect.status "Skip."
+
+            // ## Darwin SSL aka. OS X native SSL
+            detect.line "Checking whether to enable iOS/Mac OS X native SSL/TLS"
+            if(detect.isWith("curl-darwinssl") && !@CURL.SSL_CONFIGURED) {
+                if(pfs.isDir("/System/Library/Frameworks/Security.framework")) {
+                    detect.success "Yes"
+                    @CURL.SSL_CONFIGURED = true;
+                    detect.define("USE_DARWINSSL", 1);
+                    @CURL.curl_ssl_msg = "enabled (iOS/Mac OS X-native)";
+                    // FIXME: -framework support
+                    @settings.LINK.flags += [
+                        "-framework CoreFoundation",
+                        "-framework Security"
+                    ];
+                } else {
+                    detect.fail "No"
+                }
+            } else detect.status "Skip"
+
+            // ## Non-native libraries (PolarSSL, mbedTLS, ...)
+            @CURL.ca = false;
+            var withSsl, sslPath = detect.isWith("curl-ssl");
+            detect.line "cURL with SSL: OpenSSL\n"
+            if(withSsl && !@CURL.SSL_CONFIGURED) {
+                // Skip MinGW / MSYS check...
+                if(sslPath == "") {
+                    // No path given.
+                    // Skip cross-compile check...
+                    @CURL.PKGTEST = true;
+                    @CURL.PREFIX_OPENSSL = "/usr/local/ssl";
+                    @curl.LIB_OPENSSL="${@CURL.PREFIX_OPENSSL}/lib";
+                } else {
+                    @CURL.PKGTEST = false;
+                    @CURL.PREFIX_OPENSSL = sslPath;
+                    // Do a pkg-config test.
+                    @CURL.OPENSSL_PCDIR = "${sslPath}/lib/pkgconfig";
+                    detect.notice "PKG_CONFIG_LIBDIR will be set to \"${@CURL.OPENSSL_PCDIR}\""
+                    if(pfs.isDir("${@CURL.OPENSSL_PCDIR}/openssl.pc")) {
+                        @CURL.PKGTEST = true;
+                    }
+                    @CURL.LIB_OPENSSL = "${@CURL.PREFIX_OPENSSL}/lib";
+                    if(@CURL.PREFIX_OPENSSL != "/usr") {
+                        @CURL.SSL_LDFLAGS="-L${@CURL.LIB_OPENSSL}"
+                        @CURL.SSL_CPPFLAGS="-I${@CURL.PREFIX_OPENSSL}/include"
+                    }
+                    @CURL.SSL_CPPFLAGS = "${@CURL.SSL_CPPFLAGS} -I${@CURL.PREFIX_OPENSSL}/include/openssl";
+
+                    if(@CURL.PKGTEST) {
+                        if(detect.tool("pkg-config")) {
+                            for(var localName,args in {
+                                "SSL_LIBS":     "--libs-only-l",
+                                "SSL_LDFLAGS":  "--libs-only-L",
+                                "SSL_CPPFLAGS": "--cflags-only-I"
+                            }) {
+                                var proc = SubProcess({async: false});
+                                proc.set_env("PKG_CONFIG_LIBDIR", @CURL.OPENSSL_PCDIR);
+                                print "- pkg-config: ENV[PKG_CONFIG_LIBDIR] = ${@CURL.OPENSSL_PCDIR}";
+                                var cmd = "pkg-config ${args} openssl";
+                                print "- pkg-config: $ ${cmd}";
+                                var spawned = proc.execute(cmd);
+                                if(spawned) {
+                                    var ec = proc.exit_code();
+                                    if(ec == 0) {
+                                        var stdout = proc.stdout().trim();
+                                        print "- pkg-config: ${localName} = ${stdout}"
+                                        @CURL[localName] = stdout;
+                                    } else {
+                                        print "- pkg-config: Failed. (Status: ${ec})"
+                                    }
+                                } else {
+                                    print "- pkg-config: Process not spawned"
+                                }
+                            }
+                            @CURL.LIB_OPENSSL = @CURL.SSL_LDFLAGS.replace("-L", "");
+
+                            // Save the results.
+                            @settings.LINK.libraries
+                                += @CURL.SSL_LIBS.replace("-l","").split(" ");
+                            @settings.LINK.libraryDirs
+                                += @CURL.SSL_LDFLAGS.replace("-L","").split(" ");
+                            @settings.native.includeDirs
+                                += @CURL.SSL_CPPFLAGS.replace("-I", "").split(" ");
+                        } else {
+                            detect.status "No pkg-config found. Skipping."
+                        }
+                    }
+                }
+
+                // Now, look for crypto stuff.
+                if(detect.libfunc("crypto", "HMAC_Update")) {
+                    @settings.LINK.libraries[] = "crypto";
+                    detect.define("HAVECRYPTO", 1);
+                } else if(detect.libfunc(
+                    "crypto", "HMAC_Init_ex",
+                    "c", [] + @CURL.SSL_CPPFLAGS
+                            + @CURL.SSL_LDFLAGS
+                            + @CURL.SSL_LIBS
+                )) {
+                    // ACTUALLY I doubt that this will work.
+                    // My test for a function in a library goes through dlopen()...
+                    // That means, that I am pretty guaranteed to have THIS check fail.
+                    // I'd need to find the actual library FIRST, and give the
+                    // full path.
+                    // FIXME: Better libfunc().
+
+                }
+
+                if("HAVECRYPTO" in detect.cache) {
+                    detect.line "Checking OpenSSL linking without -ldl"
+                    var tst_src = [
+                        "#include <openssl/evp.h>       ",
+                        "int main() {                   ",
+                        "   SSLeay_add_all_algorithms();",
+                        "}                              "
+                    ].join("\n");
+                    if(detect.tryCompile(tst_src, "CC")) {
+                        detect.success "Works"
+                    } else {
+                        detect.fail "No"
+                        detect.line "Retry WITH -dl"
+                        if(detect.tryCompile(tst_src, "CC", "-ldl")) {
+                            detect.success "This works."
+                            @settings.LINK.libraries[] = "dl";
+                        } else {
+                            detect.fail "Nope."
+                        }
+                    }
+
+                    // Crypto checks
+                    var has = detect.libfunc("ssl", "SSL_connect");
+                    if(!has) {
+                        detect.line "Checking for ssl with RSAglue/rsaref libs in use"
+                        // Now I wish I could just pass the target's Settings object...
+                        // I need a way to do that. It would save tons of time.
+                        if(detect.libfunc(
+                            "ssl","SSL_connect",
+                            "c", "-lRSAglue -lrsaref -lssl"
+                        )) {
+                            detect.success "Yes"
+                            @settings.LINK.libraries += ["RSAglue","rsaref"];
+                        } else {
+                            detect.fail "No"
+                        }
+                    } else {
+                        for(var n,hdr in [
+                            "openssl/x509.h",
+                            "openssl/rsa.h",
+                            "openssl/crypto.h",
+                            "openssl/pem.h",
+                            "openssl/ssl.h",
+                            "openssl/err.h"
+                        ]) detect.header("c", hdr);
+
+                        @CURL.curl_ssl_msg = "enabled (OpenSSL)";
+                        detect.define("USE_OPENSSL", 1);
+                        @CURL.OPENSSL_ENABLED = true;
+
+                        if(!detect.header("openssl/x509.h")) {
+                            var matches = 0;
+                            for(var n,hdr in [
+                                "x509.h",
+                                "rsa.h",
+                                "crypto.h",
+                                "pem.h",
+                                "ssl.h",
+                                "err.h"
+                            ]) {
+                                detect.header("c", hdr) && @{ matches++; };
+                            }
+                            if(matches >= 3) {
+                                @CURL.curl_ssl_msg = "enabled (OpenSSL)";
+                                @CURL.OPENSSL_ENABLED = true;
+
+                            }
+                        }
+                    }
+                    if(@CURL.OPENSSL_ENABLED) {
+                        detect.header("c", "openssl/pkcs12.h");
+                    }
+                    // fixme: proper "OpenSSL libs and/or directories were not found where specified!" check.
+                    if(@CURL.OPENSSL_ENABLED) {
+                        // Skipping ENGINE checks...
+                        // Reason: I'll have to attach _ALL_ the LDFLAGS/CPPFLAGS/... which were
+                        // gathered. That means I actually would need to carry a whole
+                        // kind of settings object. Which I currently don't.
+                        // When I revisit this, this should be topmost prio,
+                        // because cURL depends on some of these information.
+                        // I can get away with the fact that i'll actually skip
+                        // OpenSSL and just _enforce_ mbedTLS instead... but, yeah,
+                        // thats still cheating.
+
+                        // Also skipping these checks:
+                        // - BoringSSL
+                        // - libressl
+                        // - LD_LIBRARY_PATH
+                    }
+                }
+            }
+
+            // ## Random seed
+            // Skip: egd-socket
+            // Skip: /dev/urandom (Because the default is enough here).
+            detect.defineQuoted("RANDOM_FILE", "/dev/urandom");
+            // Skip: OpenSSL with SRP
+            // Skip: GnuTLS
+            // Skip: GnuTLS crypto backend
+            // Skip: GnuTLS with SRP
+            // Skip: PolarSSL (Besides, it's deprecated!)
+
+            // ## mbedTLS
+            if(
+                (IceTea.hasTarget("mbedtls") || detect.isWith("curl-mbedtls"))
+                && !@CURL.SSL_CONFIGURED
+            ) {
+                if(IceTea.hasTarget("mbedtls")) {
+                    @needs[] = "mbedtls";
+                    detect.define("USE_MBEDTLS", 1);
+                    @CURL.curl_ssl_msg = "enabled (mbedTLS (IceTea target))";
+                    @CURL.SSL_CONFIGURED = true;
+                    // I wish this was always that easy. o.o...
+                } else {
+                    if(detect.libfunc("mbedtls", "mbedtls_havege_init")) {
+                        detect.define("USE_MBEDTLS", 1);
+                        @CURL.curl_ssl_msg = "enabled (mbedTLS)";
+                        @settings.LINK.libraries += ["mbedx509","mbedcrypto"];
+                        @CURL.USE_MBEDTLS = true;
+                    } else {
+                        @CURL.USE_MBEDTLS = false;
+                    }
+
+                    if(!@CURL.USE_MBEDTLS) {
+                        // And once again: I can't test library paths with libfunc...
+                        // Therefore, I'll just skip this part.
+                        // I really need to sit down on this issue. Did you count how
+                        // many times in a single source file I have complained about
+                        // a single API; and the worst part; it's one I wrote myself?!
+                        // I am a -horrible- person 0.0
+                    }
+                }
+            }
+
+            // Skip: CyaSSL
+            // Skip: NSS
+            if(!@CURL.SSL_CONFIGURED) {
+                detect.warn "SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more."
+                detect.warn "Use --help to see the available SSL options (they're vast! (but not all configurable...))"
+            }
+
+            @CURL.CURL_CHECK_CA_BUNDLE();
+
+            // Skip: libpsl
+            // Skip: libmetalink
+            // Skip: libssh2
+            // Skip: librtmp
+            // Skip: Versioned Symbols linker switch
+
+            // # IDN
+            // Skip: winidn
+            // Skip: libidn
+
+            // Skip: nghttp2 (Although that'd be interesting to have...)
+            // Skip: zsh completions
+
+            // Now they promised me: Back to normal configure.
+            // After LDAP, OpenSSL and others, I really hope you're serious! =)
+            autoconf.AC_HEADER_STDC();
+            @CURL.CURL_CHECK_HEADER_MALLOC();
+            @CURL.CURL_CHECK_HEADER_MEMORY();
+
+            // TIME FOR A HEADER BOMB!
+            // I'm listening to dubstep right now. Am I allowed to say: "Drop the header!"?
+            for(var n,hdr in [
+                "sys/types.h",  "sys/time.h",   "sys/select.h", "sys/socket.h",
+                "sys/ioctl.h",  "sys/uio.h",    "assert.h",     "unistd.h",
+                "stdlib.h",     "limits.h",     "arpa/inet.h",  "net/if.h",
+                "netinet/in.h", "sys/un.h",     "netinet/tcp.h","netdb.h",
+                "sys/sockio.h", "sys/stat.h",   "sys/param.h",  "termios.h",
+                "termio.h",     "sgtty.h",      "fcntl.h",      "alloca.h",
+                "time.h",       "io.h",         "pwd.h",        "utime.h",
+                "sys/utime.h",  "sys/poll.h",   "poll.h",       "socket.h",
+                "sys/resource.h",               "libgen.h",     "locale.h",
+                "errno.h",      "stdbool.h",    "arpa/tftp.h",  "sys/filio.h",
+                "sys/wait.h",   "setjmp.h"
+            ]) detect.header("c",hdr);
+
+            detect.settings.preSource += [
+                "#ifdef HAVE_SYS_TYPES_H    ",
+                "#include <sys/types.h>     ",
+                "#endif                     ",
+                "#ifdef HAVE_SYS_TIME_H     ",
+                "#include <sys/time.h>      ",
+                "#endif                     ",
+                "#ifdef HAVE_SYS_SELECT_H   ",
+                "#include <sys/select.h>    ",
+                "#endif                     ",
+                "#ifdef HAVE_SYS_SOCKET_H   ",
+                "#include <sys/socket.h>    ",
+                "#endif                     ",
+                "#ifdef HAVE_NETINET_IN_H   ",
+                "#include <netinet/in.h>    ",
+                "#endif                     ",
+                "#ifdef HAVE_SYS_UN_H       ",
+                "#include <sys/un.h>        ",
+                "#endif                     ",
+                "" // Additional newline
+            ].join("\n");
+
+            autoconf.AC_C_CONST();
+            @CURL.CURL_CHECK_VARIADIC_MACROS();
+            detect.sizeof("size_t");
+            autoconf.AC_HEADER_TIME();
+            @CURL.CURL_CHECK_STRUCT_TIMEVAL();
+            @CURL.CURL_VERIFY_RUNTIMELIBS();
+
+            for(var n,type in [
+                "long", "int", "short",
+                "time_t", "off_t"
+            ]) detect.sizeof(type);
+
+            @CURL.CURL_CONFIGURE_LONG();
+
+            // Skip: soname
+
+            if(detect.type("long long")) {
+                detect.define("HAVE_LONGLONG", 1);
+
+                detect.line "Checking if numberLL works";
+                if(detect.tryCompile([
+                    "int main(){                ",
+                    "   long long val = 1000LL; ",
+                    "}                          "
+                ].join("\n"), "CC")) {
+                    detect.succes "Yes"
+                    detect.define("HAVE_LL", 1);
+                } else {
+                    detect.fail "No"
+                }
+            }
+
+            if(!detect.type("ssize_t")) {
+                detect.define("ssize_t", "int");
+            }
+
+            if(detect.type("bool")) {
+                detect.define("HAVE_BOOL_T", 1);
+            }
+
+            // When doing AC_CHECK_TYPE, is the third argument like a finally{} block,
+            // and always executed? o.o I only guess so, that's why I am
+            // actually appending to preSource.
+            detect.settings.preSource += [
+                "#ifdef HAVE_SYS_TYPES_H    ",
+                "#include <sys/types.h>     ",
+                "#endif                     ",
+                "#ifdef HAVE_STDBOOL_H      ",
+                "#include <stdbool.h>       ",
+                "#endif                     ",
+                "" // Cause additional newline.
+            ].join("\n");
+
+            @CURL.CURL_CONFIGURE_CURL_SOCKLEN_T();
+
+            @CURL.CURL_CONFIGURE_PULL_SYS_POLL();
+
+            @CURL.TYPE_IN_ADDR_T();
+            @CURL.TYPE_SOCKADDR_STORAGE();
+            @CURL.TYPE_SIG_ATOMIC_T();
+
+            autoconf.AC_TYPE_SIGNAL();
+
+            @CURL.CURL_CHECK_FUNC_SELECT();
+            @CURL.CURL_CHECK_FUNC_RECV();
+            @CURL.CURL_CHECK_FUNC_SEND();
+            @CURL.CURL_CHECK_MSG_NOSIGNAL();
+            @CURL.CURL_CHECK_FUNC_ALARM();
+            @CURL.CURL_CHECK_FUNC_BASENAME();
+            @CURL.CURL_CHECK_FUNC_CLOSESOCKET();
+            @CURL.CURL_CHECK_FUNC_CLOSESOCKET_CAMEL();
+            @CURL.CURL_CHECK_FUNC_CONNECT();
+            @CURL.CURL_CHECK_FUNC_FCNTL();
+            @CURL.CURL_CHECK_FUNC_FDOPEN();
+            @CURL.CURL_CHECK_FUNC_FREEADDRINFO();
+            @CURL.CURL_CHECK_FUNC_FREEIFADDRS();
+            @CURL.CURL_CHECK_FUNC_FSETXATTR();
+            @CURL.CURL_CHECK_FUNC_FTRUNCATE();
+            @CURL.CURL_CHECK_FUNC_GETADDRINFO();
+            @CURL.CURL_CHECK_FUNC_GAI_STRERROR();
+            @CURL.CURL_CHECK_FUNC_GETHOSTBYADDR();
+            @CURL.CURL_CHECK_FUNC_GETHOSTBYADDR_R();
+            @CURL.CURL_CHECK_FUNC_GETHOSTBYNAME();
+            @CURL.CURL_CHECK_FUNC_GETHOSTBYNAME_R();
+            @CURL.CURL_CHECK_FUNC_GETHOSTNAME();
+            @CURL.CURL_CHECK_FUNC_GETIFADDRS();
+            @CURL.CURL_CHECK_FUNC_GETSERVBYPORT_R();
+            @CURL.CURL_CHECK_FUNC_GMTIME_R();
+            @CURL.CURL_CHECK_FUNC_INET_NTOA_R();
+            @CURL.CURL_CHECK_FUNC_INET_NTOP();
+            @CURL.CURL_CHECK_FUNC_INET_PTON();
+            @CURL.CURL_CHECK_FUNC_IOCTL();
+            @CURL.CURL_CHECK_FUNC_IOCTLSOCKET();
+            @CURL.CURL_CHECK_FUNC_IOCTLSOCKET_CAMEL();
+            @CURL.CURL_CHECK_FUNC_LOCALTIME_R();
+            @CURL.CURL_CHECK_FUNC_MEMRCHR();
+            @CURL.CURL_CHECK_FUNC_POLL();
+            @CURL.CURL_CHECK_FUNC_SETSOCKOPT();
+            @CURL.CURL_CHECK_FUNC_SIGACTION();
+            @CURL.CURL_CHECK_FUNC_SIGINTERRUPT();
+            @CURL.CURL_CHECK_FUNC_SIGNAL();
+            @CURL.CURL_CHECK_FUNC_SIGSETJMP();
+            @CURL.CURL_CHECK_FUNC_SOCKET();
+            @CURL.CURL_CHECK_FUNC_SOCKETPAIR();
+            @CURL.CURL_CHECK_FUNC_STRCASECMP();
+            @CURL.CURL_CHECK_FUNC_STRCMPI();
+            @CURL.CURL_CHECK_FUNC_STRDUP();
+            @CURL.CURL_CHECK_FUNC_STRERROR_R();
+            @CURL.CURL_CHECK_FUNC_STRICMP();
+            @CURL.CURL_CHECK_FUNC_STRNCASECMP();
+            @CURL.CURL_CHECK_FUNC_STRNCMPI();
+            @CURL.CURL_CHECK_FUNC_STRNICMP();
+            @CURL.CURL_CHECK_FUNC_STRSTR();
+            @CURL.CURL_CHECK_FUNC_STRTOK_R();
+            @CURL.CURL_CHECK_FUNC_STRTOLL();
+            @CURL.CURL_CHECK_FUNC_WRITEV();
+
+            // SKIP: djgpp check
+
+            for(var n,func in [
+                "fork",             "geteuid",
+                "getpass_r",        "getppid",
+                "getprotobyname",   "getpwuid",
+                "getpwuid_r",       "getrlimit",
+                "gettimeofday",     "if_nametoindex",
+                "inet_addr",        "perror",
+                "pipe",             "setlocale",
+                "setmode",          "setrlimit",
+                "uname",            "utime"
+            ]) detect.func(func);
+
+            @CURL.CURL_CHECK_FUNC_GETNAMEINFO();
+
+            if(@CURL.ipv6) {
+                if(detect.func("getaddrinfo")) {
+                    detect.define("ENABLE_IPV6", 1);
+                }
+                @CURL.CURL_CHECK_NI_WITHSCOPEID();
+            }
+
+            @CURL.CURL_CHECK_NONBLOCKING_SOCKET();
+
+            // Skip: nroff/groff
+            // Skip: built-in manual
+
+            @CURL.CURL_CHECK_LIB_ARES();
+
+            // Skip: Native Windows: libhostname build
+
+            @CURL.CURL_CHECK_OPTION_THREADED_RESOLVER();
+
+            // Skip: --enable-threaded-resolver & --enable-ares
+            // I don't actually understand the error message, that's why I'm skipping this.
+
+            if(
+                detect.enabled("curl-threaded-resolver")
+                && detect.header("c","pthread.h")
+            ) {
+                // Here's it again, libfunc!
+                // Thing is, libfunc uses dlopen.
+                // dlopen uses the linker's search path.
+                // So even if I test for pthread_create(), it IS going to match,
+                // since libpthread is likely in the linker's search path.
+                // So, I can't do a reliable check on that, yet...
+
+                if(detect.func("pthread_create")) {
+                    detect.define("USE_THREADS_POSIX",1);
+                    @CURL.curl_res_msg = "POSIX threaded"
+                }
+            }
+
+            if(! detect.enabled("curl-verbose-strings")) {
+                detect.define("CURL_DISABLE_VERBOSE_STRINGS", 1);
+            }
+
+            detect.line "whether to enable SSPI support (Windows native builds only)"
+            if(detect.enabled("curl-sspi")) {
+                if(@CURL.ac_cv_native_windows) {
+                    detect.success "Yes"
+                    detect.define("USE_WINDOWS_SSPI", 1);
+                    @CURL.curl_sspi_msg = "enabled"
+                } else {
+                    detect.fail "No. --enable-curl-sspi Ignored. Only supported on native Windows builds."
+                }
+            } else if("WINSSL_ENABLED" in detect.cache) {
+                detect.success "Yes"
+            } else {
+                detect.fail "No"
+            }
+
+            detect.line "Checking whether to enable cryptographic authentication methods"
+            if(!detect.enabled("curl-crypto-auth")) {
+                detect.define("CURL_DISABLE_CRYPTO_AUTH", 1);
+                detect.fail "No"
+            } else {
+                detect.success "Yes"
+            }
+
+            @CURL.CURL_CHECK_OPTION_NTLM_WB();
+            @CURL.CURL_CHECK_NTLM_WB();
         };
 
         // Done.
-        detect.settings.preSource = __PRE_SOURCE;
+        detect.settings = __DCT_SETTINGS;
 
         return ConfigureReturn;
     },

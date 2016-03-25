@@ -14,3 +14,6 @@
 [submodule "deps/curl"]
 	path = deps/curl
 	url = https://github.com/curl/curl.git
+[submodule "deps/slre"]
+	path = deps/slre
+	url = https://github.com/cesanta/slre.git

@@ -43,14 +43,19 @@ Windows:
 ### A note about Emscripten
 Yes, IceTea can theoretically be built with Emscripten. Unfortunately, it can't build anything yet due to missing `fork()` support. I will have to code a lot of inline-javascript and utilize `child_process.execSync` or other things in order to get execution going. It won't be easy, but if you want to help me port STLPlus' `SubProcess` classes to support Emscripten, then please let me know!
 
+The idea currently is to port `stlplus::*_subprocess` to utilize `child_process`. That means, STLPlus would support using `child_process` in both sync and async flavor. However, that means I'd be limited to Node that supports the `.execSync` stuff. Well, no biggie. :)
+
 You can, however, build it as a PoC and run ObjectScript scripts. Do it so:
 
-    $ gcc -I dep/incbin dep/incbin/incbin.c -o incbin
-    $ ./incbin -o scripts.c src/scripts.rc
-    $ emcc scripts.c src/*.cpp -DICETEA_INCBIN_FORCE_EXTERNAL -DOS_EMSCRIPTEN -Wno-switch -o icetea.js
+```
+# These flags are always used for emscripten. Run from inside the IceTea folder.
+$ export EMCCFLAGS="-s INVOKE_MAIN=0 --pre-js src/icetea-emscripten.js"
+$ emcc $EMCCFLAGS deps/incbin/incbin.c -o incbin.js
+$ node incbin.js src/scripts.rc -o scripts.c
+$ emcc $EMCCFLAGS -Isrc -Wno-switch scripts.c src/*.cpp -DOS_EMSCRIPTEN -IICETEA_INCBIN_FORCE_EXTERNAL -o icetea.js
+```
 
-I still need to find a good way to teach `incbin` how to best work on Emscripten... :)
-
+Be aware, that running IceTea requires you to set `--stack-size` to a higher value! ObjectScript's execution can cause a really huge stack size. Invoking IceTea just inside it's own source tree will already cause the stack limit to be exceeded. I found `--stack-size=2048` to work. But you gotta try it out yourself. :)
 
 ### Note!
 In order for the files to resolve correctly, make sure you navigated into the IceTea folder first. If you are using another program to run this, make sure to set the CWD of that of the IceTea root. For instance, you can pull down and start building like so:

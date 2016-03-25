@@ -83,9 +83,51 @@ $.__newinstance = function(cmd) {
     return spawned, exit, [null, stdout, stderr];
 }
 
+_G.system = function(cmd, opt) {
+    opt = opt || system.STDOUT;
+    var spawned, exitCode, streams
+        = $.apply($, cmd);
+    if(spawned) {
+        switch(opt) {
+            case system.EXIT_CODE:
+                return exitCode;
+            case system.STDOUT:
+                return streams[1];
+            case system.STDERR:
+                return streams[2];
+            case system.ALLOUT:
+                return streams[1], streams[2];
+            case system.HIGHEROUT:
+                if(#streams[1] > #streams[2]) {
+                    return streams[1];
+                } else {
+                    return streams[2];
+                }
+        }
+    } else {
+        return false;
+    }
+}
+system.EXIT_CODE = 0;
+system.STDOUT = 1;
+system.STDERR = 2;
+system.ALLOUT = 3;
+system.HIGHEROUT = 4;
+
+/**
+ * Extensions to the File module
+ */
 File.writeWhole = function(contents, file) {
     var fh = File(file, "w");
     var rt = fh.write(contents);
     fh.close();
     return rt;
+}
+
+File.readWhole = function(file) {
+    var fh = File(file, "r");
+    var size = fh.size;
+    var rt = fh.read(size);
+    fh.close();
+    return rt, size;
 }

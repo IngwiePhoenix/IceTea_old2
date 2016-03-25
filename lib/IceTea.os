@@ -1485,14 +1485,24 @@ configurable("rule", function(head, body){
     var name,display = head.unpack();
     IceTea.addRule(name, display, body);
 });
-configurable("target", function(head, body){
-    var name, ruleName = head.unpack();
-    if(!(ruleName in IceTea.__rules)) {
-        throw "Rule <${ruleName}> (requesed by target <${name}>) is unknown.";
+
+// Not actually a configurable!
+_G.target = function() {
+    if(#arguments == 1) {
+        return IceTea.__targets[arguments[0]];
+    } else {
+        var head = ...;
+        return function(body) {
+            var name, ruleName = head.unpack();
+            if(!(ruleName in IceTea.__rules)) {
+                throw "Rule <${ruleName}> (requesed by target <${name}>) is unknown.";
+            }
+            var rule = IceTea.__rules[ruleName];
+            IceTea.addTarget(name, rule, body);
+        }
     }
-    var rule = IceTea.__rules[ruleName];
-    IceTea.addTarget(name, rule, body);
-});
+}
+
 configurable("external", function(head, body){
     var name = head[0];
     IceTea.addExternal(name, body);

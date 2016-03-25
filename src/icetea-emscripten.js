@@ -1,12 +1,18 @@
+if(!ENVIRONMENT_IS_NODE) {
+    throw new Error("Can only run on NodeJS!");
+}
+
 function debugLog(str) {
     if(process.env.DEBUG) {
         process.stdout.write('[IceTea:Emscripten]: '+str+'\n');
     }
 }
 
-// Make the ENV available.
-for(var name in process.env) {
-    ENV[name] = process.env[name];
+if(typeof ENV != "undefined") {
+    // Make the ENV available.
+    for(var name in process.env) {
+        ENV[name] = process.env[name];
+    }
 }
 
 // Mount the paths
@@ -28,3 +34,10 @@ list.forEach(function(item){
         }
     }
 });
+
+// Navigate to current folder
+FS.chdir(process.cwd());
+
+// Call main
+Module.callMain(Module.arguments);
+postRun();

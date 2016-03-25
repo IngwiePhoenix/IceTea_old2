@@ -331,7 +331,6 @@ public:
             _M(kill),
             _M(execute),
             _M(tick),
-            //{OS_TEXT("__callinstance"), OSSubProcess::execute},
             {}
         };
 

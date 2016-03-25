@@ -467,6 +467,7 @@ int IceTea::run() {
     this->printDebug("Calling IceTea.Initializer...");
     callObjectFunction(this, "IceTea", "Initializer", 0, 0, false);
     if(this->hasEndedExecuting(rt)) {
+        this->handleException();
         this->printDebug("Initializer failed.");
         return rt;
     } else {

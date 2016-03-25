@@ -1,8 +1,20 @@
+# Scripts on the toplevel
 /*.os
-/src/os-scripts.cpp
-/icetea
+/*.js
+/*.it
+
+# Allowed scripts
+!/build.it
+!/bootstrap.it
+!/build.js
+
+# Generated files/folders
 /*.dSYM
 /config.h
-out/
+/out/
+
+# Executables made during manual builds
+/icetea
 /icetea.js
 /incbin
+/incbin.js
