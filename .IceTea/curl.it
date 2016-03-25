@@ -565,7 +565,7 @@ target("curl", "lib") {
                 "      force compilation error  ",
                 "#endif                         ",
                 "int main(){ return 0; }        "
-            ].join("\n"), "C");
+            ].join("\n"), "CC");
             if(compiled) {
                 detect.success "Yes."
                 @tmp_reentrant_initially_defined = true;
@@ -1793,7 +1793,7 @@ target("curl", "lib") {
             // # Storing the configure options.
             // ... actually, not possible with IceTea. Good to know.
             @CURL.CURL_CONFIGURE_OPTIONS = "\"\"";
-            detect.define("CONFIGURE_OPTIONS", CURL_CONFIGURE_OPTIONS);
+            detect.define("CONFIGURE_OPTIONS", @CURL.CURL_CONFIGURE_OPTIONS);
 
             // # Tools
             var CURL_TOOLS = {
@@ -2948,6 +2948,62 @@ target("curl", "lib") {
 
             @CURL.CURL_CHECK_OPTION_NTLM_WB();
             @CURL.CURL_CHECK_NTLM_WB();
+
+            // Skip: TLS-SRP authentication
+            // Skip: Unix domain sockets. Reason: Implement autoconf.AC_CHECK_MEMBER
+
+            if(detect.disabled("curl-cookies")) {
+                detect.define("CURL_DISABLE_COOKIES", 1);
+            }
+
+            @CURL.CURL_CONFIGURE_SYMBOL_HIDING();
+
+            // Skip: SONAME version bump
+            // Reason: I only really know how to do that on OS X. Besides,
+            // the default build is staticaly anyway... so, there is no SONAME.
+
+            // Major skip:
+            // - pkg-config
+            // - curl-config script variables
+            // - Makefile substitutes
+            // - Makefile generation
+            // - Protocol summary (SUPPORT_PROTOCOLS). I NEED to do it though.
+
+            print [
+                "",
+                "Configured to build curl/libcurl:",
+                "",
+                "  curl version:     ${CURLVERSION}",
+                "  Host setup:       ${detect.host()}",
+                "  Install prefix:   ${detect.prefix()}",
+                "  Compiler:         ${detect.toolCache.CC}",
+                "  SSL support:      ${@CURL.curl_ssl_msg}",
+                "  SSH support:      ${@CURL.curl_ssh_msg}",
+                "  zlib support:     ${@CURL.curl_zlib_msg}",
+                "  GSS-API support:  ${@CURL.curl_gss_msg}",
+                "  TLS-SRP support:  ${@CURL.curl_tls_srp_msg}",
+                "  resolver:         ${@CURL.curl_res_msg}",
+                "  IPv6 support:     ${@CURL.curl_ipv6_msg}",
+                "  Unix sockets support: ${@CURL.curl_unix_sockets_msg}",
+                "  IDN support:      ${@CURL.curl_idn_msg}",
+                "  Build libcurl:    Static by default via IceTea",
+                "  Built-in manual:  ${@CURL.curl_manual_msg}",
+                "  --libcurl option: ${@CURL.curl_libcurl_msg}",
+                "  Verbose errors:   ${@CURL.curl_verbose_msg}",
+                "  SSPI support:     ${@CURL.curl_sspi_msg}",
+                "  ca cert bundle:   ${@CURL.ca}${@CURL.ca_warning}",
+                "  ca cert path:     ${@CURL.capath}${@CURL.capath_warning}",
+                "  ca fallback:      ${@CURL.with_ca_fallback}",
+                "  LDAP support:     ${@CURL.curl_ldap_msg}",
+                "  LDAPS support:    ${@CURL.curl_ldaps_msg}",
+                "  RTSP support:     ${@CURL.curl_rtsp_msg}",
+                "  RTMP support:     ${@CURL.curl_rtmp_msg}",
+                "  metalink support: ${@CURL.curl_mtlnk_msg}",
+                "  PSL support:      ${@CURL.curl_psl_msg}",
+                "  HTTP2 support:    ${@CURL.curl_h2_msg}",
+                "  Protocols:        ${@CURL.SUPPORT_PROTOCOLS}",
+                ""
+            ].join("\n");
         };
 
         // Done.
