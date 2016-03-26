@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "326B7C701CA5FC170075D0F6"
-               BuildableName = "icetea"
-               BlueprintName = "icetea"
+               BlueprintIdentifier = "32A1C76F1CA6017F0061B67C"
+               BuildableName = "incbin"
+               BlueprintName = "incbin"
                ReferencedContainer = "container:IceTea.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -32,9 +32,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "326B7C701CA5FC170075D0F6"
-            BuildableName = "icetea"
-            BlueprintName = "icetea"
+            BlueprintIdentifier = "32A1C76F1CA6017F0061B67C"
+            BuildableName = "incbin"
+            BlueprintName = "incbin"
             ReferencedContainer = "container:IceTea.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -55,9 +55,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "326B7C701CA5FC170075D0F6"
-            BuildableName = "icetea"
-            BlueprintName = "icetea"
+            BlueprintIdentifier = "32A1C76F1CA6017F0061B67C"
+            BuildableName = "incbin"
+            BlueprintName = "incbin"
             ReferencedContainer = "container:IceTea.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -74,9 +74,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "326B7C701CA5FC170075D0F6"
-            BuildableName = "icetea"
-            BlueprintName = "icetea"
+            BlueprintIdentifier = "32A1C76F1CA6017F0061B67C"
+            BuildableName = "incbin"
+            BlueprintName = "incbin"
             ReferencedContainer = "container:IceTea.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

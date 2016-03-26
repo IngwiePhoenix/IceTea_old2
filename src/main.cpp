@@ -13,19 +13,7 @@
 
 #include "IceTea.h"
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#include "file_system.hpp"
-#endif
-
 int main(int argc, char** argv) {
-    #ifdef EMSCRIPTEN
-    // Navigate to the cwd...
-    stlplus::folder_set_current(
-        emscripten_run_script_string("process.cwd();")
-    );
-    #endif
-
     IceTea* it = IceTea::create();
     return it
         ->setupCli(argc, (const char**)argv)
