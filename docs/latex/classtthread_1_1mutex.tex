@@ -1,0 +1,109 @@
+\hypertarget{classtthread_1_1mutex}{}\section{tthread\+:\+:mutex Class Reference}
+\label{classtthread_1_1mutex}\index{tthread\+::mutex@{tthread\+::mutex}}
+
+
+Mutex class.  
+
+
+
+
+{\ttfamily \#include $<$tinythread.\+h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classtthread_1_1mutex_a5f264cc02eada94f1e34c051ba739dd6}{mutex} ()\hypertarget{classtthread_1_1mutex_a5f264cc02eada94f1e34c051ba739dd6}{}\label{classtthread_1_1mutex_a5f264cc02eada94f1e34c051ba739dd6}
+
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hyperlink{classtthread_1_1mutex_a77eed89cdb2fc397d7d36945124ead51}{$\sim$mutex} ()\hypertarget{classtthread_1_1mutex_a77eed89cdb2fc397d7d36945124ead51}{}\label{classtthread_1_1mutex_a77eed89cdb2fc397d7d36945124ead51}
+
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void \hyperlink{classtthread_1_1mutex_a41add9fd340426bfe5a7eac19e326e2a}{lock} ()
+\begin{DoxyCompactList}\small\item\em Lock the mutex. \end{DoxyCompactList}\item 
+bool \hyperlink{classtthread_1_1mutex_afe904e063e778a4f513f709c93b8fbb2}{try\+\_\+lock} ()
+\begin{DoxyCompactList}\small\item\em Try to lock the mutex. \end{DoxyCompactList}\item 
+void \hyperlink{classtthread_1_1mutex_a1727e54dc48cc8598fe7908366a562a6}{unlock} ()
+\begin{DoxyCompactList}\small\item\em Unlock the mutex. \end{DoxyCompactList}\item 
+{\bfseries mutex} (const \hyperlink{classtthread_1_1mutex}{mutex} \&)\hypertarget{classtthread_1_1mutex_a0216bd810c9f26070aca164a7982fefe}{}\label{classtthread_1_1mutex_a0216bd810c9f26070aca164a7982fefe}
+
+\item 
+\hyperlink{classtthread_1_1mutex}{mutex} \& {\bfseries operator=} (const \hyperlink{classtthread_1_1mutex}{mutex} \&)\hypertarget{classtthread_1_1mutex_a9e4c9b6180111f76f495f5c21e37974a}{}\label{classtthread_1_1mutex_a9e4c9b6180111f76f495f5c21e37974a}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries condition\+\_\+variable}\hypertarget{classtthread_1_1mutex_a89c9b6aa2256fa5efd92a333d96381d4}{}\label{classtthread_1_1mutex_a89c9b6aa2256fa5efd92a333d96381d4}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Mutex class. 
+
+This is a mutual exclusion object for synchronizing access to shared memory areas for several threads. The mutex is non-\/recursive (i.\+e. a program may deadlock if the thread that owns a mutex object calls \hyperlink{classtthread_1_1mutex_a41add9fd340426bfe5a7eac19e326e2a}{lock()} on that object). \begin{DoxySeeAlso}{See also}
+\hyperlink{classtthread_1_1recursive__mutex}{recursive\+\_\+mutex} 
+\end{DoxySeeAlso}
+
+
+Definition at line 159 of file tinythread.\+h.
+
+
+
+\subsection{Member Function Documentation}
+\index{tthread\+::mutex@{tthread\+::mutex}!lock@{lock}}
+\index{lock@{lock}!tthread\+::mutex@{tthread\+::mutex}}
+\subsubsection[{\texorpdfstring{lock()}{lock()}}]{\setlength{\rightskip}{0pt plus 5cm}void tthread\+::mutex\+::lock (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classtthread_1_1mutex_a41add9fd340426bfe5a7eac19e326e2a}{}\label{classtthread_1_1mutex_a41add9fd340426bfe5a7eac19e326e2a}
+
+
+Lock the mutex. 
+
+The method will block the calling thread until a lock on the mutex can be obtained. The mutex remains locked until {\ttfamily \hyperlink{classtthread_1_1mutex_a1727e54dc48cc8598fe7908366a562a6}{unlock()}} is called. \begin{DoxySeeAlso}{See also}
+\hyperlink{classtthread_1_1lock__guard}{lock\+\_\+guard} 
+\end{DoxySeeAlso}
+
+
+Definition at line 188 of file tinythread.\+h.
+
+\index{tthread\+::mutex@{tthread\+::mutex}!try\+\_\+lock@{try\+\_\+lock}}
+\index{try\+\_\+lock@{try\+\_\+lock}!tthread\+::mutex@{tthread\+::mutex}}
+\subsubsection[{\texorpdfstring{try\+\_\+lock()}{try_lock()}}]{\setlength{\rightskip}{0pt plus 5cm}bool tthread\+::mutex\+::try\+\_\+lock (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classtthread_1_1mutex_afe904e063e778a4f513f709c93b8fbb2}{}\label{classtthread_1_1mutex_afe904e063e778a4f513f709c93b8fbb2}
+
+
+Try to lock the mutex. 
+
+The method will try to lock the mutex. If it fails, the function will return immediately (non-\/blocking). \begin{DoxyReturn}{Returns}
+{\ttfamily true} if the lock was acquired, or {\ttfamily false} if the lock could not be acquired. 
+\end{DoxyReturn}
+
+
+Definition at line 204 of file tinythread.\+h.
+
+\index{tthread\+::mutex@{tthread\+::mutex}!unlock@{unlock}}
+\index{unlock@{unlock}!tthread\+::mutex@{tthread\+::mutex}}
+\subsubsection[{\texorpdfstring{unlock()}{unlock()}}]{\setlength{\rightskip}{0pt plus 5cm}void tthread\+::mutex\+::unlock (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classtthread_1_1mutex_a1727e54dc48cc8598fe7908366a562a6}{}\label{classtthread_1_1mutex_a1727e54dc48cc8598fe7908366a562a6}
+
+
+Unlock the mutex. 
+
+If any threads are waiting for the lock on this mutex, one of them will be unblocked. 
+
+Definition at line 222 of file tinythread.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{tinythread_8h}{tinythread.\+h}\end{DoxyCompactItemize}

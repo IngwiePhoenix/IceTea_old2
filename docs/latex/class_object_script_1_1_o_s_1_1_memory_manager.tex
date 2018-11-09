@@ -1,0 +1,57 @@
+\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager}{}\section{Object\+Script\+:\+:OS\+:\+:Memory\+Manager Class Reference}
+\label{class_object_script_1_1_o_s_1_1_memory_manager}\index{Object\+Script\+::\+O\+S\+::\+Memory\+Manager@{Object\+Script\+::\+O\+S\+::\+Memory\+Manager}}
+Inheritance diagram for Object\+Script\+:\+:OS\+:\+:Memory\+Manager\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_object_script_1_1_o_s_1_1_memory_manager}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$ {\bfseries retain} ()\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_aa82971b54d37ddf78532bb7a69879131}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_aa82971b54d37ddf78532bb7a69879131}
+
+\item 
+void {\bfseries release} ()\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a17d4544ca2b03e1216716095cda7e469}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a17d4544ca2b03e1216716095cda7e469}
+
+\item 
+virtual void $\ast$ {\bfseries malloc} (int size)=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a3b9950b53ec2356d07c9fddf68cf0580}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a3b9950b53ec2356d07c9fddf68cf0580}
+
+\item 
+virtual void {\bfseries free} (void $\ast$p)=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a5bdf7cb5b938e5bb607d12fd301c95d3}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a5bdf7cb5b938e5bb607d12fd301c95d3}
+
+\item 
+virtual void {\bfseries set\+Breakpoint\+Id} (int id)=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_aee8cad55eb24e582ed9e3d8305bab8ec}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_aee8cad55eb24e582ed9e3d8305bab8ec}
+
+\item 
+virtual int {\bfseries get\+Allocated\+Bytes} ()=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_af4133bfd91d68202d840a15f9ad4cf12}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_af4133bfd91d68202d840a15f9ad4cf12}
+
+\item 
+virtual int {\bfseries get\+Max\+Allocated\+Bytes} ()=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a8d29a551bccc528c352cebb62b6030f5}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a8d29a551bccc528c352cebb62b6030f5}
+
+\item 
+virtual int {\bfseries get\+Used\+Bytes} ()=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a209b978a24df7a71830a469d8bd470c9}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a209b978a24df7a71830a469d8bd470c9}
+
+\item 
+virtual int {\bfseries get\+Cached\+Bytes} ()=0\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a6a858d403bb8bd9aaa60da5b83b321bc}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a6a858d403bb8bd9aaa60da5b83b321bc}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int {\bfseries ref\+\_\+count}\hypertarget{class_object_script_1_1_o_s_1_1_memory_manager_a90a4aa41fb955e5d2f44346f32b025c3}{}\label{class_object_script_1_1_o_s_1_1_memory_manager_a90a4aa41fb955e5d2f44346f32b025c3}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 353 of file objectscript.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/objectscript.\+h\item 
+src/objectscript.\+cpp\end{DoxyCompactItemize}

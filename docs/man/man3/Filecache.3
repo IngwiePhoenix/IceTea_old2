@@ -1,0 +1,52 @@
+.TH "Filecache" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+Filecache \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "bool \fBsync\fP ()"
+.br
+.ti -1c
+.RI "bool \fBreread\fP ()"
+.br
+.ti -1c
+.RI "std::map< std::string, std::string > \fBgetMap\fP (const std::string &obj)"
+.br
+.ti -1c
+.RI "\fBFilecache\fP (const char *fname)"
+.br
+.ti -1c
+.RI "\fBFilecache\fP (const std::string fname)"
+.br
+.ti -1c
+.RI "void \fBset\fP (const std::string key, const std::string val, std::string obj='root')"
+.br
+.ti -1c
+.RI "std::string \fBget\fP (const std::string key, const std::string obj='root')"
+.br
+.ti -1c
+.RI "bool \fBremove\fP (const std::string key, std::string obj='root')"
+.br
+.ti -1c
+.RI "void \fBfile\fP (const char *fn)"
+.br
+.ti -1c
+.RI "void \fBfile\fP (const std::string fn)"
+.br
+.ti -1c
+.RI "std::string \fBfile\fP ()"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 32 of file filecache\&.hpp\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

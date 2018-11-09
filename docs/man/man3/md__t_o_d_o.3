@@ -1,0 +1,347 @@
+.TH "md__t_o_d_o" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+md__t_o_d_o \- ToDo: To make it better\&.\&.\&. 
+I have set up myself to make an awesome build tool\&. But as each project's nature, it has a todo list\&. Here it goes!
+.PP
+.IP "\(bu" 2
+[X] Support creation and manipulation of files by mapping the oldschool \fCFILE* f*()\fP functions into the \fCos-pfs\fP module\&.
+.IP "\(bu" 2
+[X] Finally introduce the usage of actions instead of building all targets\&.
+.IP "\(bu" 2
+[X] Implement sanity checks to make sure that an action/target/rule object is correctly entered\&.
+.IP "\(bu" 2
+[-] Introduce \fCexternal(name) {\&.\&.\&. opts \&.\&.\&.}\fP
+.IP "\(bu" 2
+[X] Implement the detector module\&.
+.IP "\(bu" 2
+[X] Implement an overall caching storage to make it possible for the app to store a cache for detector and alike\&.
+.IP "\(bu" 2
+[X] Somehow introduce console colors for all platforms\&.
+.IP "\(bu" 2
+[X] Introduce pre-inclusion (\fCrequire()\fPing all files within a specified subfolder)
+.IP "\(bu" 2
+[ ] Introduce addition to \fCrequire()\fP to automatically include a project\&. I\&.e\&.: \fCrequire\&.project 'submodule/'\fP
+.IP "  \(bu" 4
+And what if the project has a custom \fCbootstrap\&.it\fP? o\&.o It shouldn't, but that might actually matter\&. Therefore, this feature should come along with actual Project support\&.
+.PP
+
+.IP "\(bu" 2
+[X] Begin using the \fCprepare()\fP method for rules\&.
+.IP "\(bu" 2
+[X] Implement the \fCtag()\fP mechanism for usage inside targets/externals and the function to do a proper lookup\&.
+.IP "\(bu" 2
+[X] Introduce the array \fC+\fP operator\&. I\&.e\&.: \fCvar a=['foo'] + ['bar']\fP\&. \fCo\fP should now contain: \fC['foo','bar']\fP
+.IP "\(bu" 2
+[X] Proper SHA2 implementation
+.IP "\(bu" 2
+[X] Properly implement the lib+func checks (libdl on linux and what on Win32?)
+.PP
+.PP
+.SS "Added 19th Dec\&. 2014, 3\&.40AM"
+.PP
+.IP "\(bu" 2
+[X] Introduce dependency tracker
+.IP "\(bu" 2
+[X] Rewrite \fCvoid Run(void*)\fP for a better update tracker\&. It currently will happily rerun a task \fBmultiple\fP times\&. It needs to learn to only run a task once, and only once\&.
+.IP "\(bu" 2
+[X] Add \fC+\fP operator for \fCObject\fP\&.
+.IP "\(bu" 2
+[X] Better error handling if OS actually crashed\&. Currently \fCint main(int,char**)\fP will report that no targets were built whilst it actually has an exception written ontop of it\&.
+.IP "\(bu" 2
+[ ] Separate debug/non-debug builds
+.IP "  \(bu" 4
+Should allow some options to be set for output folder, etc\&.\&.\&. Maybe use a Profile kinda thing?
+.PP
+
+.IP "\(bu" 2
+[X] Better Windows linker support / flag passing / warning handling\&.
+.IP "\(bu" 2
+[X] Implement a \fCbuild(Array)\fP method to allow scripted builds (i\&.e\&. from within a function, add tasks to the queue\&.)
+.IP "\(bu" 2
+[X] Make rules able to depend upon targets also\&.
+.IP "\(bu" 2
+[X] Let targets finalize themselves (i\&.e\&. copy resulting binary to root folder - or link it at least)
+.PP
+.PP
+.SS "Added 25th Dec\&. 2014, 1\&.27PM"
+.PP
+.IP "\(bu" 2
+[X] Introduce a proper dependency tracking\&. Resolve target outputs and add them to the dependencies\&.
+.IP "  \(bu" 4
+May make it recursive\&.
+.PP
+
+.IP "\(bu" 2
+[X] Finally write \fCdetect\&.write_*()\fP functions\&.
+.IP "  \(bu" 4
+[X] \fCdetect\&.write_header()\fP
+.IP "  \(bu" 4
+[X] \fCdetect\&.write_json()\fP
+.PP
+
+.IP "\(bu" 2
+[X] Proper build flags for the \fC\fBIceTea\fP\fP target
+.IP "\(bu" 2
+[ ] Introduce an \fCinstall\fP kind of thing\&.
+.IP "\(bu" 2
+[ ] Teach \fCbootstrap\&.it\fP these rules:
+.IP "  \(bu" 4
+ASM: Assembly
+.IP "  \(bu" 4
+C#: CSharp
+.IP "  \(bu" 4
+Framework: OS X Framework
+.IP "  \(bu" 4
+Component: A generic module
+.IP "  \(bu" 4
+Concat: Combine inputs into single output
+.IP "  \(bu" 4
+Shared libraries
+.IP "  \(bu" 4
+Static libraries (Partialy)
+.PP
+
+.IP "\(bu" 2
+[X] Implement these settings: [Rules now use the settings, so they are userland-defined\&.]
+.IP "  \(bu" 4
+native\&.framework_dirs: OBJC, OBJCXX
+.IP "  \(bu" 4
+OBJC/XX\&.GC/ARC: Settings for garbage collection or ARC
+.IP "  \(bu" 4
+LIB\&.rpath: Search paths and install name
+.IP "  \(bu" 4
+COMPONENT: target binary, other settings
+.IP "  \(bu" 4
+ASM: Defines and such
+.PP
+
+.IP "\(bu" 2
+[X] Finally take \fCbootstrap\&.it\fP into memory within a post-build
+.IP "  \(bu" 4
+Using the \fCincbin\fP utility\&.
+.PP
+
+.PP
+.PP
+.SS "Added 20th Februrary 2015, 10\&.21AM"
+.PP
+.IP "\(bu" 2
+[X] Rewrite build executor (Thanks to  :))
+.IP "  \(bu" 4
+First generate all the tasks, then loop over them to execute them\&.
+.IP "  \(bu" 4
+Wait on multiple tasks (commands) and check for their status\&.
+.IP "    \(bu" 6
+If failed, let the other commands finish first, then exit\&.
+.PP
+
+.IP "  \(bu" 4
+Use \fC\fBstlplus::async_subprocess\fP\fP\&.
+.IP "  \(bu" 4
+Create a subclass that reports \fCbool done()\fP\&.
+.PP
+
+.IP "\(bu" 2
+[-] Make \fCsettings\&.LINK\&.libraries\fP unique (i\&.e\&.: only one \fC-lmylib\fP per array)
+.IP "  \(bu" 4
+Should probably make \fCArray\&.dedupe\fP\&.
+.PP
+
+.PP
+.PP
+.SS "Added 20th November 2015, 11:07PM"
+.PP
+.IP "\(bu" 2
+[X] Implement a Topsort mechanism
+.IP "  \(bu" 4
+Luckily, advice was retrived here: http://stackoverflow.com/a/30249477/2423150
+.PP
+
+.IP "\(bu" 2
+[ ] Possibly generate a graph\&.
+.IP "\(bu" 2
+[ ] Maybe introduce RegEx support\&.
+.IP "  \(bu" 4
+I can, via extensions\&.
+.PP
+
+.PP
+.PP
+.SS "Added 10th Janurary 2016, 6:42AM"
+.PP
+.IP "\(bu" 2
+[ ] Re-implement a \fCdescribe/it\fP style testing framework as seen in:
+.IP "  \(bu" 4
+https://github.com/stephenmathieson/describe.h/blob/master/describe.h
+.PP
+
+.PP
+.PP
+.SS "Added 12th Janurary 2016, 5\&.47AM"
+.PP
+.IP "\(bu" 2
+[X] Make sure that files within a target actually exist\&.
+.PP
+.PP
+.SS "Added 13th Janurary 2016, 4\&.20PM"
+.PP
+.IP "\(bu" 2
+[X] Add a rule - and options - that allow it to be 'not run'\&.
+.IP "  \(bu" 4
+Makes it possible for targets to depend on header-only libs\&.
+.IP "  \(bu" 4
+Get extra settings in or trigger other configure steps\&.
+.PP
+
+.IP "\(bu" 2
+[Never] Build the same target for multiple rules\&. I\&.e\&. as shared and static library\&.
+.IP "  \(bu" 4
+This might result in chaos\&. Rather, just copy the input object to multiple targets\&.
+.IP "  \(bu" 4
+Or just depend on the parent as a lirary and go from there\&.
+.PP
+
+.IP "\(bu" 2
+[X] Write proper process classes\&. \fC$()\fP is nice, but more complex classes are needed\&.
+.IP "  \(bu" 4
+\fCSubProcess\fP: Pass\fC{async:}\fP with either \fCtrue\fP or \fCfalse\fP\&.
+.IP "  \(bu" 4
+\fCshell\fP will not be affected by this\&. It uses an entirely different routine anyway\&.
+.PP
+
+.IP "\(bu" 2
+[X] Rewrite parts of \fCdetect\fP in OS itself to simplify source\&.
+.IP "\(bu" 2
+[X] Store info about input files' last-changed date\&. On subsequent runs, filter these, and manipulate the queue accordingly\&.
+.PP
+.PP
+.SS "Added 16th Janurary 2016, 1\&.02AM"
+.PP
+.IP "\(bu" 2
+[ ] Overwrite internal ObjectScript classes to extend behaviour\&.
+.IP "  \(bu" 4
+[ ] \fCOS::initPreScript()\fP: can run a script for initialization\&. We can use that in \fCIceTea::initializeModules()\fP\&. We can also override \fCrequire()\fP!
+.IP "  \(bu" 4
+[ ] \fCOS::resolveFile(OS::String)\fP -> \fCrequire\&.resolve\fP: Resolve a file\&.
+.PP
+
+.IP "\(bu" 2
+[ ] Utilize \fCOS::Core\fP to get ahold of the backtrace\&.
+.IP "  \(bu" 4
+Useful for finding the currently executed file!
+.PP
+
+.IP "\(bu" 2
+[X] Introduce \fCTemplate\fP\&. A class to take \fC\&.in\fP files and transform them\&.
+.IP "  \(bu" 4
+No extra class needed\&. Simply using OS now\&.
+.IP "  \(bu" 4
+However, I should add \fC@NAME@\fP substitutions\&.\&.\&.
+.IP "  \(bu" 4
+But that would require Regex O\&.o so I might not\&.
+.PP
+
+.IP "\(bu" 2
+[X] Export cached values into ObjectScript, so that we can process \fC\&.in\fP files\&.
+.PP
+.PP
+.SS "Added 18th Janurary 2016, 5\&.12pm"
+.PP
+.IP "\(bu" 2
+[ ] Advanced APIs:
+.IP "  \(bu" 4
+Compile a file directly, utilize \fBIceTea\fP's functionality to properly resolve the compiler and any settings\&. Provide a 'Template target' to serve all the various settings\&.
+.IP "  \(bu" 4
+Simplify the usage of sub-builds\&.
+.PP
+
+.IP "\(bu" 2
+[ ] Find better ways to merge as many tasks together as possible\&.
+.IP "  \(bu" 4
+Idea: Look-ahead\&. See if topmost task in next level has any unbuilt deps, and if not, lower it to current\&.
+.PP
+
+.IP "\(bu" 2
+[ ] Improve caching and step-minimizing\&.
+.IP "  \(bu" 4
+File hashing is only one thing\&.\&.\&.
+.PP
+
+.IP "\(bu" 2
+[ ] A way to have sub-builds trigger changes in upstream\&. So that generated code gets re-compiled into an executable\&.
+.IP "  \(bu" 4
+This actually should happen, since the hash would change\&. Hm\&.\&.\&.
+.PP
+
+.PP
+.PP
+.SS "Added 13th March 2016, 4:40am"
+.PP
+.IP "\(bu" 2
+[ ] Overhaul \fCTask\fP:
+.IP "  \(bu" 4
+[ ] Implement \fCprofiles\fP property\&. Each function corresponds to a scheme\&.
+.IP "  \(bu" 4
+[ ] Use double-underscore to indicate private methods\&.
+.PP
+
+.IP "\(bu" 2
+[ ] \fCProject\fPs:
+.IP "  \(bu" 4
+[ ] Name, description, version\&.
+.IP "  \(bu" 4
+[ ] Each project can have it's own steps/rules\&. Falls back to global ones\&.
+.IP "  \(bu" 4
+[ ] Projects can import steps/rules from others\&.
+.IP "  \(bu" 4
+[ ] Projects are imported with their \fCbootstrap\&.it\fP file first\&.
+.IP "  \(bu" 4
+[ ] A included project's \fC\&.\fBIceTea\fP\fP folder becomes available only to the project - call it private resources\&.
+.PP
+
+.PP
+.PP
+.SS "Added 17th March 2016, 7:09am"
+.PP
+.IP "\(bu" 2
+[ ] Default paths for Pluma based plugins
+.IP "\(bu" 2
+[ ] Introduce 'install' step for IceTea! 
+.SS "Later that day"
+
+.PP
+.PP
+.IP "\(bu" 2
+[New concept] Flag targets, allowing them to:
+.IP "  \(bu" 4
+Specify the kind of tooling they want\&. (Native, Emscripten, Cheerp, \&.\&.\&.)
+.IP "  \(bu" 4
+Give steps the ability to be not applied\&. Even if the pattern matches, but a flag is not set, dont use it\&.
+.PP
+
+.IP "\(bu" 2
+[ ] Recursive dependency traversal\&. Ouch\&.
+.IP "  \(bu" 4
+Target A depends on B, which depends on C\&.
+.IP "  \(bu" 4
+Merge C into B, into A\&.
+.PP
+
+.PP
+.PP
+.SS "Added 17th March 2016, 7:09am"
+.PP
+.IP "\(bu" 2
+[-] Add compiler \fC-target\fP support\&.
+.IP "  \(bu" 4
+Might not work on Windows\&.
+.IP "  \(bu" 4
+Will allow for stuff like Cheerp to work\&.
+.IP "  \(bu" 4
+Partially implemented when Toolchains become a thing\&. Just use an extra flag\&. 
+.PP
+
+.PP
+

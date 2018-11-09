@@ -1,0 +1,66 @@
+\hypertarget{classpluma_1_1_host}{}\section{pluma\+:\+:Host Class Reference}
+\label{classpluma_1_1_host}\index{pluma\+::\+Host@{pluma\+::\+Host}}
+
+
+Manages providers.  
+
+
+
+
+{\ttfamily \#include $<$Host.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \hyperlink{classpluma_1_1_host_ab673ba94ff56a12cdf2a7a25ebb8cc36}{add} (\hyperlink{classpluma_1_1_provider}{Provider} $\ast$provider)
+\begin{DoxyCompactList}\small\item\em Add provider. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries Plugin\+Manager}\hypertarget{classpluma_1_1_host_ad0ccd35859b04e162412b22bf5200374}{}\label{classpluma_1_1_host_ad0ccd35859b04e162412b22bf5200374}
+
+\item 
+class {\bfseries Provider}\hypertarget{classpluma_1_1_host_a70ab087352a74128b9608cf9e7d24c71}{}\label{classpluma_1_1_host_a70ab087352a74128b9608cf9e7d24c71}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Manages providers. 
+
+Definition at line 44 of file Host.\+hpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{pluma\+::\+Host@{pluma\+::\+Host}!add@{add}}
+\index{add@{add}!pluma\+::\+Host@{pluma\+::\+Host}}
+\subsubsection[{\texorpdfstring{add(\+Provider $\ast$provider)}{add(Provider *provider)}}]{\setlength{\rightskip}{0pt plus 5cm}bool pluma\+::\+Host\+::add (
+\begin{DoxyParamCaption}
+\item[{{\bf Provider} $\ast$}]{provider}
+\end{DoxyParamCaption}
+)}\hypertarget{classpluma_1_1_host_ab673ba94ff56a12cdf2a7a25ebb8cc36}{}\label{classpluma_1_1_host_ab673ba94ff56a12cdf2a7a25ebb8cc36}
+
+
+Add provider. 
+
+\hyperlink{classpluma_1_1_provider}{Provider} type and version are checked. Only known and valid provider types are accepted.
+
+
+\begin{DoxyParams}{Parameters}
+{\em provider} & \hyperlink{classpluma_1_1_provider}{Provider} to be added.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the provider is accepted. 
+\end{DoxyReturn}
+
+
+Definition at line 42 of file Host.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Host.\+hpp\item 
+src/Host.\+cpp\end{DoxyCompactItemize}

@@ -9,6 +9,13 @@
 #include "objectscript.h"
 #include "os-icetea.h"
 
+#ifdef stdout
+#   undef stdout
+#endif
+#ifdef stderr
+#   undef stderr
+#endif
+
 class SyncProcess: public stlplus::subprocess {
 private:
     std::string stdout;

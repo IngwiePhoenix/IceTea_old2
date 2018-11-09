@@ -1,0 +1,53 @@
+.TH "tthread::chrono" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+tthread::chrono \- Minimal implementation of the \fCchrono\fP namespace\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBduration\fP"
+.br
+.RI "\fIDuration template class\&. \fP"
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t, \fBratio\fP< 1, 1000000000 > > \fBnanoseconds\fP"
+.br
+.RI "\fIDuration with the unit nanoseconds\&. \fP"
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t, \fBratio\fP< 1, 1000000 > > \fBmicroseconds\fP"
+.br
+.RI "\fIDuration with the unit microseconds\&. \fP"
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t, \fBratio\fP< 1, 1000 > > \fBmilliseconds\fP"
+.br
+.RI "\fIDuration with the unit milliseconds\&. \fP"
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t > \fBseconds\fP"
+.br
+.RI "\fIDuration with the unit seconds\&. \fP"
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t, \fBratio\fP< 60 > > \fBminutes\fP"
+.br
+.RI "\fIDuration with the unit minutes\&. \fP"
+.ti -1c
+.RI "typedef \fBduration\fP< __intmax_t, \fBratio\fP< 3600 > > \fBhours\fP"
+.br
+.RI "\fIDuration with the unit hours\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Minimal implementation of the \fCchrono\fP namespace\&. 
+
+The \fCchrono\fP namespace provides types for specifying time intervals\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

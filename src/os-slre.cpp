@@ -80,7 +80,10 @@ class IceTeaSLRE: public IceTeaPlugin {
         }
 
         // Capture us some results.
-        struct slre_cap caps[pars];
+        // Also, this is a workaround for MSVC C2057
+        // See: http://www.fredosaurus.com/notes-cpp/newdelete/50dynamalloc.html
+        typedef struct slre_cap SLRE;
+        SLRE* caps = new SLRE[pars];
 
         int rt = slre_match(
             pattern, buffer, buff_len,
@@ -92,38 +95,47 @@ class IceTeaSLRE: public IceTeaPlugin {
             case SLRE_NO_MATCH:
                 os->pushNumber(rt);
                 os->newArray();
+                delete[] caps;
                 return 2;
 
             case SLRE_UNEXPECTED_QUANTIFIER:
                 os->setException("SLRE: Unexpected quantifier");
+                delete[] caps;
                 return 0;
 
             case SLRE_UNBALANCED_BRACKETS:
                 os->setException("SLRE: Unbalanced brackets");
+                delete[] caps;
                 return 0;
 
             case SLRE_INTERNAL_ERROR:
                 os->setException("SLRE: Internal error");
+                delete[] caps;
                 return 0;
 
             case SLRE_INVALID_CHARACTER_SET:
                 os->setException("SLRE: Invalid character set");
+                delete[] caps;
                 return 0;
 
             case SLRE_INVALID_METACHARACTER:
                 os->setException("SLRE: Invalid metacharacter");
+                delete[] caps;
                 return 0;
 
             case SLRE_CAPS_ARRAY_TOO_SMALL:
                 os->setException("SLRE: (In native code:) Capture array too small");
+                delete[] caps;
                 return 0;
 
             case SLRE_TOO_MANY_BRANCHES:
                 os->setException("SLRE: Too many branches");
+                delete[] caps;
                 return 0;
 
             case SLRE_TOO_MANY_BRACKETS:
                 os->setException("SLRE: Too many brackets");
+                delete[] caps;
                 return 0;
         }
 
@@ -135,6 +147,7 @@ class IceTeaSLRE: public IceTeaPlugin {
             os->pushString(caps[i].ptr, caps[i].len);
             os->addProperty(-2);
         }
+        delete[] caps;
         return 2;
     }
 

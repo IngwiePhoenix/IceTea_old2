@@ -54,13 +54,9 @@ public:
         os->pushCFunction(os_die);
         os->setGlobal("abort");
 
-        OS::FuncDef wcFuncs[] = {
-            {OS_TEXT("match"), wildcard_match},
-            {}
-        };
         os->getModule("wildcard");
-        os->setFuncs(wcFuncs);
-        os->pop();
+        os->pushCFunction(wildcard_match);
+        os->setProperty(-2, "match");
 
         return true;
     }

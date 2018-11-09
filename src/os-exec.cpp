@@ -2,11 +2,9 @@
 #include <utility>
 #include <iostream>
 #include "IceTea.h"
-#include "os-exec.h"
-#include "subprocesses.hpp"
 #include "InternalIceTeaPlugin.h"
-
-#include "icetea-emscripten.h"
+#include "subprocesses.hpp"
+#include "os-exec.h"
 
 using namespace std;
 using namespace ObjectScript;

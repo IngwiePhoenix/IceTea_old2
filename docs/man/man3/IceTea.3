@@ -1,0 +1,101 @@
+.TH "IceTea" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+IceTea \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBObjectScript::OS\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBinitSettings\fP ()"
+.br
+.ti -1c
+.RI "void \fBsetDebug\fP (bool)"
+.br
+.ti -1c
+.RI "bool \fBgetDebug\fP ()"
+.br
+.ti -1c
+.RI "void \fBprintDebug\fP (std::string)"
+.br
+.ti -1c
+.RI "\fBIceTea\fP * \fBsetupCli\fP (std::vector< std::string >)"
+.br
+.ti -1c
+.RI "\fBIceTea\fP * \fBsetupCli\fP (int, const char **)"
+.br
+.ti -1c
+.RI "\fBCLI\fP * \fBgetCliHandle\fP ()"
+.br
+.ti -1c
+.RI "void \fBreparseCli\fP ()"
+.br
+.ti -1c
+.RI "\fBFilecache\fP * \fBgetFilecache\fP ()"
+.br
+.ti -1c
+.RI "bool \fBcheckAndRunInline\fP (int &)"
+.br
+.ti -1c
+.RI "bool \fBcheckAndRunHelp\fP ()"
+.br
+.ti -1c
+.RI "bool \fBcheckAndListModules\fP (int &)"
+.br
+.ti -1c
+.RI "bool \fBhasEndedExecuting\fP (int &)"
+.br
+.ti -1c
+.RI "bool \fBhasEndedExecuting\fP ()"
+.br
+.ti -1c
+.RI "void \fBrequire\fP (std::string)"
+.br
+.ti -1c
+.RI "void \fBeval\fP (std::string)"
+.br
+.ti -1c
+.RI "void \fBeval\fP (std::string, int)"
+.br
+.ti -1c
+.RI "void \fBevalFakeFile\fP (std::string, const unsigned char[], int len)"
+.br
+.ti -1c
+.RI "void \fBevalFakeFile\fP (const char *, const char *)"
+.br
+.ti -1c
+.RI "bool \fBisBool\fP (int offs)"
+.br
+.ti -1c
+.RI "bool \fBisBool\fP ()"
+.br
+.ti -1c
+.RI "bool \fBstartup\fP ()"
+.br
+.ti -1c
+.RI "void \fBrunMain\fP (int &)"
+.br
+.ti -1c
+.RI "int \fBrun\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBIceTea\fP * \fBcreate\fP (\fBObjectScript::OS::MemoryManager\fP *=NULL)"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+Definition at line 27 of file IceTea\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

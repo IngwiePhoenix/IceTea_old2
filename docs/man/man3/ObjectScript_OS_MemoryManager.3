@@ -1,0 +1,55 @@
+.TH "ObjectScript::OS::MemoryManager" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::MemoryManager \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OSHeapManager\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBMemoryManager\fP * \fBretain\fP ()"
+.br
+.ti -1c
+.RI "void \fBrelease\fP ()"
+.br
+.ti -1c
+.RI "virtual void * \fBmalloc\fP (int size)=0"
+.br
+.ti -1c
+.RI "virtual void \fBfree\fP (void *p)=0"
+.br
+.ti -1c
+.RI "virtual void \fBsetBreakpointId\fP (int id)=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetAllocatedBytes\fP ()=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetMaxAllocatedBytes\fP ()=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetUsedBytes\fP ()=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetCachedBytes\fP ()=0"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBref_count\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 353 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

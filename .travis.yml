@@ -17,9 +17,6 @@ script:
   - ./out/icetea -m
 
 matrix:
-  exclude:
-    - os: osx
-      env: TRCXX=i586-mingw32msvc-g++
   allow_failures:
     - env: TRCXX=clang++
     - env: TRCXX=i586-mingw32msvc-g++

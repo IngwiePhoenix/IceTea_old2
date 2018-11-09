@@ -1,0 +1,813 @@
+\hypertarget{class_object_script_1_1_o_s}{}\section{Object\+Script\+:\+:OS Class Reference}
+\label{class_object_script_1_1_o_s}\index{Object\+Script\+::\+OS@{Object\+Script\+::\+OS}}
+Inheritance diagram for Object\+Script\+:\+:OS\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_object_script_1_1_o_s}
+\end{center}
+\end{figure}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_object_script_1_1_o_s_1_1_core}{Core}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_func_def}{Func\+Def}
+\item 
+class \hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_null_def}{Null\+Def}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_number_def}{Number\+Def}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_pop}{Pop}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_save_stack_size}{Save\+Stack\+Size}
+\item 
+class \hyperlink{class_object_script_1_1_o_s_1_1_string}{String}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_string_def}{String\+Def}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_utils}{Utils}
+\item 
+struct \hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_buffer}{Core\+::\+Buffer} {\bfseries Core\+Buffer}\hypertarget{class_object_script_1_1_o_s_a688ce3c0fefe2f092b510b71fc177e2f}{}\label{class_object_script_1_1_o_s_a688ce3c0fefe2f092b510b71fc177e2f}
+
+\item 
+typedef \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_file}{Core\+::\+File} {\bfseries Core\+File}\hypertarget{class_object_script_1_1_o_s_a7fca69a549658a3c16f45889e32813ea}{}\label{class_object_script_1_1_o_s_a7fca69a549658a3c16f45889e32813ea}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Reserve\+Capacity} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, int new\+\_\+capacity)\hypertarget{class_object_script_1_1_o_s_aa94b8785628c970e338652406c069acd}{}\label{class_object_script_1_1_o_s_aa94b8785628c970e338652406c069acd}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Reserve\+Capacity\+Exact} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, int capacity)\hypertarget{class_object_script_1_1_o_s_a0d4f78dd974a0d82539892c16dcfb4ef}{}\label{class_object_script_1_1_o_s_a0d4f78dd974a0d82539892c16dcfb4ef}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Add\+Item} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, const T \&val)\hypertarget{class_object_script_1_1_o_s_a4e1396a5ab3086ec95d852e3e1a00ddf}{}\label{class_object_script_1_1_o_s_a4e1396a5ab3086ec95d852e3e1a00ddf}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Clear} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec)\hypertarget{class_object_script_1_1_o_s_afc90e66a6269ddecd9976040f94ebd01}{}\label{class_object_script_1_1_o_s_afc90e66a6269ddecd9976040f94ebd01}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Release\+Items} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec)\hypertarget{class_object_script_1_1_o_s_ae91c3ef66711cb6cd5ba21bb6bbbec88}{}\label{class_object_script_1_1_o_s_ae91c3ef66711cb6cd5ba21bb6bbbec88}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Delete\+Items} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $\ast$ $>$ \&vec)\hypertarget{class_object_script_1_1_o_s_ac5f0dbd2d0156b2a82c67c8928dc6057}{}\label{class_object_script_1_1_o_s_ac5f0dbd2d0156b2a82c67c8928dc6057}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Insert\+At\+Index} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, int i, const T \&val)\hypertarget{class_object_script_1_1_o_s_a0bf87d6ef789ccd8a3dcb03cbbb5893e}{}\label{class_object_script_1_1_o_s_a0bf87d6ef789ccd8a3dcb03cbbb5893e}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Remove\+At\+Index} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, int i)\hypertarget{class_object_script_1_1_o_s_a1f86dba5c944cc0ced0cf663e804514d}{}\label{class_object_script_1_1_o_s_a1f86dba5c944cc0ced0cf663e804514d}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries vector\+Push} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec, const T \&val)\hypertarget{class_object_script_1_1_o_s_ad45868237584994325441cbd1a6c28c8}{}\label{class_object_script_1_1_o_s_ad45868237584994325441cbd1a6c28c8}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\T {\bfseries vector\+Pop} (\hyperlink{struct_object_script_1_1_o_s_1_1_vector}{Vector}$<$ T $>$ \&vec)\hypertarget{class_object_script_1_1_o_s_a8b0aeafee4b92af0950c7e15cda6cc48}{}\label{class_object_script_1_1_o_s_a8b0aeafee4b92af0950c7e15cda6cc48}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries release\+Obj} (T $\ast$\&obj)\hypertarget{class_object_script_1_1_o_s_ad2c2ff6c8961400a5aa613489f2d9004}{}\label{class_object_script_1_1_o_s_ad2c2ff6c8961400a5aa613489f2d9004}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries delete\+Obj} (T $\ast$\&obj)\hypertarget{class_object_script_1_1_o_s_a9907ba11acb315b3b0f37f63157f8011}{}\label{class_object_script_1_1_o_s_a9907ba11acb315b3b0f37f63157f8011}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries destroy\+Obj} (T \&obj)\hypertarget{class_object_script_1_1_o_s_aae0606378887e677fa4a8359ecda5f10}{}\label{class_object_script_1_1_o_s_aae0606378887e677fa4a8359ecda5f10}
+
+\item 
+virtual \hyperlink{class_object_script_1_1_o_s}{OS} $\ast$ {\bfseries start} (\hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_ad6043762d8c294c2034018607b0b44f9}{}\label{class_object_script_1_1_o_s_ad6043762d8c294c2034018607b0b44f9}
+
+\item 
+virtual bool {\bfseries init} (\hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a46532c6b3631ea493359a56978f6eb74}{}\label{class_object_script_1_1_o_s_a46532c6b3631ea493359a56978f6eb74}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s}{OS} $\ast$ {\bfseries retain} ()\hypertarget{class_object_script_1_1_o_s_a159fba1d74665ae3889014c6a032e7d7}{}\label{class_object_script_1_1_o_s_a159fba1d74665ae3889014c6a032e7d7}
+
+\item 
+void {\bfseries release} ()\hypertarget{class_object_script_1_1_o_s_a893a2da586ce46304a1070208762a1ac}{}\label{class_object_script_1_1_o_s_a893a2da586ce46304a1070208762a1ac}
+
+\item 
+virtual void $\ast$ {\bfseries malloc} (int size)\hypertarget{class_object_script_1_1_o_s_a97f861bd81233395185d55463d8e80d1}{}\label{class_object_script_1_1_o_s_a97f861bd81233395185d55463d8e80d1}
+
+\item 
+virtual void {\bfseries free} (void $\ast$p)\hypertarget{class_object_script_1_1_o_s_a0e481f08e226f3c9cef5b066f951ea57}{}\label{class_object_script_1_1_o_s_a0e481f08e226f3c9cef5b066f951ea57}
+
+\item 
+int {\bfseries get\+Allocated\+Bytes} ()\hypertarget{class_object_script_1_1_o_s_a87f48d61957b1677b97291e53fe94e88}{}\label{class_object_script_1_1_o_s_a87f48d61957b1677b97291e53fe94e88}
+
+\item 
+int {\bfseries get\+Max\+Allocated\+Bytes} ()\hypertarget{class_object_script_1_1_o_s_a5a720819b4dec6cb130103da1467d868}{}\label{class_object_script_1_1_o_s_a5a720819b4dec6cb130103da1467d868}
+
+\item 
+int {\bfseries get\+Used\+Bytes} ()\hypertarget{class_object_script_1_1_o_s_a69adaa89a4dab09dee836c9eb206eb6e}{}\label{class_object_script_1_1_o_s_a69adaa89a4dab09dee836c9eb206eb6e}
+
+\item 
+int {\bfseries get\+Cached\+Bytes} ()\hypertarget{class_object_script_1_1_o_s_a0d27eef3948cefb6e1eb86f64ce5e607}{}\label{class_object_script_1_1_o_s_a0d27eef3948cefb6e1eb86f64ce5e607}
+
+\item 
+void {\bfseries set\+Mem\+Breakpoint\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_a23ce785da5963a2d96231fedf3a2e151}{}\label{class_object_script_1_1_o_s_a23ce785da5963a2d96231fedf3a2e151}
+
+\item 
+int {\bfseries get\+Max\+Call\+Stack} ()\hypertarget{class_object_script_1_1_o_s_ace200aef8359d5d102eeccc7d6a17c3b}{}\label{class_object_script_1_1_o_s_ace200aef8359d5d102eeccc7d6a17c3b}
+
+\item 
+void {\bfseries set\+Max\+Call\+Stack} (int)\hypertarget{class_object_script_1_1_o_s_a16427159899639c245028e17cfdf0073}{}\label{class_object_script_1_1_o_s_a16427159899639c245028e17cfdf0073}
+
+\item 
+bool {\bfseries is\+Terminated} ()\hypertarget{class_object_script_1_1_o_s_a2c642ecb549038fd31f7868aae2c3200}{}\label{class_object_script_1_1_o_s_a2c642ecb549038fd31f7868aae2c3200}
+
+\item 
+int {\bfseries get\+Terminated\+Code} ()\hypertarget{class_object_script_1_1_o_s_ad47f6e75162fd6aad320555e5f09fbc8}{}\label{class_object_script_1_1_o_s_ad47f6e75162fd6aad320555e5f09fbc8}
+
+\item 
+void {\bfseries set\+Terminated} (bool=true, int=0)\hypertarget{class_object_script_1_1_o_s_a4bfe18bbcbb17b44174321aaf96dd117}{}\label{class_object_script_1_1_o_s_a4bfe18bbcbb17b44174321aaf96dd117}
+
+\item 
+void {\bfseries reset\+Terminated} ()\hypertarget{class_object_script_1_1_o_s_a602ee91b47bb4463c11d3e4d92532f41}{}\label{class_object_script_1_1_o_s_a602ee91b47bb4463c11d3e4d92532f41}
+
+\item 
+bool {\bfseries is\+Exception\+Set} ()\hypertarget{class_object_script_1_1_o_s_a8823c870c75e38ef152d4cb1df8ae2e3}{}\label{class_object_script_1_1_o_s_a8823c870c75e38ef152d4cb1df8ae2e3}
+
+\item 
+void {\bfseries get\+Exception} ()\hypertarget{class_object_script_1_1_o_s_a8fa1eed1593aa25dfd08312ca0aa7ba1}{}\label{class_object_script_1_1_o_s_a8fa1eed1593aa25dfd08312ca0aa7ba1}
+
+\item 
+void {\bfseries set\+Exception} ()\hypertarget{class_object_script_1_1_o_s_ad33825bd55a327cbbc2d75946ac9f02c}{}\label{class_object_script_1_1_o_s_ad33825bd55a327cbbc2d75946ac9f02c}
+
+\item 
+void {\bfseries set\+Exception} (const char $\ast$)\hypertarget{class_object_script_1_1_o_s_ae9dac6e98aea30c57f7a45eebf6489d8}{}\label{class_object_script_1_1_o_s_ae9dac6e98aea30c57f7a45eebf6489d8}
+
+\item 
+void {\bfseries set\+Exception} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&)\hypertarget{class_object_script_1_1_o_s_af61e66dedddae6fcbb2ce19181f28806}{}\label{class_object_script_1_1_o_s_af61e66dedddae6fcbb2ce19181f28806}
+
+\item 
+void {\bfseries handle\+Exception} ()\hypertarget{class_object_script_1_1_o_s_a51fc876063f1add09575c65dea23dc29}{}\label{class_object_script_1_1_o_s_a51fc876063f1add09575c65dea23dc29}
+
+\item 
+void {\bfseries reset\+Exception} ()\hypertarget{class_object_script_1_1_o_s_ad622514e3eb728d1d10455ede9b867e7}{}\label{class_object_script_1_1_o_s_ad622514e3eb728d1d10455ede9b867e7}
+
+\item 
+void {\bfseries get\+Property} (bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a3fd600dc121980822e70feb5fd1aedf9}{}\label{class_object_script_1_1_o_s_a3fd600dc121980822e70feb5fd1aedf9}
+
+\item 
+void {\bfseries get\+Property} (const char $\ast$, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a2dc1f141a957cf944cbb426466da8ebc}{}\label{class_object_script_1_1_o_s_a2dc1f141a957cf944cbb426466da8ebc}
+
+\item 
+void {\bfseries get\+Property} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_aaa0ac6e48fd42f9606990f1c7d73d5b5}{}\label{class_object_script_1_1_o_s_aaa0ac6e48fd42f9606990f1c7d73d5b5}
+
+\item 
+void {\bfseries get\+Property} (int offs, const char $\ast$, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a0daaa63b9a29602ca1bbd781def0819d}{}\label{class_object_script_1_1_o_s_a0daaa63b9a29602ca1bbd781def0819d}
+
+\item 
+void {\bfseries get\+Property} (int offs, const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_aa1d8e395f186e6a89b3d6b282f10697e}{}\label{class_object_script_1_1_o_s_aa1d8e395f186e6a89b3d6b282f10697e}
+
+\item 
+void {\bfseries set\+Property} (bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a05fb5664fdfe69bc4eb09a4e045d1c22}{}\label{class_object_script_1_1_o_s_a05fb5664fdfe69bc4eb09a4e045d1c22}
+
+\item 
+void {\bfseries set\+Property} (const char $\ast$, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a3f09b948d4574c3669be6f2f16286718}{}\label{class_object_script_1_1_o_s_a3f09b948d4574c3669be6f2f16286718}
+
+\item 
+void {\bfseries set\+Property} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ac48a730971463f16f6ab1e92e48fb5db}{}\label{class_object_script_1_1_o_s_ac48a730971463f16f6ab1e92e48fb5db}
+
+\item 
+void {\bfseries set\+Property} (int offs, const char $\ast$, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a8174c756017c9c8793c735b4dcd29d9a}{}\label{class_object_script_1_1_o_s_a8174c756017c9c8793c735b4dcd29d9a}
+
+\item 
+void {\bfseries set\+Property} (int offs, const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a37bd9a57e59f449b0c6940863f7bc49d}{}\label{class_object_script_1_1_o_s_a37bd9a57e59f449b0c6940863f7bc49d}
+
+\item 
+void {\bfseries add\+Property} (bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a3303f9dc35fdf8298b320b5457c6c640}{}\label{class_object_script_1_1_o_s_a3303f9dc35fdf8298b320b5457c6c640}
+
+\item 
+void {\bfseries add\+Property} (int offs, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a1454b1480700f43f6e994874f61e47b6}{}\label{class_object_script_1_1_o_s_a1454b1480700f43f6e994874f61e47b6}
+
+\item 
+bool {\bfseries set\+Smart\+Property} (const char $\ast$, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a228989208916cda2cd205e55ac4b556c}{}\label{class_object_script_1_1_o_s_a228989208916cda2cd205e55ac4b556c}
+
+\item 
+bool {\bfseries set\+Smart\+Property} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a2d2c8920eb3bb4666c23b7452f7ab0ee}{}\label{class_object_script_1_1_o_s_a2d2c8920eb3bb4666c23b7452f7ab0ee}
+
+\item 
+void {\bfseries delete\+Property} (bool del\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ab0abb9341eb99aac16e3b9981c323a74}{}\label{class_object_script_1_1_o_s_ab0abb9341eb99aac16e3b9981c323a74}
+
+\item 
+void {\bfseries delete\+Property} (const char $\ast$, bool del\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a6dad203d51ba1c86bf1ea4a9688cb37a}{}\label{class_object_script_1_1_o_s_a6dad203d51ba1c86bf1ea4a9688cb37a}
+
+\item 
+void {\bfseries delete\+Property} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool del\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a92c888b9470c2096bbcef5fa77777c0d}{}\label{class_object_script_1_1_o_s_a92c888b9470c2096bbcef5fa77777c0d}
+
+\item 
+void {\bfseries get\+Global} (const char $\ast$, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a7d847a120259b5db8fef9f11f73f6633}{}\label{class_object_script_1_1_o_s_a7d847a120259b5db8fef9f11f73f6633}
+
+\item 
+void {\bfseries get\+Global} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a5f42f2d99e789eb7f5464f1f7c4e9dd5}{}\label{class_object_script_1_1_o_s_a5f42f2d99e789eb7f5464f1f7c4e9dd5}
+
+\item 
+void {\bfseries set\+Global} (const char $\ast$, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a78aa5613fe989d0f99949f733e861524}{}\label{class_object_script_1_1_o_s_a78aa5613fe989d0f99949f733e861524}
+
+\item 
+void {\bfseries set\+Global} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_abf3831b7a1523d56931bfacce6e63196}{}\label{class_object_script_1_1_o_s_abf3831b7a1523d56931bfacce6e63196}
+
+\item 
+void {\bfseries set\+Global} (const \hyperlink{struct_object_script_1_1_o_s_1_1_func_def}{Func\+Def} \&func, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a64a465f696082696cb1a9fe7bdb07189}{}\label{class_object_script_1_1_o_s_a64a465f696082696cb1a9fe7bdb07189}
+
+\item 
+void {\bfseries get\+Prototype} ()\hypertarget{class_object_script_1_1_o_s_a6de0cc50b325d0bce9ad1976b34425a8}{}\label{class_object_script_1_1_o_s_a6de0cc50b325d0bce9ad1976b34425a8}
+
+\item 
+void {\bfseries set\+Prototype} ()\hypertarget{class_object_script_1_1_o_s_a77b5f6f3a813820268819bc3536166f5}{}\label{class_object_script_1_1_o_s_a77b5f6f3a813820268819bc3536166f5}
+
+\item 
+void {\bfseries set\+Prototype} (int userdata\+\_\+crc)\hypertarget{class_object_script_1_1_o_s_ab77c906e24380ee04b395822a9a50303}{}\label{class_object_script_1_1_o_s_ab77c906e24380ee04b395822a9a50303}
+
+\item 
+int {\bfseries get\+C\+Func\+Closure\+Count} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a32510249a99072469626e614c53674d5}{}\label{class_object_script_1_1_o_s_a32510249a99072469626e614c53674d5}
+
+\item 
+void {\bfseries get\+C\+Func\+Closure} (int offs, int i)\hypertarget{class_object_script_1_1_o_s_a95a2a88e0462391694e0939aa0cab262}{}\label{class_object_script_1_1_o_s_a95a2a88e0462391694e0939aa0cab262}
+
+\item 
+void {\bfseries get\+C\+Func\+Closure} (int i)\hypertarget{class_object_script_1_1_o_s_a8808c7e0fee915c2bcb132248ece0249}{}\label{class_object_script_1_1_o_s_a8808c7e0fee915c2bcb132248ece0249}
+
+\item 
+void {\bfseries set\+C\+Func\+Closure} (int offs, int i)\hypertarget{class_object_script_1_1_o_s_af159b93320cb3a12b9f0ef11c3e9aa8a}{}\label{class_object_script_1_1_o_s_af159b93320cb3a12b9f0ef11c3e9aa8a}
+
+\item 
+void {\bfseries set\+C\+Func\+Closure} (int i)\hypertarget{class_object_script_1_1_o_s_a972bf385502d979741afb8ff28b88d9f}{}\label{class_object_script_1_1_o_s_a972bf385502d979741afb8ff28b88d9f}
+
+\item 
+int {\bfseries get\+Value\+Id} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a82e9f27604a38db22d27afa69b92779e}{}\label{class_object_script_1_1_o_s_a82e9f27604a38db22d27afa69b92779e}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Value\+Name} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a33391095534216daa0fe408e598ebf76}{}\label{class_object_script_1_1_o_s_a33391095534216daa0fe408e598ebf76}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Value\+Classname} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_ade02e8e63d534e1cfb8e345d7e07b4c8}{}\label{class_object_script_1_1_o_s_ade02e8e63d534e1cfb8e345d7e07b4c8}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Value\+Name\+Or\+Classname} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a655af4e5f2b5d496e57796fa4fbe28e9}{}\label{class_object_script_1_1_o_s_a655af4e5f2b5d496e57796fa4fbe28e9}
+
+\item 
+void {\bfseries push\+Null} ()\hypertarget{class_object_script_1_1_o_s_a08afa7248937ad16644b00368e234bc9}{}\label{class_object_script_1_1_o_s_a08afa7248937ad16644b00368e234bc9}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\void {\bfseries push\+Number} (const T \&val)\hypertarget{class_object_script_1_1_o_s_a29c3d9fb8dfccf7c54e972e9a72958f2}{}\label{class_object_script_1_1_o_s_a29c3d9fb8dfccf7c54e972e9a72958f2}
+
+\item 
+void {\bfseries push\+Bool} (bool)\hypertarget{class_object_script_1_1_o_s_acde3f37a9dffd531d8e474c1cfffbe4f}{}\label{class_object_script_1_1_o_s_acde3f37a9dffd531d8e474c1cfffbe4f}
+
+\item 
+void {\bfseries push\+String} (const char $\ast$)\hypertarget{class_object_script_1_1_o_s_a9d08679da9b736eb89b983f779d27ec3}{}\label{class_object_script_1_1_o_s_a9d08679da9b736eb89b983f779d27ec3}
+
+\item 
+void {\bfseries push\+String} (const char $\ast$, int len)\hypertarget{class_object_script_1_1_o_s_a067651a053f5d15fd6814c2245bd65a2}{}\label{class_object_script_1_1_o_s_a067651a053f5d15fd6814c2245bd65a2}
+
+\item 
+void {\bfseries push\+String} (const void $\ast$, int size)\hypertarget{class_object_script_1_1_o_s_a1df8074f53a6fedb472223641419ae72}{}\label{class_object_script_1_1_o_s_a1df8074f53a6fedb472223641419ae72}
+
+\item 
+void {\bfseries push\+String} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&)\hypertarget{class_object_script_1_1_o_s_a4f36ea6c36080c0a498bca0a37cec797}{}\label{class_object_script_1_1_o_s_a4f36ea6c36080c0a498bca0a37cec797}
+
+\item 
+void {\bfseries push\+C\+Function} (O\+S\+\_\+\+C\+Function func, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a77b3404a6c4368f8f22f32dfed72b696}{}\label{class_object_script_1_1_o_s_a77b3404a6c4368f8f22f32dfed72b696}
+
+\item 
+void {\bfseries push\+C\+Function} (O\+S\+\_\+\+C\+Function func, int closure\+\_\+values, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_afd0021a5864e0732866f4c4b8a4cc313}{}\label{class_object_script_1_1_o_s_afd0021a5864e0732866f4c4b8a4cc313}
+
+\item 
+void $\ast$ {\bfseries push\+Userdata} (int crc, int data\+\_\+size, O\+S\+\_\+\+Userdata\+Dtor dtor=N\+U\+LL, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a5746887338ab6fe06b5cccb17b13c851}{}\label{class_object_script_1_1_o_s_a5746887338ab6fe06b5cccb17b13c851}
+
+\item 
+void $\ast$ {\bfseries push\+Userdata} (int data\+\_\+size, O\+S\+\_\+\+Userdata\+Dtor dtor=N\+U\+LL, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a7559a3971d9625c0ae6f27f3d1b0affd}{}\label{class_object_script_1_1_o_s_a7559a3971d9625c0ae6f27f3d1b0affd}
+
+\item 
+void $\ast$ {\bfseries push\+User\+Pointer} (int crc, void $\ast$data, O\+S\+\_\+\+Userdata\+Dtor dtor=N\+U\+LL, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_ad0a02ab4a1633933a3bba81e184aeb5e}{}\label{class_object_script_1_1_o_s_ad0a02ab4a1633933a3bba81e184aeb5e}
+
+\item 
+void $\ast$ {\bfseries push\+User\+Pointer} (void $\ast$data, O\+S\+\_\+\+Userdata\+Dtor dtor=N\+U\+LL, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a44edc69c48bf841872ec5b1b88286495}{}\label{class_object_script_1_1_o_s_a44edc69c48bf841872ec5b1b88286495}
+
+\item 
+int {\bfseries find\+User\+Pointer\+Value\+Id} (void $\ast$data)\hypertarget{class_object_script_1_1_o_s_a84c7afc6e6d39b12dea3f9bd45ca29af}{}\label{class_object_script_1_1_o_s_a84c7afc6e6d39b12dea3f9bd45ca29af}
+
+\item 
+void {\bfseries new\+Object} ()\hypertarget{class_object_script_1_1_o_s_a535ebf443f88fd5dd02a04ae16e22f95}{}\label{class_object_script_1_1_o_s_a535ebf443f88fd5dd02a04ae16e22f95}
+
+\item 
+void {\bfseries new\+Array} (int initial\+\_\+capacity=0)\hypertarget{class_object_script_1_1_o_s_a5aacea6e919f69d67eed443d39e518f6}{}\label{class_object_script_1_1_o_s_a5aacea6e919f69d67eed443d39e518f6}
+
+\item 
+void {\bfseries push\+Back\+Trace} (int skip\+\_\+funcs, int max\+\_\+trace\+\_\+funcs=20)\hypertarget{class_object_script_1_1_o_s_ae574f8c539760a0caf1352c6bb6f2fea}{}\label{class_object_script_1_1_o_s_ae574f8c539760a0caf1352c6bb6f2fea}
+
+\item 
+void {\bfseries push\+Stack\+Value} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a9edea34437bb53fa3b5e9e0668e6784a}{}\label{class_object_script_1_1_o_s_a9edea34437bb53fa3b5e9e0668e6784a}
+
+\item 
+void {\bfseries push\+Globals} ()\hypertarget{class_object_script_1_1_o_s_a26d757f6ad8e8281a8c5414807bf146c}{}\label{class_object_script_1_1_o_s_a26d757f6ad8e8281a8c5414807bf146c}
+
+\item 
+void {\bfseries push\+User\+Pool} ()\hypertarget{class_object_script_1_1_o_s_a1cbe2a360395342f3feb7172d5bd7a05}{}\label{class_object_script_1_1_o_s_a1cbe2a360395342f3feb7172d5bd7a05}
+
+\item 
+void {\bfseries push\+Value\+By\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_ac7c517953d20941b0a21f8f996ccf517}{}\label{class_object_script_1_1_o_s_ac7c517953d20941b0a21f8f996ccf517}
+
+\item 
+void {\bfseries retain\+Value\+By\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_aa163519f980b6646e7f478251ff2d2c1}{}\label{class_object_script_1_1_o_s_aa163519f980b6646e7f478251ff2d2c1}
+
+\item 
+void {\bfseries release\+Value\+By\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_a7aaf9e55bfff80cab32f4a75324981a9}{}\label{class_object_script_1_1_o_s_a7aaf9e55bfff80cab32f4a75324981a9}
+
+\item 
+void {\bfseries clone} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a28e6bcbead41036e9d13e7487c89feac}{}\label{class_object_script_1_1_o_s_a28e6bcbead41036e9d13e7487c89feac}
+
+\item 
+int {\bfseries get\+Stack\+Size} ()\hypertarget{class_object_script_1_1_o_s_ac5c14abb211a4c6738faca80bf0a5b1a}{}\label{class_object_script_1_1_o_s_ac5c14abb211a4c6738faca80bf0a5b1a}
+
+\item 
+int {\bfseries get\+Absolute\+Offs} (int offs)\hypertarget{class_object_script_1_1_o_s_a713553b0197b87821f68609ac9a74239}{}\label{class_object_script_1_1_o_s_a713553b0197b87821f68609ac9a74239}
+
+\item 
+void {\bfseries remove} (int start\+\_\+offs=-\/1, int count=1)\hypertarget{class_object_script_1_1_o_s_a5f945af35c20439a5ae8da34e2f1b5e4}{}\label{class_object_script_1_1_o_s_a5f945af35c20439a5ae8da34e2f1b5e4}
+
+\item 
+void {\bfseries pop} (int count=1)\hypertarget{class_object_script_1_1_o_s_a45e85891e165af688e9241396f479dad}{}\label{class_object_script_1_1_o_s_a45e85891e165af688e9241396f479dad}
+
+\item 
+void {\bfseries move} (int start\+\_\+offs, int count, int new\+\_\+offs)\hypertarget{class_object_script_1_1_o_s_ada25bee51e76e7af3fc1a31ff0ee8368}{}\label{class_object_script_1_1_o_s_ada25bee51e76e7af3fc1a31ff0ee8368}
+
+\item 
+void {\bfseries move} (int offs, int new\+\_\+offs)\hypertarget{class_object_script_1_1_o_s_a61b8c083a78571f9831bc8c8363bb1b7}{}\label{class_object_script_1_1_o_s_a61b8c083a78571f9831bc8c8363bb1b7}
+
+\item 
+void {\bfseries exchange} (int offs=-\/2)\hypertarget{class_object_script_1_1_o_s_aa371b423a0656db9d764b1bbd9cb6e8d}{}\label{class_object_script_1_1_o_s_aa371b423a0656db9d764b1bbd9cb6e8d}
+
+\item 
+void {\bfseries run\+Op} (O\+S\+\_\+\+E\+Opcode opcode)\hypertarget{class_object_script_1_1_o_s_a8cb714a6a24e5d808dd94452f8ffc669}{}\label{class_object_script_1_1_o_s_a8cb714a6a24e5d808dd94452f8ffc669}
+
+\item 
+int {\bfseries get\+Len} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a464f53a757cfce7f52432125ce2ab527}{}\label{class_object_script_1_1_o_s_a464f53a757cfce7f52432125ce2ab527}
+
+\item 
+O\+S\+\_\+\+E\+Value\+Type {\bfseries get\+Type} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a20acb58aa921cf05e8c1d120a7b8bd08}{}\label{class_object_script_1_1_o_s_a20acb58aa921cf05e8c1d120a7b8bd08}
+
+\item 
+O\+S\+\_\+\+E\+Value\+Type {\bfseries get\+Type\+By\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_ab462cbebab6ac1b79ff24b32e7ef798f}{}\label{class_object_script_1_1_o_s_ab462cbebab6ac1b79ff24b32e7ef798f}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Type\+Str} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_ac5cffd847d7a5104c6bef6e0f7b156c5}{}\label{class_object_script_1_1_o_s_ac5cffd847d7a5104c6bef6e0f7b156c5}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Type\+Str\+By\+Id} (int id)\hypertarget{class_object_script_1_1_o_s_a1d5b3308345f75c55ae7b5463c0417c1}{}\label{class_object_script_1_1_o_s_a1d5b3308345f75c55ae7b5463c0417c1}
+
+\item 
+bool {\bfseries is\+Number} (int offs=-\/1, double $\ast$out=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_ab82c02443554d6364c2b9e2a7097cd1f}{}\label{class_object_script_1_1_o_s_ab82c02443554d6364c2b9e2a7097cd1f}
+
+\item 
+bool {\bfseries is\+String} (int offs=-\/1, \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} $\ast$out=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a95f8ec1097c5d024c4610de54a3a59f4}{}\label{class_object_script_1_1_o_s_a95f8ec1097c5d024c4610de54a3a59f4}
+
+\item 
+bool {\bfseries is\+Type} (O\+S\+\_\+\+E\+Value\+Type, int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_adfddf56b777790453f9556f79dc81888}{}\label{class_object_script_1_1_o_s_adfddf56b777790453f9556f79dc81888}
+
+\item 
+bool {\bfseries is\+Null} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_ad03ef2cf3acd82006a75fe8eabd27b0d}{}\label{class_object_script_1_1_o_s_ad03ef2cf3acd82006a75fe8eabd27b0d}
+
+\item 
+bool {\bfseries is\+Object} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a64db55f4aaeffdffa2a73a10363e111f}{}\label{class_object_script_1_1_o_s_a64db55f4aaeffdffa2a73a10363e111f}
+
+\item 
+bool {\bfseries is\+Array} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a3ae083633181313e65df7525e98d3db9}{}\label{class_object_script_1_1_o_s_a3ae083633181313e65df7525e98d3db9}
+
+\item 
+bool {\bfseries is\+Function} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_af38aeeaaabf083669c5c9bbdfd920164}{}\label{class_object_script_1_1_o_s_af38aeeaaabf083669c5c9bbdfd920164}
+
+\item 
+bool {\bfseries is\+Userdata} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a81a0ed7d7fa6e4d23c6571edc699f39e}{}\label{class_object_script_1_1_o_s_a81a0ed7d7fa6e4d23c6571edc699f39e}
+
+\item 
+bool {\bfseries is\+Userdata} (int crc, int offs, int prototype\+\_\+crc=0)\hypertarget{class_object_script_1_1_o_s_a1250c2d4291bced57414774f9ffa75e6}{}\label{class_object_script_1_1_o_s_a1250c2d4291bced57414774f9ffa75e6}
+
+\item 
+bool {\bfseries is} (int value\+\_\+offs=-\/2, int prototype\+\_\+offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a4ee67860b0924ae3de0364c70076d5b2}{}\label{class_object_script_1_1_o_s_a4ee67860b0924ae3de0364c70076d5b2}
+
+\item 
+bool {\bfseries as} (int value\+\_\+offs=-\/2, int prototype\+\_\+offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a91f777598a4a8e619b04b63bff723f6a}{}\label{class_object_script_1_1_o_s_a91f777598a4a8e619b04b63bff723f6a}
+
+\item 
+bool {\bfseries in} (int name\+\_\+offs=-\/2, int obj\+\_\+offs=-\/1)\hypertarget{class_object_script_1_1_o_s_a5f2860b845698cf46080c880ff4c250e}{}\label{class_object_script_1_1_o_s_a5f2860b845698cf46080c880ff4c250e}
+
+\item 
+void $\ast$ {\bfseries to\+Userdata} (int crc, int offs=-\/1, int prototype\+\_\+crc=0)\hypertarget{class_object_script_1_1_o_s_a173a9fe9bf1b102cced0a6ce3db107f1}{}\label{class_object_script_1_1_o_s_a173a9fe9bf1b102cced0a6ce3db107f1}
+
+\item 
+void {\bfseries clear\+Userdata} (int crc, int offs=-\/1, int prototype\+\_\+crc=0)\hypertarget{class_object_script_1_1_o_s_aeae93b0b45b27286caecda67011377ce}{}\label{class_object_script_1_1_o_s_aeae93b0b45b27286caecda67011377ce}
+
+\item 
+bool {\bfseries to\+Bool} (int offs=-\/1)\hypertarget{class_object_script_1_1_o_s_af78c76e2836e2f1d0bd41204ee28f6de}{}\label{class_object_script_1_1_o_s_af78c76e2836e2f1d0bd41204ee28f6de}
+
+\item 
+double {\bfseries to\+Number} (int offs=-\/1, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a58d296bfe5c17af205242ba90ca08548}{}\label{class_object_script_1_1_o_s_a58d296bfe5c17af205242ba90ca08548}
+
+\item 
+float {\bfseries to\+Float} (int offs=-\/1, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a1873459e92631f9e8c7f94cd88991e03}{}\label{class_object_script_1_1_o_s_a1873459e92631f9e8c7f94cd88991e03}
+
+\item 
+double {\bfseries to\+Double} (int offs=-\/1, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_aeeda2200c611cc5d3331691d41bda91e}{}\label{class_object_script_1_1_o_s_aeeda2200c611cc5d3331691d41bda91e}
+
+\item 
+int {\bfseries to\+Int} (int offs=-\/1, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a912f70c22f7d0b2d541bd5be7b32b5b5}{}\label{class_object_script_1_1_o_s_a912f70c22f7d0b2d541bd5be7b32b5b5}
+
+\item 
+int {\bfseries to\+Int\+Radix} (int offs=-\/1, int radix=10, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a28b6eb9d426fee67c86bcbbaed8019d4}{}\label{class_object_script_1_1_o_s_a28b6eb9d426fee67c86bcbbaed8019d4}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries to\+String} (int offs=-\/1, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ab4fa8adeda8939b76b31fb656760966f}{}\label{class_object_script_1_1_o_s_ab4fa8adeda8939b76b31fb656760966f}
+
+\item 
+bool {\bfseries to\+Bool} (int offs, bool def)\hypertarget{class_object_script_1_1_o_s_aebf8399e8f8802b67b8a27aca62fe905}{}\label{class_object_script_1_1_o_s_aebf8399e8f8802b67b8a27aca62fe905}
+
+\item 
+double {\bfseries to\+Number} (int offs, double def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_abdc7b70c3bff83a69dbb933260be3419}{}\label{class_object_script_1_1_o_s_abdc7b70c3bff83a69dbb933260be3419}
+
+\item 
+float {\bfseries to\+Float} (int offs, float def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a5bd5708a0f57783edaffad0df7e1198b}{}\label{class_object_script_1_1_o_s_a5bd5708a0f57783edaffad0df7e1198b}
+
+\item 
+double {\bfseries to\+Double} (int offs, double def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a3bb36a4fd3474360c3e193ff31ce73a6}{}\label{class_object_script_1_1_o_s_a3bb36a4fd3474360c3e193ff31ce73a6}
+
+\item 
+int {\bfseries to\+Int} (int offs, int def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a79e6813c1bcb3b778a888510b77992e8}{}\label{class_object_script_1_1_o_s_a79e6813c1bcb3b778a888510b77992e8}
+
+\item 
+int {\bfseries to\+Int\+Radix} (int offs, int def, int radix, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a9925918c4b584e3868eb18ef555474ac}{}\label{class_object_script_1_1_o_s_a9925918c4b584e3868eb18ef555474ac}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries to\+String} (int offs, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a7fc7f4255712f8d95a4a9e3d1958875c}{}\label{class_object_script_1_1_o_s_a7fc7f4255712f8d95a4a9e3d1958875c}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries to\+String} (int offs, const char $\ast$def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a9dbe2300509ff12737c082c5d4f56303}{}\label{class_object_script_1_1_o_s_a9dbe2300509ff12737c082c5d4f56303}
+
+\item 
+bool {\bfseries pop\+Bool} ()\hypertarget{class_object_script_1_1_o_s_a29b099813fc5f8eefb4deae2682746ef}{}\label{class_object_script_1_1_o_s_a29b099813fc5f8eefb4deae2682746ef}
+
+\item 
+double {\bfseries pop\+Number} (bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a41609761079aca80848e98a110f128f8}{}\label{class_object_script_1_1_o_s_a41609761079aca80848e98a110f128f8}
+
+\item 
+float {\bfseries pop\+Float} (bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a5ce31834ae14048b31ae3bb80d6d945a}{}\label{class_object_script_1_1_o_s_a5ce31834ae14048b31ae3bb80d6d945a}
+
+\item 
+double {\bfseries pop\+Double} (bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a447af46056b7ebe8b7100c9952e81ddd}{}\label{class_object_script_1_1_o_s_a447af46056b7ebe8b7100c9952e81ddd}
+
+\item 
+int {\bfseries pop\+Int} (bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a959cd8a069c0ae634269b70995512d24}{}\label{class_object_script_1_1_o_s_a959cd8a069c0ae634269b70995512d24}
+
+\item 
+int {\bfseries pop\+Int\+Radix} (int radix=0, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_aef6e023fc0b52a5d6f9fad0e03ae4118}{}\label{class_object_script_1_1_o_s_aef6e023fc0b52a5d6f9fad0e03ae4118}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries pop\+String} (bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a84f8ea62aa52ac431403c46ee405fb7c}{}\label{class_object_script_1_1_o_s_a84f8ea62aa52ac431403c46ee405fb7c}
+
+\item 
+bool {\bfseries pop\+Bool} (bool def)\hypertarget{class_object_script_1_1_o_s_a4bf5118ffc4a8147394e32975c3fa08e}{}\label{class_object_script_1_1_o_s_a4bf5118ffc4a8147394e32975c3fa08e}
+
+\item 
+double {\bfseries pop\+Number} (double def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a5ebdab5d6d6926e3d09f4c090f9d3b8c}{}\label{class_object_script_1_1_o_s_a5ebdab5d6d6926e3d09f4c090f9d3b8c}
+
+\item 
+float {\bfseries pop\+Float} (float def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a8604eafea66a8623ff5f959cdf2eb969}{}\label{class_object_script_1_1_o_s_a8604eafea66a8623ff5f959cdf2eb969}
+
+\item 
+double {\bfseries pop\+Double} (double def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ab59d2e726724b744307a28262cffa7c3}{}\label{class_object_script_1_1_o_s_ab59d2e726724b744307a28262cffa7c3}
+
+\item 
+int {\bfseries pop\+Int} (int def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_aafd49afa622047334ae281f941a18f30}{}\label{class_object_script_1_1_o_s_aafd49afa622047334ae281f941a18f30}
+
+\item 
+int {\bfseries pop\+Int\+Radix} (int def, int radix, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ab57fccf26d1e7ee48c84483c55227d92}{}\label{class_object_script_1_1_o_s_ab57fccf26d1e7ee48c84483c55227d92}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries pop\+String} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a2547fe40726fed5d0b491e1c012c23c9}{}\label{class_object_script_1_1_o_s_a2547fe40726fed5d0b491e1c012c23c9}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries pop\+String} (const char $\ast$def, bool valueof\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_acbeb7b7ea383f57ce2117f95936a4a6d}{}\label{class_object_script_1_1_o_s_acbeb7b7ea383f57ce2117f95936a4a6d}
+
+\item 
+int {\bfseries get\+Setting} (O\+S\+\_\+\+E\+Settings)\hypertarget{class_object_script_1_1_o_s_adc5ac6f905bfae8effc49ba6bebc9c76}{}\label{class_object_script_1_1_o_s_adc5ac6f905bfae8effc49ba6bebc9c76}
+
+\item 
+int {\bfseries set\+Setting} (O\+S\+\_\+\+E\+Settings, int)\hypertarget{class_object_script_1_1_o_s_a3d6fafecc6fee90b59c3dc0e69aae436}{}\label{class_object_script_1_1_o_s_a3d6fafecc6fee90b59c3dc0e69aae436}
+
+\item 
+bool {\bfseries compile\+File} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, bool required=false, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true)\hypertarget{class_object_script_1_1_o_s_af0782feef5d32df3615ad7dae0e1e6dd}{}\label{class_object_script_1_1_o_s_af0782feef5d32df3615ad7dae0e1e6dd}
+
+\item 
+bool {\bfseries compile\+Fake\+File} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&str, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true)\hypertarget{class_object_script_1_1_o_s_a06d8a34424ea0361f9970b0ad0d9cecc}{}\label{class_object_script_1_1_o_s_a06d8a34424ea0361f9970b0ad0d9cecc}
+
+\item 
+bool {\bfseries compile} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&str, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true)\hypertarget{class_object_script_1_1_o_s_ad33fe32f629e54b67930fd47e9dcc246}{}\label{class_object_script_1_1_o_s_ad33fe32f629e54b67930fd47e9dcc246}
+
+\item 
+bool {\bfseries compile} (O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true)\hypertarget{class_object_script_1_1_o_s_ac3444a00dd8cc593bdf6036cabbf67cf}{}\label{class_object_script_1_1_o_s_ac3444a00dd8cc593bdf6036cabbf67cf}
+
+\item 
+void {\bfseries call\+FT} (int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Call\+Type call\+\_\+type=O\+S\+\_\+\+C\+A\+L\+L\+T\+Y\+P\+E\+\_\+\+A\+U\+TO, O\+S\+\_\+\+E\+Call\+This\+Usage call\+\_\+this\+\_\+usage=O\+S\+\_\+\+C\+A\+L\+L\+T\+H\+I\+S\+\_\+\+K\+E\+E\+P\+\_\+\+S\+T\+A\+C\+K\+\_\+\+V\+A\+L\+UE)\hypertarget{class_object_script_1_1_o_s_a662a1d9545e237294eb94be8e4586849}{}\label{class_object_script_1_1_o_s_a662a1d9545e237294eb94be8e4586849}
+
+\item 
+void {\bfseries call\+TF} (int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Call\+Type call\+\_\+type=O\+S\+\_\+\+C\+A\+L\+L\+T\+Y\+P\+E\+\_\+\+A\+U\+TO, O\+S\+\_\+\+E\+Call\+This\+Usage call\+\_\+this\+\_\+usage=O\+S\+\_\+\+C\+A\+L\+L\+T\+H\+I\+S\+\_\+\+K\+E\+E\+P\+\_\+\+S\+T\+A\+C\+K\+\_\+\+V\+A\+L\+UE)\hypertarget{class_object_script_1_1_o_s_a37e3547b79d14dcbb7a6b61095da8aaf}{}\label{class_object_script_1_1_o_s_a37e3547b79d14dcbb7a6b61095da8aaf}
+
+\item 
+void {\bfseries callF} (int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Call\+Type call\+\_\+type=O\+S\+\_\+\+C\+A\+L\+L\+T\+Y\+P\+E\+\_\+\+A\+U\+TO)\hypertarget{class_object_script_1_1_o_s_a9df3cba3bc6f07802cffea77de5be215}{}\label{class_object_script_1_1_o_s_a9df3cba3bc6f07802cffea77de5be215}
+
+\item 
+void {\bfseries eval} (const char $\ast$str, int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_abef78af9dffb089e308d37f431a93b2a}{}\label{class_object_script_1_1_o_s_abef78af9dffb089e308d37f431a93b2a}
+
+\item 
+void {\bfseries eval} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&str, int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_a8048d37e2419289413dffaa007ead081}{}\label{class_object_script_1_1_o_s_a8048d37e2419289413dffaa007ead081}
+
+\item 
+void {\bfseries eval\+Fake\+File} (const char $\ast$filename, const char $\ast$str, int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_abc0334d3eeb74c3190a39de4c05d047e}{}\label{class_object_script_1_1_o_s_abc0334d3eeb74c3190a39de4c05d047e}
+
+\item 
+void {\bfseries eval\+Fake\+File} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&str, int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_a4a64a3590829f04059d986ce5c96cfb0}{}\label{class_object_script_1_1_o_s_a4a64a3590829f04059d986ce5c96cfb0}
+
+\item 
+void {\bfseries eval\+Protected} (const char $\ast$str, int params=0, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_a0e6daaf47ede615caf4d35f08b3a9f7c}{}\label{class_object_script_1_1_o_s_a0e6daaf47ede615caf4d35f08b3a9f7c}
+
+\item 
+void {\bfseries require} (const char $\ast$filename, bool required=false, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_aaa012317e95cc57e08484fc074832674}{}\label{class_object_script_1_1_o_s_aaa012317e95cc57e08484fc074832674}
+
+\item 
+virtual void {\bfseries require} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, bool required=false, int ret\+\_\+values=0, O\+S\+\_\+\+E\+Source\+Code\+Type source\+\_\+code\+\_\+type=O\+S\+\_\+\+S\+O\+U\+R\+C\+E\+C\+O\+D\+E\+\_\+\+A\+U\+TO, bool check\+\_\+utf8\+\_\+bom=true, bool handle\+\_\+exception=true)\hypertarget{class_object_script_1_1_o_s_ad05ad8a7d608245d2d08823aa903c21f}{}\label{class_object_script_1_1_o_s_ad05ad8a7d608245d2d08823aa903c21f}
+
+\item 
+void {\bfseries gc\+Full} ()\hypertarget{class_object_script_1_1_o_s_ad733c346497f4f584d570b9d1955c30f}{}\label{class_object_script_1_1_o_s_ad733c346497f4f584d570b9d1955c30f}
+
+\item 
+void {\bfseries set\+G\+C\+Start\+When\+Used\+Bytes} (int)\hypertarget{class_object_script_1_1_o_s_a72d4c19ed87f3fb77c182b7fd699f60c}{}\label{class_object_script_1_1_o_s_a72d4c19ed87f3fb77c182b7fd699f60c}
+
+\item 
+int {\bfseries get\+G\+C\+Start\+When\+Used\+Bytes} ()\hypertarget{class_object_script_1_1_o_s_a79891b51e42c4cd49904d24cf384a01d}{}\label{class_object_script_1_1_o_s_a79891b51e42c4cd49904d24cf384a01d}
+
+\item 
+void {\bfseries set\+Funcs} (const \hyperlink{struct_object_script_1_1_o_s_1_1_func_def}{Func\+Def} $\ast$list, bool setter\+\_\+enabled=true, int closure\+\_\+values=0, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_ab7acec3cdb96ba482c38d71196714109}{}\label{class_object_script_1_1_o_s_ab7acec3cdb96ba482c38d71196714109}
+
+\item 
+void {\bfseries set\+Func} (const \hyperlink{struct_object_script_1_1_o_s_1_1_func_def}{Func\+Def} \&def, bool setter\+\_\+enabled=true, int closure\+\_\+values=0, void $\ast$user\+\_\+param=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a858bb9bd2e622cc2efa3742471832e5d}{}\label{class_object_script_1_1_o_s_a858bb9bd2e622cc2efa3742471832e5d}
+
+\item 
+void {\bfseries set\+Numbers} (const \hyperlink{struct_object_script_1_1_o_s_1_1_number_def}{Number\+Def} $\ast$list, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ac3ac473bde563254ea212aa6ce96ad78}{}\label{class_object_script_1_1_o_s_ac3ac473bde563254ea212aa6ce96ad78}
+
+\item 
+void {\bfseries set\+Number} (const \hyperlink{struct_object_script_1_1_o_s_1_1_number_def}{Number\+Def} \&def, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ae644c1ce99b1204ba33fb803dc061f70}{}\label{class_object_script_1_1_o_s_ae644c1ce99b1204ba33fb803dc061f70}
+
+\item 
+void {\bfseries set\+Strings} (const \hyperlink{struct_object_script_1_1_o_s_1_1_string_def}{String\+Def} $\ast$list, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ab05333fe94b44049519cb37dc4d0769a}{}\label{class_object_script_1_1_o_s_ab05333fe94b44049519cb37dc4d0769a}
+
+\item 
+void {\bfseries set\+String} (const \hyperlink{struct_object_script_1_1_o_s_1_1_string_def}{String\+Def} \&def, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a13ce0dcd6bf3a7ca08c6def6ad7bfaca}{}\label{class_object_script_1_1_o_s_a13ce0dcd6bf3a7ca08c6def6ad7bfaca}
+
+\item 
+void {\bfseries set\+Nulls} (const \hyperlink{struct_object_script_1_1_o_s_1_1_null_def}{Null\+Def} $\ast$list, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a3a2716d9c2e1c87ca516f80d21876043}{}\label{class_object_script_1_1_o_s_a3a2716d9c2e1c87ca516f80d21876043}
+
+\item 
+void {\bfseries set\+Null} (const \hyperlink{struct_object_script_1_1_o_s_1_1_null_def}{Null\+Def} \&def, bool setter\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a0f0c1a7cd369047fc966d3146c04cb3e}{}\label{class_object_script_1_1_o_s_a0f0c1a7cd369047fc966d3146c04cb3e}
+
+\item 
+void {\bfseries get\+Object} (const char $\ast$name, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a16b591766278e07c176fe598bb8d68bb}{}\label{class_object_script_1_1_o_s_a16b591766278e07c176fe598bb8d68bb}
+
+\item 
+void {\bfseries get\+Global\+Object} (const char $\ast$name, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_a2703673d0afabd5df886034c84cafd5e}{}\label{class_object_script_1_1_o_s_a2703673d0afabd5df886034c84cafd5e}
+
+\item 
+void {\bfseries get\+Module} (const char $\ast$name, bool getter\+\_\+enabled=true, bool prototype\+\_\+enabled=true)\hypertarget{class_object_script_1_1_o_s_ac1af08cc316504f3a400be8882078723}{}\label{class_object_script_1_1_o_s_ac1af08cc316504f3a400be8882078723}
+
+\item 
+bool {\bfseries next\+Iterator\+Step} (int results=2)\hypertarget{class_object_script_1_1_o_s_a2fc11d0657dae7b86d8df8d4844fda30}{}\label{class_object_script_1_1_o_s_a2fc11d0657dae7b86d8df8d4844fda30}
+
+\item 
+bool {\bfseries next\+Iterator\+Step} (int results, const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&iter\+\_\+func)\hypertarget{class_object_script_1_1_o_s_a0dbd5e556f9f45c6e89b3d07ee821a52}{}\label{class_object_script_1_1_o_s_a0dbd5e556f9f45c6e89b3d07ee821a52}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries change\+Filename\+Ext} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&ext)\hypertarget{class_object_script_1_1_o_s_a28c23c29f0b710ee735541a1af59a439}{}\label{class_object_script_1_1_o_s_a28c23c29f0b710ee735541a1af59a439}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries change\+Filename\+Ext} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, const char $\ast$ext)\hypertarget{class_object_script_1_1_o_s_a308d1d5f22dec9d3eb6c22c19d573169}{}\label{class_object_script_1_1_o_s_a308d1d5f22dec9d3eb6c22c19d573169}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Ext} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a15bb127287ef6d76fea249719f49b0e9}{}\label{class_object_script_1_1_o_s_a15bb127287ef6d76fea249719f49b0e9}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Ext} (const char $\ast$filename)\hypertarget{class_object_script_1_1_o_s_a9382b3f07cb93dbb7eaa0227e3a3adbb}{}\label{class_object_script_1_1_o_s_a9382b3f07cb93dbb7eaa0227e3a3adbb}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Ext} (const char $\ast$filename, int len)\hypertarget{class_object_script_1_1_o_s_a849134485eed96b87c9c2201bfa17c66}{}\label{class_object_script_1_1_o_s_a849134485eed96b87c9c2201bfa17c66}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a9c93a3b0a2f43312d40fd5bcba9fd8c3}{}\label{class_object_script_1_1_o_s_a9c93a3b0a2f43312d40fd5bcba9fd8c3}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename} (const char $\ast$filename)\hypertarget{class_object_script_1_1_o_s_afbf6d5b6d17e7cc1f9048384f23b3c26}{}\label{class_object_script_1_1_o_s_afbf6d5b6d17e7cc1f9048384f23b3c26}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename} (const char $\ast$filename, int len)\hypertarget{class_object_script_1_1_o_s_a72378687821ebfd2f3827b7f25e86fc1}{}\label{class_object_script_1_1_o_s_a72378687821ebfd2f3827b7f25e86fc1}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Path} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a09c11a4bcbf6e4e12d8ad7233847b2fb}{}\label{class_object_script_1_1_o_s_a09c11a4bcbf6e4e12d8ad7233847b2fb}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Path} (const char $\ast$filename)\hypertarget{class_object_script_1_1_o_s_a4d819be0d70ba89811865b07b7314866}{}\label{class_object_script_1_1_o_s_a4d819be0d70ba89811865b07b7314866}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Filename\+Path} (const char $\ast$filename, int len)\hypertarget{class_object_script_1_1_o_s_a2ed70f4cf1a7b59aa32c9e6e672e71a6}{}\label{class_object_script_1_1_o_s_a2ed70f4cf1a7b59aa32c9e6e672e71a6}
+
+\item 
+bool {\bfseries is\+Absolute\+Path} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a212fe4673f09ff046b89ff12408e765d}{}\label{class_object_script_1_1_o_s_a212fe4673f09ff046b89ff12408e765d}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries resolve\+Path} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a857aa603cb64fe5cabc5f8c110e4a2f4}{}\label{class_object_script_1_1_o_s_a857aa603cb64fe5cabc5f8c110e4a2f4}
+
+\item 
+virtual \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries resolve\+Path} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&cur\+\_\+path)\hypertarget{class_object_script_1_1_o_s_a4dc86d48a2e893a6833a6a8a6218adb0}{}\label{class_object_script_1_1_o_s_a4dc86d48a2e893a6833a6a8a6218adb0}
+
+\item 
+virtual \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Compiled\+Filename} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&resolved\+\_\+filename)\hypertarget{class_object_script_1_1_o_s_ad25eaa83341a33a447f1cc9565f5ec6e}{}\label{class_object_script_1_1_o_s_ad25eaa83341a33a447f1cc9565f5ec6e}
+
+\item 
+virtual \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} {\bfseries get\+Text\+Opcodes\+Filename} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&resolved\+\_\+filename)\hypertarget{class_object_script_1_1_o_s_afd8ace174b67b974d37ad5685ef8ddbe}{}\label{class_object_script_1_1_o_s_afd8ace174b67b974d37ad5685ef8ddbe}
+
+\item 
+virtual O\+S\+\_\+\+E\+File\+Use\+Type {\bfseries check\+File\+Usage} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&sourcecode\+\_\+filename, const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&compiled\+\_\+filename)\hypertarget{class_object_script_1_1_o_s_a6c3724298ba329bb33eeb827b77ec2f7}{}\label{class_object_script_1_1_o_s_a6c3724298ba329bb33eeb827b77ec2f7}
+
+\item 
+virtual O\+S\+\_\+\+E\+Source\+Code\+Type {\bfseries get\+Source\+Code\+Type} (const \hyperlink{class_object_script_1_1_o_s_1_1_string}{String} \&filename)\hypertarget{class_object_script_1_1_o_s_a8cc38ea5a8916bbd41ec7d8bdd5f2c74}{}\label{class_object_script_1_1_o_s_a8cc38ea5a8916bbd41ec7d8bdd5f2c74}
+
+\item 
+virtual bool {\bfseries is\+File\+Exist} (const char $\ast$filename)\hypertarget{class_object_script_1_1_o_s_aac89ee1f39a55b9aa97b0bdaf980341d}{}\label{class_object_script_1_1_o_s_aac89ee1f39a55b9aa97b0bdaf980341d}
+
+\item 
+virtual int {\bfseries get\+File\+Size} (const char $\ast$filename)\hypertarget{class_object_script_1_1_o_s_ace44a7cf987eb1ccf2691b7f16dd340d}{}\label{class_object_script_1_1_o_s_ace44a7cf987eb1ccf2691b7f16dd340d}
+
+\item 
+virtual int {\bfseries get\+File\+Size} (\hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$f)\hypertarget{class_object_script_1_1_o_s_a85d05dbcbb5c5195f9823e5976751e54}{}\label{class_object_script_1_1_o_s_a85d05dbcbb5c5195f9823e5976751e54}
+
+\item 
+virtual \hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$ {\bfseries open\+File} (const char $\ast$filename, const char $\ast$mode)\hypertarget{class_object_script_1_1_o_s_a55abd0ef5b721a750c9c3efa27006d27}{}\label{class_object_script_1_1_o_s_a55abd0ef5b721a750c9c3efa27006d27}
+
+\item 
+virtual int {\bfseries read\+File} (void $\ast$buf, int size, \hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$f)\hypertarget{class_object_script_1_1_o_s_ac1f1470570d5e9357bd35b06fd692dd1}{}\label{class_object_script_1_1_o_s_ac1f1470570d5e9357bd35b06fd692dd1}
+
+\item 
+virtual int {\bfseries write\+File} (const void $\ast$buf, int size, \hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$f)\hypertarget{class_object_script_1_1_o_s_aa938495a6fa5dc5010537e59fc2aa2d8}{}\label{class_object_script_1_1_o_s_aa938495a6fa5dc5010537e59fc2aa2d8}
+
+\item 
+virtual int {\bfseries seek\+File} (\hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$f, int offset, int whence)\hypertarget{class_object_script_1_1_o_s_a42920ca15e1d5654fc3f5ee5256a5284}{}\label{class_object_script_1_1_o_s_a42920ca15e1d5654fc3f5ee5256a5284}
+
+\item 
+virtual void {\bfseries close\+File} (\hyperlink{struct_object_script_1_1_o_s_1_1_file_handle}{File\+Handle} $\ast$f)\hypertarget{class_object_script_1_1_o_s_a807c56660bb94253394bb9b89aeb7b1b}{}\label{class_object_script_1_1_o_s_a807c56660bb94253394bb9b89aeb7b1b}
+
+\item 
+virtual void {\bfseries echo} (const void $\ast$buf, int size)\hypertarget{class_object_script_1_1_o_s_aace566bdbaba54f9eb67735c8a1643d1}{}\label{class_object_script_1_1_o_s_aace566bdbaba54f9eb67735c8a1643d1}
+
+\item 
+void {\bfseries echo} (const char $\ast$str)\hypertarget{class_object_script_1_1_o_s_a48d94223200ed7709df94d95a4561e24}{}\label{class_object_script_1_1_o_s_a48d94223200ed7709df94d95a4561e24}
+
+\item 
+void {\bfseries echo} (const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&str)\hypertarget{class_object_script_1_1_o_s_a60489d9a5315404c263e7d84a0a85f0c}{}\label{class_object_script_1_1_o_s_a60489d9a5315404c263e7d84a0a85f0c}
+
+\item 
+virtual void {\bfseries printf} (const char $\ast$fmt,...)\hypertarget{class_object_script_1_1_o_s_af0ea32a5d9f4a3661badd20aa6d3f7af}{}\label{class_object_script_1_1_o_s_af0ea32a5d9f4a3661badd20aa6d3f7af}
+
+\item 
+void {\bfseries append\+Quoted\+String} (\hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_buffer}{Core\+::\+Buffer} \&buf, const \hyperlink{class_object_script_1_1_o_s_1_1_core_1_1_string}{Core\+::\+String} \&string)\hypertarget{class_object_script_1_1_o_s_a56e0d271ee9821c1ac1617378dfadd7b}{}\label{class_object_script_1_1_o_s_a56e0d271ee9821c1ac1617378dfadd7b}
+
+\item 
+int {\bfseries get\+Rand\+Seed} ()\hypertarget{class_object_script_1_1_o_s_ad004d680cbad852d0f4adc85746dec76}{}\label{class_object_script_1_1_o_s_ad004d680cbad852d0f4adc85746dec76}
+
+\item 
+void {\bfseries set\+Rand\+Seed} (int seed)\hypertarget{class_object_script_1_1_o_s_a2ad36f63cbfd9a4d7236b923f5419722}{}\label{class_object_script_1_1_o_s_a2ad36f63cbfd9a4d7236b923f5419722}
+
+\item 
+double {\bfseries get\+Rand} ()\hypertarget{class_object_script_1_1_o_s_a0da084363d6f37ee4111fc486997e4f6}{}\label{class_object_script_1_1_o_s_a0da084363d6f37ee4111fc486997e4f6}
+
+\item 
+double {\bfseries get\+Rand} (double up)\hypertarget{class_object_script_1_1_o_s_a07ed2952eb5bff8999b70f58eae0ccab}{}\label{class_object_script_1_1_o_s_a07ed2952eb5bff8999b70f58eae0ccab}
+
+\item 
+double {\bfseries get\+Rand} (double min, double max)\hypertarget{class_object_script_1_1_o_s_a41e8448e483cdcf315d649041517709e}{}\label{class_object_script_1_1_o_s_a41e8448e483cdcf315d649041517709e}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \hyperlink{class_object_script_1_1_o_s}{OS} $\ast$ {\bfseries create} (\hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_a5472f18cd586e7b17602fcb2bda4bb85}{}\label{class_object_script_1_1_o_s_a5472f18cd586e7b17602fcb2bda4bb85}
+
+\item 
+{\footnotesize template$<$class T $>$ }\\static T $\ast$ {\bfseries create} (T $\ast$os, \hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$manager=N\+U\+LL)\hypertarget{class_object_script_1_1_o_s_abc3ebd16b86e0cc7976cbe220535997d}{}\label{class_object_script_1_1_o_s_abc3ebd16b86e0cc7976cbe220535997d}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual void {\bfseries shutdown} ()\hypertarget{class_object_script_1_1_o_s_a7e242648c2f130884c66e421404afc2a}{}\label{class_object_script_1_1_o_s_a7e242648c2f130884c66e421404afc2a}
+
+\item 
+void {\bfseries qsort} (void $\ast$base, unsigned num, unsigned width, int($\ast$comp)(\hyperlink{class_object_script_1_1_o_s}{OS} $\ast$, const void $\ast$, const void $\ast$, void $\ast$), void $\ast$)\hypertarget{class_object_script_1_1_o_s_a9cae560ece5b8d79edb3321b7b4f8308}{}\label{class_object_script_1_1_o_s_a9cae560ece5b8d79edb3321b7b4f8308}
+
+\item 
+void {\bfseries init\+Core\+Functions} ()\hypertarget{class_object_script_1_1_o_s_aa56677e86bd7fed50b7f2c5ff950b02a}{}\label{class_object_script_1_1_o_s_aa56677e86bd7fed50b7f2c5ff950b02a}
+
+\item 
+void {\bfseries init\+Object\+Class} ()\hypertarget{class_object_script_1_1_o_s_a2e65484fd07a7bb2d0b113a966d42df9}{}\label{class_object_script_1_1_o_s_a2e65484fd07a7bb2d0b113a966d42df9}
+
+\item 
+void {\bfseries init\+Array\+Class} ()\hypertarget{class_object_script_1_1_o_s_ac34f01483f95c6672a257c37c3999361}{}\label{class_object_script_1_1_o_s_ac34f01483f95c6672a257c37c3999361}
+
+\item 
+void {\bfseries init\+Function\+Class} ()\hypertarget{class_object_script_1_1_o_s_abbd9fc85cc185000519c0c3bc39b1c9e}{}\label{class_object_script_1_1_o_s_abbd9fc85cc185000519c0c3bc39b1c9e}
+
+\item 
+void {\bfseries init\+String\+Class} ()\hypertarget{class_object_script_1_1_o_s_ac6acaa0cefece06609d68b2d02a74291}{}\label{class_object_script_1_1_o_s_ac6acaa0cefece06609d68b2d02a74291}
+
+\item 
+void {\bfseries init\+Number\+Class} ()\hypertarget{class_object_script_1_1_o_s_a49e471790cdc1b48a138b080adffa219}{}\label{class_object_script_1_1_o_s_a49e471790cdc1b48a138b080adffa219}
+
+\item 
+void {\bfseries init\+Boolean\+Class} ()\hypertarget{class_object_script_1_1_o_s_a6f0bb9627f87ee84a6ec6a0d3e2edea3}{}\label{class_object_script_1_1_o_s_a6f0bb9627f87ee84a6ec6a0d3e2edea3}
+
+\item 
+void {\bfseries init\+Buffer\+Class} ()\hypertarget{class_object_script_1_1_o_s_aae3d3e01dc20147601204d3293707c82}{}\label{class_object_script_1_1_o_s_aae3d3e01dc20147601204d3293707c82}
+
+\item 
+void {\bfseries init\+File\+Class} ()\hypertarget{class_object_script_1_1_o_s_a866b421554c5e6a142ae22ead6d91ead}{}\label{class_object_script_1_1_o_s_a866b421554c5e6a142ae22ead6d91ead}
+
+\item 
+void {\bfseries init\+Exception\+Class} ()\hypertarget{class_object_script_1_1_o_s_a382fd837b6a7ab80cc8e9cf3ee7b85a7}{}\label{class_object_script_1_1_o_s_a382fd837b6a7ab80cc8e9cf3ee7b85a7}
+
+\item 
+void {\bfseries init\+Path\+Module} ()\hypertarget{class_object_script_1_1_o_s_a369e8b5c7551b14a3954d71fbe0cd9a8}{}\label{class_object_script_1_1_o_s_a369e8b5c7551b14a3954d71fbe0cd9a8}
+
+\item 
+void {\bfseries init\+Math\+Module} ()\hypertarget{class_object_script_1_1_o_s_af78dccfce9e42ade6f9aea82207a9473}{}\label{class_object_script_1_1_o_s_af78dccfce9e42ade6f9aea82207a9473}
+
+\item 
+void {\bfseries init\+Json\+Module} ()\hypertarget{class_object_script_1_1_o_s_a8c748a3a4fa09a5ec4710461b0b9edcf}{}\label{class_object_script_1_1_o_s_a8c748a3a4fa09a5ec4710461b0b9edcf}
+
+\item 
+void {\bfseries init\+G\+C\+Module} ()\hypertarget{class_object_script_1_1_o_s_aaf7c3e5d54c1d4d31192e26be459072d}{}\label{class_object_script_1_1_o_s_aaf7c3e5d54c1d4d31192e26be459072d}
+
+\item 
+void {\bfseries init\+Lang\+Tokenizer\+Module} ()\hypertarget{class_object_script_1_1_o_s_a6e3ce3d3dedfe30731be61c778f20fad}{}\label{class_object_script_1_1_o_s_a6e3ce3d3dedfe30731be61c778f20fad}
+
+\item 
+virtual void {\bfseries init\+Settings} ()\hypertarget{class_object_script_1_1_o_s_a564682e45d39cd2e91ac62908fcb32ed}{}\label{class_object_script_1_1_o_s_a564682e45d39cd2e91ac62908fcb32ed}
+
+\item 
+virtual void {\bfseries init\+Pre\+Script} ()\hypertarget{class_object_script_1_1_o_s_adf417999f3150a7f6602a96a8a1f76ce}{}\label{class_object_script_1_1_o_s_adf417999f3150a7f6602a96a8a1f76ce}
+
+\item 
+virtual void {\bfseries init\+Post\+Script} ()\hypertarget{class_object_script_1_1_o_s_a93b74eb428316688be09be75160a6e2b}{}\label{class_object_script_1_1_o_s_a93b74eb428316688be09be75160a6e2b}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_memory_manager}{Memory\+Manager} $\ast$ {\bfseries memory\+\_\+manager}\hypertarget{class_object_script_1_1_o_s_a45525748f43c0aeb6a1acb48cd91ff66}{}\label{class_object_script_1_1_o_s_a45525748f43c0aeb6a1acb48cd91ff66}
+
+\item 
+\hyperlink{class_object_script_1_1_o_s_1_1_core}{Core} $\ast$ {\bfseries core}\hypertarget{class_object_script_1_1_o_s_a4189e629717fb54473e1db6e87e995db}{}\label{class_object_script_1_1_o_s_a4189e629717fb54473e1db6e87e995db}
+
+\item 
+int {\bfseries ref\+\_\+count}\hypertarget{class_object_script_1_1_o_s_af3eaf9f94a2e1054358f298775da8866}{}\label{class_object_script_1_1_o_s_af3eaf9f94a2e1054358f298775da8866}
+
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries O\+S\+Memory\+Manager\+Old}\hypertarget{class_object_script_1_1_o_s_a4d7939ded2fbcb95a031096912122ef0}{}\label{class_object_script_1_1_o_s_a4d7939ded2fbcb95a031096912122ef0}
+
+\item 
+{\footnotesize template$<$class Core $>$ }\\struct {\bfseries User\+Data\+Destructor}\hypertarget{class_object_script_1_1_o_s_adc7c69854dacb4a5be4aab5e7f94cca7}{}\label{class_object_script_1_1_o_s_adc7c69854dacb4a5be4aab5e7f94cca7}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 346 of file objectscript.\+h.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/objectscript.\+h\item 
+src/objectscript.\+cpp\end{DoxyCompactItemize}

@@ -247,14 +247,17 @@ void IceTea::printDebug(string msg) {
 
 IceTea* IceTea::setupCli(vector<string> strings) {
     int argc=strings.size(), i=0;
-    const char* argv[argc];
+    char** argv = new char*[argc];
     vector<string>::iterator it;
     for(it=strings.begin(); it != strings.end(); ++it) {
-        argv[i++] = it->c_str();
+        char* s = new char[it->size()+1];
+        std::copy(it->begin(), it->end(), s);
+        s[it->size()] = '\0';
+        argv[i++] = s;
     }
 
     // Pass the char** to the original method.
-    return this->setupCli(argc, argv);
+    return this->setupCli(argc, (const char**)argv);
 }
 
 IceTea* IceTea::setupCli(int argc, const char** argv) {

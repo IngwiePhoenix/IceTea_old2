@@ -1,0 +1,60 @@
+\hypertarget{struct_object_script_1_1_o_s_1_1_utils}{}\section{Object\+Script\+:\+:OS\+:\+:Utils Struct Reference}
+\label{struct_object_script_1_1_o_s_1_1_utils}\index{Object\+Script\+::\+O\+S\+::\+Utils@{Object\+Script\+::\+O\+S\+::\+Utils}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum {\bfseries E\+Number\+Parse\+Type} \{ {\bfseries P\+A\+R\+S\+E\+\_\+\+T\+O\+K\+EN}, 
+{\bfseries P\+A\+R\+S\+E\+\_\+\+I\+NT}, 
+{\bfseries P\+A\+R\+S\+E\+\_\+\+F\+L\+O\+AT}
+ \}\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a7940d34d4c532f388d4eb51e923b5e51}{}\label{struct_object_script_1_1_o_s_1_1_utils_a7940d34d4c532f388d4eb51e923b5e51}
+
+\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static bool {\bfseries parse\+Float} (const char $\ast$\&str, \hyperlink{struct_object_script_1_1_float_type}{Float\+Type}$<$ double $>$\+::type \&val, E\+Number\+Parse\+Type parse\+\_\+type, int int\+\_\+radix=10)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a55532b4d1562651386f8401cdbde9199}{}\label{struct_object_script_1_1_o_s_1_1_utils_a55532b4d1562651386f8401cdbde9199}
+
+\item 
+static char $\ast$ {\bfseries num\+To\+Str} (char $\ast$, \+\_\+\+\_\+int32 value)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_afb02af1d12be337cb2133ab737fbf0ae}{}\label{struct_object_script_1_1_o_s_1_1_utils_afb02af1d12be337cb2133ab737fbf0ae}
+
+\item 
+static char $\ast$ {\bfseries num\+To\+Str} (char $\ast$, \+\_\+\+\_\+int64 value)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a38a05e2bb9821f8772f968111fb86e7d}{}\label{struct_object_script_1_1_o_s_1_1_utils_a38a05e2bb9821f8772f968111fb86e7d}
+
+\item 
+static char $\ast$ {\bfseries num\+To\+Str} (char $\ast$, \hyperlink{struct_object_script_1_1_float_type}{Float\+Type}$<$ double $>$\+::type value)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a6e418953de00a6e5b5eacb2b7c4af675}{}\label{struct_object_script_1_1_o_s_1_1_utils_a6e418953de00a6e5b5eacb2b7c4af675}
+
+\item 
+static char $\ast$ {\bfseries num\+To\+Str} (char $\ast$, \hyperlink{struct_object_script_1_1_float_type}{Float\+Type}$<$ double $>$\+::type value, int precision)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_ae9057e2153d2a0c5bfc02c073649f6b5}{}\label{struct_object_script_1_1_o_s_1_1_utils_ae9057e2153d2a0c5bfc02c073649f6b5}
+
+\item 
+static \+\_\+\+\_\+int64 {\bfseries str\+To\+Int} (const char $\ast$)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a143f7d7927fa1bc8e47c3bf36f09c128}{}\label{struct_object_script_1_1_o_s_1_1_utils_a143f7d7927fa1bc8e47c3bf36f09c128}
+
+\item 
+static \hyperlink{struct_object_script_1_1_float_type}{Float\+Type}$<$ double $>$\+::type {\bfseries str\+To\+Float} (const char $\ast$)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_ae6b675c6eb7982ce738c8dca954efae4}{}\label{struct_object_script_1_1_o_s_1_1_utils_ae6b675c6eb7982ce738c8dca954efae4}
+
+\item 
+static int {\bfseries key\+To\+Hash} (const void $\ast$, int size)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_aefb273654d76a3e79e01a1bedeebc4f7}{}\label{struct_object_script_1_1_o_s_1_1_utils_aefb273654d76a3e79e01a1bedeebc4f7}
+
+\item 
+static int {\bfseries key\+To\+Hash} (const void $\ast$buf1, int size1, const void $\ast$buf2, int size2)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a0b668d4233f0537ceef64a0352db5a65}{}\label{struct_object_script_1_1_o_s_1_1_utils_a0b668d4233f0537ceef64a0352db5a65}
+
+\item 
+static int {\bfseries cmp} (const void $\ast$buf1, int len1, const void $\ast$buf2, int len2)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_af62b202bd06ff4cb00a4b9d6e39c1a3a}{}\label{struct_object_script_1_1_o_s_1_1_utils_af62b202bd06ff4cb00a4b9d6e39c1a3a}
+
+\item 
+static double {\bfseries round} (double a, int precision=0)\hypertarget{struct_object_script_1_1_o_s_1_1_utils_a7922c9d97d48f2e38720e21997370698}{}\label{struct_object_script_1_1_o_s_1_1_utils_a7922c9d97d48f2e38720e21997370698}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 378 of file objectscript.\+h.
+
+
+
+The documentation for this struct was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/objectscript.\+h\item 
+src/objectscript.\+cpp\end{DoxyCompactItemize}

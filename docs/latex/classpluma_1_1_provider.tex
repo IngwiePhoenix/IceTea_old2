@@ -1,0 +1,185 @@
+\hypertarget{classpluma_1_1_provider}{}\section{pluma\+:\+:Provider Class Reference}
+\label{classpluma_1_1_provider}\index{pluma\+::\+Provider@{pluma\+::\+Provider}}
+
+
+Interface to provide applications with objects from plugins.  
+
+
+
+
+{\ttfamily \#include $<$Provider.\+hpp$>$}
+
+Inheritance diagram for pluma\+:\+:Provider\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=12.000000cm]{classpluma_1_1_provider}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+virtual \hyperlink{classpluma_1_1_provider_a111a1db902d6372282f8407c9d845c21}{$\sim$\+Provider} ()\hypertarget{classpluma_1_1_provider_a111a1db902d6372282f8407c9d845c21}{}\label{classpluma_1_1_provider_a111a1db902d6372282f8407c9d845c21}
+
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+virtual unsigned int \hyperlink{classpluma_1_1_provider_a2053501ab733fc5f8ddfaf76032c82cb}{get\+Version} () const  =0
+\begin{DoxyCompactList}\small\item\em Get provider version. \end{DoxyCompactList}\item 
+bool \hyperlink{classpluma_1_1_provider_a192ea5a17a8fe9de1f3ba6572f44f266}{is\+Compatible} (const \hyperlink{classpluma_1_1_host}{Host} \&host) const 
+\begin{DoxyCompactList}\small\item\em Check compatibility with host. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+class {\bfseries Host}\hypertarget{classpluma_1_1_provider_a912b690126957a1ad90d0c373a4ad4d0}{}\label{classpluma_1_1_provider_a912b690126957a1ad90d0c373a4ad4d0}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interface to provide applications with objects from plugins. 
+
+The plugin specific implementations are unknown at the host side, only their shared interfaces are known.
+
+Then, host app needs a generic way of create interface objects. That\textquotesingle{}s what provider classes are for. It is the factory design pattern (\href{http://www.oodesign.com/factory-pattern.html}{\tt http\+://www.\+oodesign.\+com/factory-\/pattern.\+html})
+
+Shared interfaces define their provider types (by inheriting from \hyperlink{classpluma_1_1_provider}{pluma\+::\+Provider}). Hosts then use those tipes to get objects from the plugins. Plugins derive the shared interface providers so that they can provide host with specific implementations of the shared interface. Those specific providers are given to the host through a connect function.
+
+Example\+: A host app uses objects of type Device. A certain plugin defines a Keyboard, witch is a Device. The \hyperlink{classpluma_1_1_host}{Host} will use Device\+Providers to create objects of type Device. The plugin will provide host specifically with a Keyboard\+Provider. Other plugins may provide host with other derived Device\+Provider types.
+
+Device hpp (shared)\+: 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <Pluma/Pluma.hpp>}
+\textcolor{keyword}{class }Device\{
+\textcolor{keyword}{public}:
+    \textcolor{keyword}{virtual} std::string getDescription() \textcolor{keyword}{const} = 0;
+\};
+\textcolor{comment}{// create DevicedProvider class}
+PLUMA\_PROVIDER\_HEADER(Device);
+\end{DoxyCode}
+
+
+Device cpp (shared)\+: 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include "Device.hpp"}
+generate DevicedProvider with version 6, and compatible with at least v.3
+PLUMA\_PROVIDER\_SOURCE(Device, 6, 3);
+\end{DoxyCode}
+
+
+~\newline
+ Keyboard code on the plugin side\+: 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <Pluma/Pluma.hpp>}
+\textcolor{preprocessor}{#include "Device.hpp"}
+
+\textcolor{keyword}{class }Keyboard: \textcolor{keyword}{public} Device\{
+\textcolor{keyword}{public}:
+    std::string getDescription()\textcolor{keyword}{ const}\{
+        \textcolor{keywordflow}{return} \textcolor{stringliteral}{"keyboard"};
+    \}
+\};
+
+\textcolor{comment}{// create KeyboardProvider, it implements DeviceProvider}
+PLUMA\_INHERIT\_PROVIDER(Keyboard, Device);
+\end{DoxyCode}
+
+
+plugin connector\+: 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <Pluma/Connector.hpp>}
+\textcolor{preprocessor}{#include "Keyboard.hpp"}
+
+PLUMA\_CONNECTOR
+\textcolor{keywordtype}{bool} connect(\hyperlink{classpluma_1_1_host}{pluma::Host}& host)\{
+    \textcolor{comment}{// add a keyboard provider to host}
+    host.\hyperlink{classpluma_1_1_host_ab673ba94ff56a12cdf2a7a25ebb8cc36}{add}( \textcolor{keyword}{new} KeyboardProvider() );
+    \textcolor{keywordflow}{return} \textcolor{keyword}{true};
+\}
+\end{DoxyCode}
+
+
+\hyperlink{classpluma_1_1_host}{Host} application code\+: 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <Pluma/Pluma.hpp>}
+
+\textcolor{preprocessor}{#include "Device.hpp"}
+\textcolor{preprocessor}{#include <iostream>}
+\textcolor{preprocessor}{#include <vector>}
+
+\textcolor{keywordtype}{int} main()\{
+
+    \hyperlink{classpluma_1_1_pluma}{pluma::Pluma} plugins;
+    \textcolor{comment}{// Tell plugins manager to accept providers of the type DeviceProvider}
+    plugins.\hyperlink{classpluma_1_1_pluma_a200c59b0983c7ca53d11b03cf8220bc7}{acceptProviderType}<DeviceProvider>();
+    \textcolor{comment}{// Load library "standard\_devices" from folder "plugins"}
+    plugins.\hyperlink{classpluma_1_1_plugin_manager_aa00400d23efa8a8f94e44dd1c5bf54e6}{load}(\textcolor{stringliteral}{"plugins"}, \textcolor{stringliteral}{"standard\_devices"});
+
+    \textcolor{comment}{// Get device providers into a vector}
+    std::vector<DeviceProvider*> providers;
+    plugins.\hyperlink{classpluma_1_1_pluma_a49fa0b2b4497885c4e978259be0a7abe}{getProviders}(providers);
+
+    \textcolor{comment}{// create a Device from the first provider}
+    \textcolor{keywordflow}{if} (!providers.empty())\{
+        Device* myDevice = providers.first()->create();
+        \textcolor{comment}{// do something with myDevice}
+        std::cout << device->getDescription() << std::endl;
+        \textcolor{comment}{// and delete it in the end}
+        \textcolor{keyword}{delete} myDevice;
+    \}
+    \textcolor{keywordflow}{return} 0;
+\}
+\end{DoxyCode}
+ 
+
+Definition at line 42 of file Provider.\+hpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{pluma\+::\+Provider@{pluma\+::\+Provider}!get\+Version@{get\+Version}}
+\index{get\+Version@{get\+Version}!pluma\+::\+Provider@{pluma\+::\+Provider}}
+\subsubsection[{\texorpdfstring{get\+Version() const  =0}{getVersion() const  =0}}]{\setlength{\rightskip}{0pt plus 5cm}virtual unsigned int pluma\+::\+Provider\+::get\+Version (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [pure virtual]}}\hypertarget{classpluma_1_1_provider_a2053501ab733fc5f8ddfaf76032c82cb}{}\label{classpluma_1_1_provider_a2053501ab733fc5f8ddfaf76032c82cb}
+
+
+Get provider version. 
+
+\begin{DoxyReturn}{Returns}
+Version number. 
+\end{DoxyReturn}
+
+
+Implemented in \hyperlink{class_ice_tea_plugin_provider_a66d621770107000c1aede49d0d5335fc}{Ice\+Tea\+Plugin\+Provider}.
+
+\index{pluma\+::\+Provider@{pluma\+::\+Provider}!is\+Compatible@{is\+Compatible}}
+\index{is\+Compatible@{is\+Compatible}!pluma\+::\+Provider@{pluma\+::\+Provider}}
+\subsubsection[{\texorpdfstring{is\+Compatible(const Host \&host) const }{isCompatible(const Host &host) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool pluma\+::\+Provider\+::is\+Compatible (
+\begin{DoxyParamCaption}
+\item[{const {\bf Host} \&}]{host}
+\end{DoxyParamCaption}
+) const}\hypertarget{classpluma_1_1_provider_a192ea5a17a8fe9de1f3ba6572f44f266}{}\label{classpluma_1_1_provider_a192ea5a17a8fe9de1f3ba6572f44f266}
+
+
+Check compatibility with host. 
+
+The same provider may be compiled with different versions on host side and on plugins side. This function checks if a plugin provider is compatible with the current version of the same provider type on the host side.
+
+
+\begin{DoxyParams}{Parameters}
+{\em host} & \hyperlink{classpluma_1_1_host}{Host}, proxy of host application.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if it\textquotesingle{}s compatible with {\itshape host}. 
+\end{DoxyReturn}
+
+
+Definition at line 42 of file Provider.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Provider.\+hpp\item 
+src/Provider.\+cpp\end{DoxyCompactItemize}

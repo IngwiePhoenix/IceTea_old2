@@ -963,8 +963,7 @@ target("curl", "lib") {
                 if(detect.tryCompilerFlag(flags, "CC")) {
                     detect.success "Working. Added: ${flags.join(' ')}"
                     // Since we are one level too deep, we need to hack into it.
-                    // FIXME: target() configurable should also just return a function when no body is given.
-                    IceTea.__targets.curl.settings.CC.flags += flags;
+                    target("curl").settings.CC.flags += flags;
                     return true;
                 } else {
                     detect.fail "No. Options rejected: ${flags}"

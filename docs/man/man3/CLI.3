@@ -1,0 +1,204 @@
+.TH "CLI" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+CLI \- Command Line Interface class\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <cli\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBCLI\fP (int _argc, const char **_argv, std::string _copyright='')"
+.br
+.RI "\fIInitialize the \fBCLI\fP object\&. \fP"
+.ti -1c
+.RI "\fB~CLI\fP ()"
+.br
+.RI "\fIDestructs \fBCLI\fP and frees the memory\&. \fP"
+.ti -1c
+.RI "void \fBsetArgWidth\fP (int len)"
+.br
+.RI "\fISet the width by which arguments are idendet\&. \fP"
+.ti -1c
+.RI "void \fBinsert\fP (std::string shortopt, std::string longopt, std::string arg, std::string desc, bool optional=true, std::string defaultValue='')"
+.br
+.RI "\fIAdd an option\&. \fP"
+.ti -1c
+.RI "void \fBgroup\fP (std::string name)"
+.br
+.RI "\fISet a new group\&. \fP"
+.ti -1c
+.RI "void \fBsetStrayArgs\fP (std::string arg, std::string desc, bool optional=true)"
+.br
+.RI "\fISet the information for stray arguments\&. \fP"
+.ti -1c
+.RI "std::vector< std::string > \fBgetStrayArgs\fP ()"
+.br
+.RI "\fIObtain all the stray args that were found\&. \fP"
+.ti -1c
+.RI "std::pair< std::string, int > \fBfindOpt\fP (std::string name)"
+.br
+.RI "\fIFor core\&. \fP"
+.ti -1c
+.RI "bool \fBparse\fP ()"
+.br
+.RI "\fITell the instance to parse the given argc and argv\&. \fP"
+.ti -1c
+.RI "bool \fBcheck\fP (std::string longopt)"
+.br
+.RI "\fICheck if an option (by its short- or longopt) is given\&. \fP"
+.ti -1c
+.RI "std::string \fBvalue\fP (std::string optname)"
+.br
+.RI "\fIGet the value that is given to an option\&. \fP"
+.ti -1c
+.RI "void \fBusage\fP ()"
+.br
+.RI "\fIPrint a usage screen\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Command Line Interface class\&. 
+
+This class is responsible for handling a command line\&. 
+.PP
+Definition at line 24 of file cli\&.h\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "CLI::CLI (int _argc, const char ** _argv, std::string _copyright = \fC''\fP)\fC [inline]\fP"
+
+.PP
+Initialize the \fBCLI\fP object\&. This constructor takes as input the original \fCargc\fP and \fCargv\fP and an additional copyright string that it will print to the head of the usage display\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fI_argc\fP Argument count 
+.br
+\fI_argv\fP The argument array to parse 
+.br
+\fI_copyright\fP The copyright to be displayed\&. 
+.RE
+.PP
+
+.PP
+Definition at line 79 of file cli\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "bool CLI::check (std::string longopt)\fC [inline]\fP"
+
+.PP
+Check if an option (by its short- or longopt) is given\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlongopt\fP A short OR longopt\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+True if it exists\&. 
+.RE
+.PP
+
+.PP
+Definition at line 211 of file cli\&.h\&.
+.SS "std::vector<std::string> CLI::getStrayArgs ()\fC [inline]\fP"
+
+.PP
+Obtain all the stray args that were found\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+A vector of all stray args\&. 
+.RE
+.PP
+
+.PP
+Definition at line 164 of file cli\&.h\&.
+.SS "void CLI::group (std::string name)\fC [inline]\fP"
+
+.PP
+Set a new group\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIname\fP The group name 
+.RE
+.PP
+
+.PP
+Definition at line 142 of file cli\&.h\&.
+.SS "void CLI::insert (std::string shortopt, std::string longopt, std::string arg, std::string desc, bool optional = \fCtrue\fP, std::string defaultValue = \fC''\fP)\fC [inline]\fP"
+
+.PP
+Add an option\&. This function inserts an option into the current group and saves the given information\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIshortopt\fP The short option to be used\&. Empty to have none\&. 
+.br
+\fIlongopt\fP The long option to be used\&. Empty to have none\&. 
+.br
+\fIarg\fP A short description what the option's value is for\&. I\&.e\&.: \fC<DIR>\fP 
+.br
+\fIdesc\fP A description of the option\&. 
+.br
+\fIoptional\fP if true, then this option will be displayed as an optional parameter\&. 
+.br
+\fIdefaultValue\fP The value that should be present by default\&.
+.RE
+.PP
+\fBNote:\fP
+.RS 4
+You need either shortopt or longopt - or both\&. But you can not leave both empty\&. 
+.PP
+Only if you supplied arg, you will be able to pull a value\&. 
+.RE
+.PP
+
+.PP
+Definition at line 118 of file cli\&.h\&.
+.SS "void CLI::setStrayArgs (std::string arg, std::string desc, bool optional = \fCtrue\fP)\fC [inline]\fP"
+
+.PP
+Set the information for stray arguments\&. This will configure the stray arguments - similar to \fBinsert\fP\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIarg\fP The short argument description\&. 
+.br
+\fIdesc\fP A proper description 
+.br
+\fIopitonal\fP Wether stray args are optional or not\&. 
+.RE
+.PP
+
+.PP
+Definition at line 156 of file cli\&.h\&.
+.SS "std::string CLI::value (std::string optname)\fC [inline]\fP"
+
+.PP
+Get the value that is given to an option\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIoptname\fP The option's name\&. 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The Value\&. Always a string\&. 
+.RE
+.PP
+
+.PP
+Definition at line 222 of file cli\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

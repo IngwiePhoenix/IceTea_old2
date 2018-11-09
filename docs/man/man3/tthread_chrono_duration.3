@@ -1,0 +1,48 @@
+.TH "tthread::chrono::duration< _Rep, _Period >" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+tthread::chrono::duration< _Rep, _Period > \- Duration template class\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <tinythread\&.h>\fP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "typedef _Rep \fBrep\fP"
+.br
+.ti -1c
+.RI "typedef _Period \fBperiod\fP"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "template<class _Rep2 > \fBduration\fP (const _Rep2 &r)"
+.br
+.RI "\fIConstruct a duration object with the given duration\&. \fP"
+.ti -1c
+.RI "rep \fBcount\fP () const "
+.br
+.RI "\fIReturn the value of the duration object\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<class _Rep, class _Period = ratio<1>>
+.br
+class tthread::chrono::duration< _Rep, _Period >"
+Duration template class\&. 
+
+This class provides enough functionality to implement \fC\fBthis_thread::sleep_for()\fP\fP\&. 
+.PP
+Definition at line 645 of file tinythread\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

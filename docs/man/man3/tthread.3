@@ -1,0 +1,72 @@
+.TH "tthread" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+tthread \- Main name space for TinyThread++\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI " \fBchrono\fP"
+.br
+.RI "\fIMinimal implementation of the \fCchrono\fP namespace\&. \fP"
+.ti -1c
+.RI " \fBthis_thread\fP"
+.br
+.RI "\fIThe namespace \fC\fBthis_thread\fP\fP provides methods for dealing with the calling thread\&. \fP"
+.in -1c
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fB_thread_start_info\fP"
+.br
+.RI "\fIInformation to pass to the new thread (what to run)\&. \fP"
+.ti -1c
+.RI "class \fBcondition_variable\fP"
+.br
+.RI "\fICondition variable class\&. \fP"
+.ti -1c
+.RI "class \fBfast_mutex\fP"
+.br
+.RI "\fIFast mutex class\&. \fP"
+.ti -1c
+.RI "class \fBlock_guard\fP"
+.br
+.RI "\fILock guard class\&. \fP"
+.ti -1c
+.RI "class \fBmutex\fP"
+.br
+.RI "\fIMutex class\&. \fP"
+.ti -1c
+.RI "class \fBratio\fP"
+.br
+.RI "\fIMinimal implementation of the \fCratio\fP class\&. \fP"
+.ti -1c
+.RI "class \fBrecursive_mutex\fP"
+.br
+.RI "\fIRecursive mutex class\&. \fP"
+.ti -1c
+.RI "class \fBthread\fP"
+.br
+.RI "\fIThread class\&. \fP"
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef long long \fB__intmax_t\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Main name space for TinyThread++\&. 
+
+This namespace is more or less equivalent to the \fCstd\fP namespace for the C++11 thread classes\&. For instance, the \fBtthread::mutex\fP class corresponds to the std::mutex class\&. 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

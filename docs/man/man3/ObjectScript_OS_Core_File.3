@@ -1,0 +1,62 @@
+.TH "ObjectScript::OS::Core::File" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::File \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBFile\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "bool \fBopen\fP (const char *filename, const char *mode='rb')"
+.br
+.ti -1c
+.RI "void \fBclose\fP ()"
+.br
+.ti -1c
+.RI "bool \fBisOpen\fP () const "
+.br
+.ti -1c
+.RI "int \fBgetSize\fP () const "
+.br
+.ti -1c
+.RI "int \fBgetPos\fP () const "
+.br
+.ti -1c
+.RI "void \fBsetPos\fP (int)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBread\fP ()"
+.br
+.ti -1c
+.RI "\fBString\fP \fBread\fP (int len)"
+.br
+.ti -1c
+.RI "int \fBwrite\fP (const void *data, int len)"
+.br
+.ti -1c
+.RI "int \fBwrite\fP (const \fBCore::String\fP &)"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBOS\fP * \fBos\fP"
+.br
+.ti -1c
+.RI "\fBFileHandle\fP * \fBf\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 927 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

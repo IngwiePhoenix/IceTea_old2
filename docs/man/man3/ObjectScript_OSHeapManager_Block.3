@@ -1,0 +1,58 @@
+.TH "ObjectScript::OSHeapManager::Block" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OSHeapManager::Block \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OSHeapManager::FreeBlock\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "unsigned __int32 \fBgetDataSize\fP () const "
+.br
+.ti -1c
+.RI "void \fBresetLink\fP ()"
+.br
+.ti -1c
+.RI "void \fBremoveLink\fP ()"
+.br
+.ti -1c
+.RI "void \fBinsertAfter\fP (\fBBlock\fP *block)"
+.br
+.ti -1c
+.RI "void \fBinsertBefore\fP (\fBBlock\fP *block)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBBlock\fP * \fBprev\fP"
+.br
+.ti -1c
+.RI "\fBBlock\fP * \fBnext\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBsize\fP"
+.br
+.ti -1c
+.RI "unsigned short \fBpage\fP"
+.br
+.ti -1c
+.RI "unsigned char \fBis_free\fP"
+.br
+.ti -1c
+.RI "unsigned char \fBpad0\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 244 of file os\-heap\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

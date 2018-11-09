@@ -1,5 +1,5 @@
 # Generic
-OUTPUT_DIRECTORY       = doc/
+OUTPUT_DIRECTORY       = docs/
 INPUT                  = src/ ./
 USE_MDFILE_AS_MAINPAGE = README.md
 
@@ -7,7 +7,7 @@ USE_MDFILE_AS_MAINPAGE = README.md
 PROJECT_NAME           = IceTea
 PROJECT_BRIEF          = Next-Generation build tool for everyone!
 DOCSET_PUBLISHER_NAME  = Ingwie Phoenix
-DOCSET_FEEDNAME        = Ingwie I/O
+DOCSET_FEEDNAME        = Ingwie Phoenix
 DOCSET_BUNDLE_ID       = io.ingwie.icetea
 DOCSET_PUBLISHER_ID    = io.ingwie
 

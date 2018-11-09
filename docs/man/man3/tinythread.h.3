@@ -1,0 +1,184 @@
+.TH "src/tinythread.h" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+src/tinythread.h \- 
+.SH SYNOPSIS
+.br
+.PP
+\fC#include <pthread\&.h>\fP
+.br
+\fC#include <signal\&.h>\fP
+.br
+\fC#include <sched\&.h>\fP
+.br
+\fC#include <unistd\&.h>\fP
+.br
+\fC#include <ostream>\fP
+.br
+
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBtthread::mutex\fP"
+.br
+.RI "\fIMutex class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::recursive_mutex\fP"
+.br
+.RI "\fIRecursive mutex class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::lock_guard< T >\fP"
+.br
+.RI "\fILock guard class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::condition_variable\fP"
+.br
+.RI "\fICondition variable class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::thread\fP"
+.br
+.RI "\fIThread class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::thread::id\fP"
+.br
+.RI "\fIThread ID\&. \fP"
+.ti -1c
+.RI "class \fBtthread::ratio< N, D >\fP"
+.br
+.RI "\fIMinimal implementation of the \fCratio\fP class\&. \fP"
+.ti -1c
+.RI "class \fBtthread::chrono::duration< _Rep, _Period >\fP"
+.br
+.RI "\fIDuration template class\&. \fP"
+.in -1c
+.SS "Namespaces"
+
+.in +1c
+.ti -1c
+.RI " \fBtthread\fP"
+.br
+.RI "\fIMain name space for TinyThread++\&. \fP"
+.ti -1c
+.RI " \fBtthread::chrono\fP"
+.br
+.RI "\fIMinimal implementation of the \fCchrono\fP namespace\&. \fP"
+.ti -1c
+.RI " \fBtthread::this_thread\fP"
+.br
+.RI "\fIThe namespace \fC\fBthis_thread\fP\fP provides methods for dealing with the calling thread\&. \fP"
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fB_TTHREAD_POSIX_\fP"
+.br
+.ti -1c
+.RI "#define \fB_TTHREAD_PLATFORM_DEFINED_\fP"
+.br
+.ti -1c
+.RI "#define \fBTINYTHREAD_VERSION_MAJOR\fP   1"
+.br
+.RI "\fITinyThread++ version (major number)\&. \fP"
+.ti -1c
+.RI "#define \fBTINYTHREAD_VERSION_MINOR\fP   1"
+.br
+.RI "\fITinyThread++ version (minor number)\&. \fP"
+.ti -1c
+.RI "#define \fBTINYTHREAD_VERSION\fP   (\fBTINYTHREAD_VERSION_MAJOR\fP * 100 + \fBTINYTHREAD_VERSION_MINOR\fP)"
+.br
+.RI "\fITinyThread++ version (full version)\&. \fP"
+.ti -1c
+.RI "#define \fB_TTHREAD_DISABLE_ASSIGNMENT\fP(name)"
+.br
+.ti -1c
+.RI "#define \fBthread_local\fP"
+.br
+.RI "\fIThread local storage keyword\&. \fP"
+.in -1c
+.SS "Typedefs"
+
+.in +1c
+.ti -1c
+.RI "typedef long long \fBtthread::__intmax_t\fP"
+.br
+.ti -1c
+.RI "typedef duration< __intmax_t, ratio< 1, 1000000000 > > \fBtthread::chrono::nanoseconds\fP"
+.br
+.RI "\fIDuration with the unit nanoseconds\&. \fP"
+.ti -1c
+.RI "typedef duration< __intmax_t, ratio< 1, 1000000 > > \fBtthread::chrono::microseconds\fP"
+.br
+.RI "\fIDuration with the unit microseconds\&. \fP"
+.ti -1c
+.RI "typedef duration< __intmax_t, ratio< 1, 1000 > > \fBtthread::chrono::milliseconds\fP"
+.br
+.RI "\fIDuration with the unit milliseconds\&. \fP"
+.ti -1c
+.RI "typedef duration< __intmax_t > \fBtthread::chrono::seconds\fP"
+.br
+.RI "\fIDuration with the unit seconds\&. \fP"
+.ti -1c
+.RI "typedef duration< __intmax_t, ratio< 60 > > \fBtthread::chrono::minutes\fP"
+.br
+.RI "\fIDuration with the unit minutes\&. \fP"
+.ti -1c
+.RI "typedef duration< __intmax_t, ratio< 3600 > > \fBtthread::chrono::hours\fP"
+.br
+.RI "\fIDuration with the unit hours\&. \fP"
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "thread::id \fBtthread::this_thread::get_id\fP ()"
+.br
+.RI "\fIReturn the thread ID of the calling thread\&. \fP"
+.ti -1c
+.RI "void \fBtthread::this_thread::yield\fP ()"
+.br
+.RI "\fIYield execution to another thread\&. \fP"
+.ti -1c
+.RI "template<class _Rep , class _Period > void \fBtthread::this_thread::sleep_for\fP (const chrono::duration< _Rep, _Period > &aTime)"
+.br
+.RI "\fIBlocks the calling thread for a period of time\&. \fP"
+.in -1c
+.SH "Macro Definition Documentation"
+.PP 
+.SS "#define _TTHREAD_DISABLE_ASSIGNMENT(name)"
+\fBValue:\fP
+.PP
+.nf
+name(const name&); \
+      name& operator=(const name&);
+.fi
+.PP
+Definition at line 112 of file tinythread\&.h\&.
+.SS "#define thread_local"
+
+.PP
+Thread local storage keyword\&. A variable that is declared with the \fCthread_local\fP keyword makes the value of the variable local to each thread (known as thread-local storage, or TLS)\&. Example usage: 
+.PP
+.nf
+1 // This variable is local to each thread\&.
+2 thread_local int variable;
+
+.fi
+.PP
+ 
+.PP
+\fBNote:\fP
+.RS 4
+The \fCthread_local\fP keyword is a macro that maps to the corresponding compiler directive (e\&.g\&. \fC__declspec(thread)\fP)\&. While the C++11 standard allows for non-trivial types (e\&.g\&. classes with constructors and destructors) to be declared with the \fCthread_local\fP keyword, most pre-C++11 compilers only allow for trivial types (e\&.g\&. \fCint\fP)\&. So, to guarantee portable code, only use trivial types for thread local storage\&. 
+.PP
+This directive is currently not supported on Mac OS X (it will give a compiler error), since compile-time TLS is not supported in the Mac OS X executable format\&. Also, some older versions of MinGW (before GCC 4\&.x) do not support this directive\&. 
+.RE
+.PP
+
+.PP
+Definition at line 142 of file tinythread\&.h\&.
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

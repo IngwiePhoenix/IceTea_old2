@@ -1,0 +1,131 @@
+\hypertarget{tinythread_8h}{}\section{src/tinythread.h File Reference}
+\label{tinythread_8h}\index{src/tinythread.\+h@{src/tinythread.\+h}}
+{\ttfamily \#include $<$pthread.\+h$>$}\\*
+{\ttfamily \#include $<$signal.\+h$>$}\\*
+{\ttfamily \#include $<$sched.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$ostream$>$}\\*
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{classtthread_1_1mutex}{tthread\+::mutex}
+\begin{DoxyCompactList}\small\item\em Mutex class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1recursive__mutex}{tthread\+::recursive\+\_\+mutex}
+\begin{DoxyCompactList}\small\item\em Recursive mutex class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1lock__guard}{tthread\+::lock\+\_\+guard$<$ T $>$}
+\begin{DoxyCompactList}\small\item\em Lock guard class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1condition__variable}{tthread\+::condition\+\_\+variable}
+\begin{DoxyCompactList}\small\item\em Condition variable class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1thread}{tthread\+::thread}
+\begin{DoxyCompactList}\small\item\em Thread class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1thread_1_1id}{tthread\+::thread\+::id}
+\begin{DoxyCompactList}\small\item\em Thread ID. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1ratio}{tthread\+::ratio$<$ N, D $>$}
+\begin{DoxyCompactList}\small\item\em Minimal implementation of the {\ttfamily ratio} class. \end{DoxyCompactList}\item 
+class \hyperlink{classtthread_1_1chrono_1_1duration}{tthread\+::chrono\+::duration$<$ \+\_\+\+Rep, \+\_\+\+Period $>$}
+\begin{DoxyCompactList}\small\item\em Duration template class. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Namespaces}
+\begin{DoxyCompactItemize}
+\item 
+ \hyperlink{namespacetthread}{tthread}
+\begin{DoxyCompactList}\small\item\em Main name space for Tiny\+Thread++. \end{DoxyCompactList}\item 
+ \hyperlink{namespacetthread_1_1chrono}{tthread\+::chrono}
+\begin{DoxyCompactList}\small\item\em Minimal implementation of the {\ttfamily chrono} namespace. \end{DoxyCompactList}\item 
+ \hyperlink{namespacetthread_1_1this__thread}{tthread\+::this\+\_\+thread}
+\begin{DoxyCompactList}\small\item\em The namespace {\ttfamily \hyperlink{namespacetthread_1_1this__thread}{this\+\_\+thread}} provides methods for dealing with the calling thread. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries \+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+P\+O\+S\+I\+X\+\_\+}\hypertarget{tinythread_8h_a5ae43c395d15a661ba4877c72d8214ed}{}\label{tinythread_8h_a5ae43c395d15a661ba4877c72d8214ed}
+
+\item 
+\#define {\bfseries \+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+P\+L\+A\+T\+F\+O\+R\+M\+\_\+\+D\+E\+F\+I\+N\+E\+D\+\_\+}\hypertarget{tinythread_8h_a7c27184597c6f4cb260d6b41aea5d9b8}{}\label{tinythread_8h_a7c27184597c6f4cb260d6b41aea5d9b8}
+
+\item 
+\#define \hyperlink{tinythread_8h_af1d2d7842598b143f8e0a54a9b6f5bec}{T\+I\+N\+Y\+T\+H\+R\+E\+A\+D\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR}~1\hypertarget{tinythread_8h_af1d2d7842598b143f8e0a54a9b6f5bec}{}\label{tinythread_8h_af1d2d7842598b143f8e0a54a9b6f5bec}
+
+\begin{DoxyCompactList}\small\item\em Tiny\+Thread++ version (major number). \end{DoxyCompactList}\item 
+\#define \hyperlink{tinythread_8h_a9248a2e6daaeb43e46bd632417cb4733}{T\+I\+N\+Y\+T\+H\+R\+E\+A\+D\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR}~1\hypertarget{tinythread_8h_a9248a2e6daaeb43e46bd632417cb4733}{}\label{tinythread_8h_a9248a2e6daaeb43e46bd632417cb4733}
+
+\begin{DoxyCompactList}\small\item\em Tiny\+Thread++ version (minor number). \end{DoxyCompactList}\item 
+\#define \hyperlink{tinythread_8h_a9a3d5a9159f22201a37dd59d82b1861f}{T\+I\+N\+Y\+T\+H\+R\+E\+A\+D\+\_\+\+V\+E\+R\+S\+I\+ON}~(\hyperlink{tinythread_8h_af1d2d7842598b143f8e0a54a9b6f5bec}{T\+I\+N\+Y\+T\+H\+R\+E\+A\+D\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+A\+J\+OR} $\ast$ 100 + \hyperlink{tinythread_8h_a9248a2e6daaeb43e46bd632417cb4733}{T\+I\+N\+Y\+T\+H\+R\+E\+A\+D\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+M\+I\+N\+OR})\hypertarget{tinythread_8h_a9a3d5a9159f22201a37dd59d82b1861f}{}\label{tinythread_8h_a9a3d5a9159f22201a37dd59d82b1861f}
+
+\begin{DoxyCompactList}\small\item\em Tiny\+Thread++ version (full version). \end{DoxyCompactList}\item 
+\#define {\bfseries \+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT}(name)
+\item 
+\#define \hyperlink{tinythread_8h_ad4d9b405bcbffaf0d4dae6166c18aa1e}{thread\+\_\+local}
+\begin{DoxyCompactList}\small\item\em Thread local storage keyword. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef long long {\bfseries tthread\+::\+\_\+\+\_\+intmax\+\_\+t}\hypertarget{namespacetthread_a8bafc3fb85fe4d09c9dbf4272142b6e9}{}\label{namespacetthread_a8bafc3fb85fe4d09c9dbf4272142b6e9}
+
+\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t, ratio$<$ 1, 1000000000 $>$ $>$ \hyperlink{namespacetthread_1_1chrono_a14269b4a249c549e6658e2c2518d41c1}{tthread\+::chrono\+::nanoseconds}\hypertarget{namespacetthread_1_1chrono_a14269b4a249c549e6658e2c2518d41c1}{}\label{namespacetthread_1_1chrono_a14269b4a249c549e6658e2c2518d41c1}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit nanoseconds. \end{DoxyCompactList}\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t, ratio$<$ 1, 1000000 $>$ $>$ \hyperlink{namespacetthread_1_1chrono_a33c0e4fb0e9537dd97fe488df2f2a2a3}{tthread\+::chrono\+::microseconds}\hypertarget{namespacetthread_1_1chrono_a33c0e4fb0e9537dd97fe488df2f2a2a3}{}\label{namespacetthread_1_1chrono_a33c0e4fb0e9537dd97fe488df2f2a2a3}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit microseconds. \end{DoxyCompactList}\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t, ratio$<$ 1, 1000 $>$ $>$ \hyperlink{namespacetthread_1_1chrono_a8bf64c23d4a358a24065fc6d6190205f}{tthread\+::chrono\+::milliseconds}\hypertarget{namespacetthread_1_1chrono_a8bf64c23d4a358a24065fc6d6190205f}{}\label{namespacetthread_1_1chrono_a8bf64c23d4a358a24065fc6d6190205f}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit milliseconds. \end{DoxyCompactList}\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t $>$ \hyperlink{namespacetthread_1_1chrono_af6eca09e946756c1070bddee6d897efb}{tthread\+::chrono\+::seconds}\hypertarget{namespacetthread_1_1chrono_af6eca09e946756c1070bddee6d897efb}{}\label{namespacetthread_1_1chrono_af6eca09e946756c1070bddee6d897efb}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit seconds. \end{DoxyCompactList}\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t, ratio$<$ 60 $>$ $>$ \hyperlink{namespacetthread_1_1chrono_a03115955459a9038f7a4ad79b45429a2}{tthread\+::chrono\+::minutes}\hypertarget{namespacetthread_1_1chrono_a03115955459a9038f7a4ad79b45429a2}{}\label{namespacetthread_1_1chrono_a03115955459a9038f7a4ad79b45429a2}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit minutes. \end{DoxyCompactList}\item 
+typedef duration$<$ \+\_\+\+\_\+intmax\+\_\+t, ratio$<$ 3600 $>$ $>$ \hyperlink{namespacetthread_1_1chrono_ad78569d569e30cdb836a6e06d01e51a7}{tthread\+::chrono\+::hours}\hypertarget{namespacetthread_1_1chrono_ad78569d569e30cdb836a6e06d01e51a7}{}\label{namespacetthread_1_1chrono_ad78569d569e30cdb836a6e06d01e51a7}
+
+\begin{DoxyCompactList}\small\item\em Duration with the unit hours. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+thread\+::id \hyperlink{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}{tthread\+::this\+\_\+thread\+::get\+\_\+id} ()\hypertarget{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}{}\label{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}
+
+\begin{DoxyCompactList}\small\item\em Return the thread ID of the calling thread. \end{DoxyCompactList}\item 
+void \hyperlink{namespacetthread_1_1this__thread_a867ef7ad1dd6026b7ee13bb013e00edd}{tthread\+::this\+\_\+thread\+::yield} ()
+\begin{DoxyCompactList}\small\item\em Yield execution to another thread. \end{DoxyCompactList}\item 
+{\footnotesize template$<$class \+\_\+\+Rep , class \+\_\+\+Period $>$ }\\void \hyperlink{namespacetthread_1_1this__thread_a5dfe77c8ca4df7d32511caa2cb7ffa7f}{tthread\+::this\+\_\+thread\+::sleep\+\_\+for} (const chrono\+::duration$<$ \+\_\+\+Rep, \+\_\+\+Period $>$ \&a\+Time)
+\begin{DoxyCompactList}\small\item\em Blocks the calling thread for a period of time. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Macro Definition Documentation}
+\index{tinythread.\+h@{tinythread.\+h}!\+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT@{\+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT}}
+\index{\+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT@{\+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT}!tinythread.\+h@{tinythread.\+h}}
+\subsubsection[{\texorpdfstring{\+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT}{_TTHREAD_DISABLE_ASSIGNMENT}}]{\setlength{\rightskip}{0pt plus 5cm}\#define \+\_\+\+T\+T\+H\+R\+E\+A\+D\+\_\+\+D\+I\+S\+A\+B\+L\+E\+\_\+\+A\+S\+S\+I\+G\+N\+M\+E\+NT(
+\begin{DoxyParamCaption}
+\item[{}]{name}
+\end{DoxyParamCaption}
+)}\hypertarget{tinythread_8h_a2d8941ebc1092db8136eb0d09521d60c}{}\label{tinythread_8h_a2d8941ebc1092db8136eb0d09521d60c}
+{\bfseries Value\+:}
+\begin{DoxyCode}
+name(\textcolor{keyword}{const} name&); \(\backslash\)
+      name& operator=(\textcolor{keyword}{const} name&);
+\end{DoxyCode}
+
+
+Definition at line 112 of file tinythread.\+h.
+
+\index{tinythread.\+h@{tinythread.\+h}!thread\+\_\+local@{thread\+\_\+local}}
+\index{thread\+\_\+local@{thread\+\_\+local}!tinythread.\+h@{tinythread.\+h}}
+\subsubsection[{\texorpdfstring{thread\+\_\+local}{thread_local}}]{\setlength{\rightskip}{0pt plus 5cm}\#define thread\+\_\+local}\hypertarget{tinythread_8h_ad4d9b405bcbffaf0d4dae6166c18aa1e}{}\label{tinythread_8h_ad4d9b405bcbffaf0d4dae6166c18aa1e}
+
+
+Thread local storage keyword. 
+
+A variable that is declared with the {\ttfamily thread\+\_\+local} keyword makes the value of the variable local to each thread (known as thread-\/local storage, or T\+LS). Example usage\+: 
+\begin{DoxyCode}
+1 // This variable is local to each thread.
+2 thread\_local int variable;
+\end{DoxyCode}
+ \begin{DoxyNote}{Note}
+The {\ttfamily thread\+\_\+local} keyword is a macro that maps to the corresponding compiler directive (e.\+g. {\ttfamily \+\_\+\+\_\+declspec(thread)}). While the C++11 standard allows for non-\/trivial types (e.\+g. classes with constructors and destructors) to be declared with the {\ttfamily thread\+\_\+local} keyword, most pre-\/\+C++11 compilers only allow for trivial types (e.\+g. {\ttfamily int}). So, to guarantee portable code, only use trivial types for thread local storage. 
+
+This directive is currently not supported on Mac OS X (it will give a compiler error), since compile-\/time T\+LS is not supported in the Mac OS X executable format. Also, some older versions of Min\+GW (before G\+CC 4.\+x) do not support this directive. 
+\end{DoxyNote}
+
+
+Definition at line 142 of file tinythread.\+h.
+
