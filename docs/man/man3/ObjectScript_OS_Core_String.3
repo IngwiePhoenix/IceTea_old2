@@ -1,0 +1,170 @@
+.TH "ObjectScript::OS::Core::String" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::String \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OS::String\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *os, \fBGCStringValue\fP *)"
+.br
+.ti -1c
+.RI "\fBString\fP (const \fBString\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const \fBString\fP &, const \fBString\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len, const char *, int len2)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const \fBString\fP &, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const void *, int size)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const void *buf1, int len1, const void *buf2, int len2)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const void *buf1, int len1, const void *buf2, int len2, const void *buf3, int len3)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, __int64 value)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, \fBFloatType\fP< double >::type value)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, \fBFloatType\fP< double >::type value, int precision)"
+.br
+.ti -1c
+.RI "const char * \fBtoChar\fP () const "
+.br
+.ti -1c
+.RI "\fBoperator const char *\fP () const "
+.br
+.ti -1c
+.RI "char \fBoperator[]\fP (int i)"
+.br
+.ti -1c
+.RI "int \fBgetDataSize\fP () const "
+.br
+.ti -1c
+.RI "int \fBgetLen\fP () const "
+.br
+.ti -1c
+.RI "bool \fBisEmpty\fP () const "
+.br
+.ti -1c
+.RI "\fBString\fP & \fBoperator=\fP (const \fBString\fP &)"
+.br
+.ti -1c
+.RI "bool \fBoperator==\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator==\fP (const char *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator==\fP (\fBGCStringValue\fP *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator!=\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator!=\fP (const char *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator!=\fP (\fBGCStringValue\fP *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator<=\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator<=\fP (const char *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator<\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator<\fP (const char *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator>=\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator>=\fP (const char *) const "
+.br
+.ti -1c
+.RI "bool \fBoperator>\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "bool \fBoperator>\fP (const char *) const "
+.br
+.ti -1c
+.RI "int \fBcmp\fP (const \fBString\fP &) const "
+.br
+.ti -1c
+.RI "int \fBcmp\fP (const char *) const "
+.br
+.ti -1c
+.RI "int \fBgetHash\fP () const "
+.br
+.ti -1c
+.RI "double \fBtoNumber\fP () const "
+.br
+.ti -1c
+.RI "double \fBtoNumberRadix\fP (int radix) const "
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBString\fP \fBformat\fP (\fBOS\fP *, int temp_buf_len, const char *fmt,\&.\&.\&.)"
+.br
+.ti -1c
+.RI "static \fBString\fP \fBformatVa\fP (\fBOS\fP *, int temp_buf_len, const char *fmt, va_list va)"
+.br
+.ti -1c
+.RI "static \fBString\fP \fBformat\fP (\fBOS\fP *, const char *fmt,\&.\&.\&.)"
+.br
+.ti -1c
+.RI "static \fBString\fP \fBformatVa\fP (\fBOS\fP *, const char *fmt, va_list va)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBstring\fP"
+.br
+.ti -1c
+.RI "\fBOS\fP * \fBallocator\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 816 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

@@ -1,0 +1,88 @@
+.TH "WorkQueue< T, ST >" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+WorkQueue< T, ST > \- The actual thread pool\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <threading\&.h>\fP
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "typedef bool(* \fBcompare_f\fP) (T, T, \fBWorkQueue\fP< T, ST > *)"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBWorkQueue\fP (int amt, \fBThreadFunction\fP func, ST udata=NULL, compare_f comp=NULL)"
+.br
+.ti -1c
+.RI "bool \fBstillGoing\fP ()"
+.br
+.ti -1c
+.RI "void \fBjoinAll\fP ()"
+.br
+.ti -1c
+.RI "void \fBdetachAll\fP ()"
+.br
+.ti -1c
+.RI "void \fBdrain\fP ()"
+.br
+.ti -1c
+.RI "void \fBstop\fP ()"
+.br
+.ti -1c
+.RI "bool \fBhasToStop\fP ()"
+.br
+.ti -1c
+.RI "void \fBadd\fP (T item)"
+.br
+.ti -1c
+.RI "bool \fBremove\fP (T &item)"
+.br
+.ti -1c
+.RI "int \fBsize\fP ()"
+.br
+.ti -1c
+.RI "int \fBcountAll\fP ()"
+.br
+.ti -1c
+.RI "void \fBstep\fP ()"
+.br
+.ti -1c
+.RI "ST \fBgetData\fP ()"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBtthread::mutex\fP \fBmutex\fP"
+.br
+.ti -1c
+.RI "\fBtthread::condition_variable\fP \fBcond\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<typename T, typename ST = void*>
+.br
+class WorkQueue< T, ST >"
+The actual thread pool\&. 
+
+This class requires one template argument and has a second, optional one\&.
+.PP
+It is based off TinyThreads++\&. Upon instantiation, all the threads will be started\&. 
+.PP
+Definition at line 30 of file threading\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

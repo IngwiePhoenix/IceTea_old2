@@ -1,0 +1,105 @@
+\hypertarget{classstlplus_1_1subprocess}{}\section{stlplus\+:\+:subprocess Class Reference}
+\label{classstlplus_1_1subprocess}\index{stlplus\+::subprocess@{stlplus\+::subprocess}}
+Inheritance diagram for stlplus\+:\+:subprocess\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{classstlplus_1_1subprocess}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries add\+\_\+variable} (const std\+::string \&name, const std\+::string \&value)\hypertarget{classstlplus_1_1subprocess_ac30696d0d1ff3ea251274d1def7959fb}{}\label{classstlplus_1_1subprocess_ac30696d0d1ff3ea251274d1def7959fb}
+
+\item 
+bool {\bfseries remove\+\_\+variable} (const std\+::string \&name)\hypertarget{classstlplus_1_1subprocess_ac27f27bc82663d14c0a7407b394eeaad}{}\label{classstlplus_1_1subprocess_ac27f27bc82663d14c0a7407b394eeaad}
+
+\item 
+const \hyperlink{classstlplus_1_1env__vector}{env\+\_\+vector} \& {\bfseries get\+\_\+variables} (void) const \hypertarget{classstlplus_1_1subprocess_af5a86c674540b0139d7424744d34261a}{}\label{classstlplus_1_1subprocess_af5a86c674540b0139d7424744d34261a}
+
+\item 
+bool {\bfseries spawn} (const std\+::string \&path, const \hyperlink{classstlplus_1_1arg__vector}{arg\+\_\+vector} \&argv, bool connect\+\_\+stdin=false, bool connect\+\_\+stdout=false, bool connect\+\_\+stderr=false)\hypertarget{classstlplus_1_1subprocess_ae6631a8562c55539826c2da6a676bf3a}{}\label{classstlplus_1_1subprocess_ae6631a8562c55539826c2da6a676bf3a}
+
+\item 
+bool {\bfseries spawn} (const std\+::string \&command\+\_\+line, bool connect\+\_\+stdin=false, bool connect\+\_\+stdout=false, bool connect\+\_\+stderr=false)\hypertarget{classstlplus_1_1subprocess_a4134ae85618c8bcbf997481d014eb3cd}{}\label{classstlplus_1_1subprocess_a4134ae85618c8bcbf997481d014eb3cd}
+
+\item 
+virtual bool {\bfseries callback} (void)\hypertarget{classstlplus_1_1subprocess_a8a65b881cedadbbffd5af0d38c8e9f93}{}\label{classstlplus_1_1subprocess_a8a65b881cedadbbffd5af0d38c8e9f93}
+
+\item 
+bool {\bfseries kill} (void)\hypertarget{classstlplus_1_1subprocess_a3762395e08baf702da1728af1d173174}{}\label{classstlplus_1_1subprocess_a3762395e08baf702da1728af1d173174}
+
+\item 
+int {\bfseries write\+\_\+stdin} (std\+::string \&buffer)\hypertarget{classstlplus_1_1subprocess_a2420cddfb72c1b262bf3945b325855ec}{}\label{classstlplus_1_1subprocess_a2420cddfb72c1b262bf3945b325855ec}
+
+\item 
+int {\bfseries read\+\_\+stdout} (std\+::string \&buffer)\hypertarget{classstlplus_1_1subprocess_a606d8e4b1192382b01a09000f8b9c8f7}{}\label{classstlplus_1_1subprocess_a606d8e4b1192382b01a09000f8b9c8f7}
+
+\item 
+int {\bfseries read\+\_\+stderr} (std\+::string \&buffer)\hypertarget{classstlplus_1_1subprocess_a3fa4a2d13609a54191355d81bf53c8b3}{}\label{classstlplus_1_1subprocess_a3fa4a2d13609a54191355d81bf53c8b3}
+
+\item 
+void {\bfseries close\+\_\+stdin} (void)\hypertarget{classstlplus_1_1subprocess_a3b29e1987962b22b4046a0107e9819bf}{}\label{classstlplus_1_1subprocess_a3b29e1987962b22b4046a0107e9819bf}
+
+\item 
+void {\bfseries close\+\_\+stdout} (void)\hypertarget{classstlplus_1_1subprocess_a9bb76c9f63006757d8e4af09500e5a03}{}\label{classstlplus_1_1subprocess_a9bb76c9f63006757d8e4af09500e5a03}
+
+\item 
+void {\bfseries close\+\_\+stderr} (void)\hypertarget{classstlplus_1_1subprocess_ab3b440d361c1383c2f59b3b418736202}{}\label{classstlplus_1_1subprocess_ab3b440d361c1383c2f59b3b418736202}
+
+\item 
+bool {\bfseries error} (void) const \hypertarget{classstlplus_1_1subprocess_aee03c5c0a729901100e5016d6802ab47}{}\label{classstlplus_1_1subprocess_aee03c5c0a729901100e5016d6802ab47}
+
+\item 
+int {\bfseries error\+\_\+number} (void) const \hypertarget{classstlplus_1_1subprocess_a49e0dbae517eec2d60e95908fb99124c}{}\label{classstlplus_1_1subprocess_a49e0dbae517eec2d60e95908fb99124c}
+
+\item 
+std\+::string {\bfseries error\+\_\+text} (void) const \hypertarget{classstlplus_1_1subprocess_a1c35c243d8f8f070558613e662c85945}{}\label{classstlplus_1_1subprocess_a1c35c243d8f8f070558613e662c85945}
+
+\item 
+int {\bfseries exit\+\_\+status} (void) const \hypertarget{classstlplus_1_1subprocess_a24ef83c6faef645532e796676449dd3e}{}\label{classstlplus_1_1subprocess_a24ef83c6faef645532e796676449dd3e}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void {\bfseries set\+\_\+error} (int)\hypertarget{classstlplus_1_1subprocess_afda71f164a0ca8573dbfa05340393747}{}\label{classstlplus_1_1subprocess_afda71f164a0ca8573dbfa05340393747}
+
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+int {\bfseries m\+\_\+pid}\hypertarget{classstlplus_1_1subprocess_a10d2b41604678d2f3ec893ca016b31b4}{}\label{classstlplus_1_1subprocess_a10d2b41604678d2f3ec893ca016b31b4}
+
+\item 
+int {\bfseries m\+\_\+child\+\_\+in}\hypertarget{classstlplus_1_1subprocess_ace46c65b0ce5b00528f089126aa64410}{}\label{classstlplus_1_1subprocess_ace46c65b0ce5b00528f089126aa64410}
+
+\item 
+int {\bfseries m\+\_\+child\+\_\+out}\hypertarget{classstlplus_1_1subprocess_a95ff443b9310a225097b7bc22d8b1dca}{}\label{classstlplus_1_1subprocess_a95ff443b9310a225097b7bc22d8b1dca}
+
+\item 
+int {\bfseries m\+\_\+child\+\_\+err}\hypertarget{classstlplus_1_1subprocess_a8b39d22068c563829a61f601bec44350}{}\label{classstlplus_1_1subprocess_a8b39d22068c563829a61f601bec44350}
+
+\item 
+\hyperlink{classstlplus_1_1env__vector}{env\+\_\+vector} {\bfseries m\+\_\+env}\hypertarget{classstlplus_1_1subprocess_a5500afc271bb12b766d59e95e5b098b6}{}\label{classstlplus_1_1subprocess_a5500afc271bb12b766d59e95e5b098b6}
+
+\item 
+int {\bfseries m\+\_\+err}\hypertarget{classstlplus_1_1subprocess_a9cede6b2bf50300b3f64f7e73d80a837}{}\label{classstlplus_1_1subprocess_a9cede6b2bf50300b3f64f7e73d80a837}
+
+\item 
+int {\bfseries m\+\_\+status}\hypertarget{classstlplus_1_1subprocess_a6c992122096061a81fc4acfb028e326b}{}\label{classstlplus_1_1subprocess_a6c992122096061a81fc4acfb028e326b}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+Definition at line 159 of file subprocesses.\+hpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/subprocesses.\+hpp\item 
+src/subprocesses.\+cpp\end{DoxyCompactItemize}

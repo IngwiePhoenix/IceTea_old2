@@ -1,0 +1,91 @@
+.TH "tthread::fast_mutex" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+tthread::fast_mutex \- Fast mutex class\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <fast_mutex\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBfast_mutex\fP ()"
+.br
+.RI "\fIConstructor\&. \fP"
+.ti -1c
+.RI "\fB~fast_mutex\fP ()"
+.br
+.RI "\fIDestructor\&. \fP"
+.ti -1c
+.RI "void \fBlock\fP ()"
+.br
+.RI "\fILock the mutex\&. \fP"
+.ti -1c
+.RI "bool \fBtry_lock\fP ()"
+.br
+.RI "\fITry to lock the mutex\&. \fP"
+.ti -1c
+.RI "void \fBunlock\fP ()"
+.br
+.RI "\fIUnlock the mutex\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Fast mutex class\&. 
+
+This is a mutual exclusion object for synchronizing access to shared memory areas for several threads\&. It is similar to the \fBtthread::mutex\fP class, but instead of using system level functions, it is implemented as an atomic spin lock with very low CPU overhead\&.
+.PP
+The \fC\fBfast_mutex\fP\fP class is NOT compatible with the \fC\fBcondition_variable\fP\fP class (however, it IS compatible with the \fC\fBlock_guard\fP\fP class)\&. It should also be noted that the \fC\fBfast_mutex\fP\fP class typically does not provide as accurate thread scheduling as a the standard \fCmutex\fP class does\&.
+.PP
+Because of the limitations of the class, it should only be used in situations where the mutex needs to be locked/unlocked very frequently\&.
+.PP
+\fBNote:\fP
+.RS 4
+The 'fast' version of this class relies on inline assembler language, which is currently only supported for 32/64-bit Intel x86/AMD64 and PowerPC architectures on a limited number of compilers (GNU g++ and MS Visual C++)\&. For other architectures/compilers, system functions are used instead\&. 
+.RE
+.PP
+
+.PP
+Definition at line 88 of file fast_mutex\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void tthread::fast_mutex::lock ()\fC [inline]\fP"
+
+.PP
+Lock the mutex\&. The method will block the calling thread until a lock on the mutex can be obtained\&. The mutex remains locked until \fC\fBunlock()\fP\fP is called\&. 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBlock_guard\fP 
+.RE
+.PP
+
+.PP
+Definition at line 120 of file fast_mutex\&.h\&.
+.SS "bool tthread::fast_mutex::try_lock ()\fC [inline]\fP"
+
+.PP
+Try to lock the mutex\&. The method will try to lock the mutex\&. If it fails, the function will return immediately (non-blocking)\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+\fCtrue\fP if the lock was acquired, or \fCfalse\fP if the lock could not be acquired\&. 
+.RE
+.PP
+
+.PP
+Definition at line 149 of file fast_mutex\&.h\&.
+.SS "void tthread::fast_mutex::unlock ()\fC [inline]\fP"
+
+.PP
+Unlock the mutex\&. If any threads are waiting for the lock on this mutex, one of them will be unblocked\&. 
+.PP
+Definition at line 199 of file fast_mutex\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

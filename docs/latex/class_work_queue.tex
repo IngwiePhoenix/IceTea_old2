@@ -1,0 +1,87 @@
+\hypertarget{class_work_queue}{}\section{Work\+Queue$<$ T, ST $>$ Class Template Reference}
+\label{class_work_queue}\index{Work\+Queue$<$ T, S\+T $>$@{Work\+Queue$<$ T, S\+T $>$}}
+
+
+The actual thread pool.  
+
+
+
+
+{\ttfamily \#include $<$threading.\+h$>$}
+
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+typedef bool($\ast$ {\bfseries compare\+\_\+f}) (T, T, \hyperlink{class_work_queue}{Work\+Queue}$<$ T, ST $>$ $\ast$)\hypertarget{class_work_queue_af440662e6d5957850d9192f4dfd87e4c}{}\label{class_work_queue_af440662e6d5957850d9192f4dfd87e4c}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+{\bfseries Work\+Queue} (int amt, \hyperlink{threading_8h_a4f750a8ce1d70e85989d1d5ae1a150b5}{Thread\+Function} func, ST udata=N\+U\+LL, compare\+\_\+f comp=N\+U\+LL)\hypertarget{class_work_queue_a83abb711bc4422cb9815178dbc86ce0e}{}\label{class_work_queue_a83abb711bc4422cb9815178dbc86ce0e}
+
+\item 
+bool {\bfseries still\+Going} ()\hypertarget{class_work_queue_a36382e6d17329eee9157ff9ff4a60a3d}{}\label{class_work_queue_a36382e6d17329eee9157ff9ff4a60a3d}
+
+\item 
+void {\bfseries join\+All} ()\hypertarget{class_work_queue_a52d740718b3d034c147d2bbe846ce71e}{}\label{class_work_queue_a52d740718b3d034c147d2bbe846ce71e}
+
+\item 
+void {\bfseries detach\+All} ()\hypertarget{class_work_queue_ad2df74f9396c388e001c7830af632899}{}\label{class_work_queue_ad2df74f9396c388e001c7830af632899}
+
+\item 
+void {\bfseries drain} ()\hypertarget{class_work_queue_ada316b8363d46f7479979994d7ad0eb6}{}\label{class_work_queue_ada316b8363d46f7479979994d7ad0eb6}
+
+\item 
+void {\bfseries stop} ()\hypertarget{class_work_queue_a7a7038296e55c02a8e66e3b1950640af}{}\label{class_work_queue_a7a7038296e55c02a8e66e3b1950640af}
+
+\item 
+bool {\bfseries has\+To\+Stop} ()\hypertarget{class_work_queue_a5b3b4a088b03424678032b9f41ec7a70}{}\label{class_work_queue_a5b3b4a088b03424678032b9f41ec7a70}
+
+\item 
+void {\bfseries add} (T item)\hypertarget{class_work_queue_a73a70d61549b7e4e0c5d7e8aed187b17}{}\label{class_work_queue_a73a70d61549b7e4e0c5d7e8aed187b17}
+
+\item 
+bool {\bfseries remove} (T \&item)\hypertarget{class_work_queue_aba21cbeed7a18e44729c2f3c43e89d3c}{}\label{class_work_queue_aba21cbeed7a18e44729c2f3c43e89d3c}
+
+\item 
+int {\bfseries size} ()\hypertarget{class_work_queue_ac2bf2d4acf6899c351ab280d18dcee0a}{}\label{class_work_queue_ac2bf2d4acf6899c351ab280d18dcee0a}
+
+\item 
+int {\bfseries count\+All} ()\hypertarget{class_work_queue_a999763b5cd4a46a7c85314b54ce76d20}{}\label{class_work_queue_a999763b5cd4a46a7c85314b54ce76d20}
+
+\item 
+void {\bfseries step} ()\hypertarget{class_work_queue_a226392ae85100777be0eeb1ab6419470}{}\label{class_work_queue_a226392ae85100777be0eeb1ab6419470}
+
+\item 
+ST {\bfseries get\+Data} ()\hypertarget{class_work_queue_a62afbedf319665c6b28198d040a04a80}{}\label{class_work_queue_a62afbedf319665c6b28198d040a04a80}
+
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classtthread_1_1mutex}{tthread\+::mutex} {\bfseries mutex}\hypertarget{class_work_queue_a6ff6898f973d52547504c667c6d73ee0}{}\label{class_work_queue_a6ff6898f973d52547504c667c6d73ee0}
+
+\item 
+\hyperlink{classtthread_1_1condition__variable}{tthread\+::condition\+\_\+variable} {\bfseries cond}\hypertarget{class_work_queue_a2f74d2aaba1734d35378b51175146e04}{}\label{class_work_queue_a2f74d2aaba1734d35378b51175146e04}
+
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\subsubsection*{template$<$typename T, typename ST = void$\ast$$>$\\*
+class Work\+Queue$<$ T, S\+T $>$}
+
+The actual thread pool. 
+
+This class requires one template argument and has a second, optional one.
+
+It is based off Tiny\+Threads++. Upon instantiation, all the threads will be started. 
+
+Definition at line 30 of file threading.\+h.
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{threading_8h}{threading.\+h}\end{DoxyCompactItemize}

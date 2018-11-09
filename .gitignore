@@ -1,0 +1,21 @@
+# Scripts on the toplevel
+/*.os
+/*.js
+/*.it
+
+# Allowed scripts
+!/build.it
+!/bootstrap.it
+!/build.js
+
+# Generated files/folders
+/*.dSYM
+/config.h
+/out/
+
+# Executables made during manual builds
+/icetea
+/icetea.js
+/incbin
+/incbin.js
+/.tmp

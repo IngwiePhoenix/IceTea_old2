@@ -1,0 +1,95 @@
+.TH "ObjectScript::OS::Core::GCStringValue" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::GCStringValue \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBObjectScript::OS::Core::GCValue\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBGCStringValue\fP (int p_data_size)"
+.br
+.ti -1c
+.RI "int \fBgetDataSize\fP () const "
+.br
+.ti -1c
+.RI "int \fBgetLen\fP () const "
+.br
+.ti -1c
+.RI "char * \fBtoChar\fP () const "
+.br
+.ti -1c
+.RI "unsigned char * \fBtoBytes\fP () const "
+.br
+.ti -1c
+.RI "void * \fBtoMemory\fP () const "
+.br
+.ti -1c
+.RI "bool \fBisNumber\fP (double *) const "
+.br
+.ti -1c
+.RI "bool \fBisNumberRadix\fP (int radix, double *) const "
+.br
+.ti -1c
+.RI "double \fBtoNumber\fP () const "
+.br
+.ti -1c
+.RI "double \fBtoNumberRadix\fP (int radix) const "
+.br
+.ti -1c
+.RI "int \fBcmp\fP (\fBGCStringValue\fP *) const "
+.br
+.ti -1c
+.RI "int \fBcmp\fP (const char *) const "
+.br
+.ti -1c
+.RI "int \fBcmp\fP (const char *, int len) const "
+.br
+.ti -1c
+.RI "bool \fBisEqual\fP (int hash, const void *b, int size) const "
+.br
+.ti -1c
+.RI "bool \fBisEqual\fP (int hash, const void *buf1, int size1, const void *buf2, int size2) const "
+.br
+.ti -1c
+.RI "void \fBcalcHash\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBGCStringValue\fP * \fBallocAndPush\fP (\fBOS\fP *, int hash, const void *, int data_size)"
+.br
+.ti -1c
+.RI "static \fBGCStringValue\fP * \fBallocAndPush\fP (\fBOS\fP *, int hash, const void *buf1, int len1, const void *buf2, int len2)"
+.br
+.ti -1c
+.RI "static \fBGCStringValue\fP * \fBallocAndPush\fP (\fBOS\fP *, \fBGCStringValue\fP *a, \fBGCStringValue\fP *b)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBdata_size\fP"
+.br
+.ti -1c
+.RI "int \fBhash\fP"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBhash_next_ref\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 1270 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

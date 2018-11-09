@@ -1,0 +1,100 @@
+.TH "tthread::recursive_mutex" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+tthread::recursive_mutex \- Recursive mutex class\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <tinythread\&.h>\fP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBrecursive_mutex\fP ()"
+.br
+.RI "\fIConstructor\&. \fP"
+.ti -1c
+.RI "\fB~recursive_mutex\fP ()"
+.br
+.RI "\fIDestructor\&. \fP"
+.ti -1c
+.RI "void \fBlock\fP ()"
+.br
+.RI "\fILock the mutex\&. \fP"
+.ti -1c
+.RI "bool \fBtry_lock\fP ()"
+.br
+.RI "\fITry to lock the mutex\&. \fP"
+.ti -1c
+.RI "void \fBunlock\fP ()"
+.br
+.RI "\fIUnlock the mutex\&. \fP"
+.ti -1c
+.RI "\fBrecursive_mutex\fP (const \fBrecursive_mutex\fP &)"
+.br
+.ti -1c
+.RI "\fBrecursive_mutex\fP & \fBoperator=\fP (const \fBrecursive_mutex\fP &)"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBcondition_variable\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Recursive mutex class\&. 
+
+This is a mutual exclusion object for synchronizing access to shared memory areas for several threads\&. The mutex is recursive (i\&.e\&. a thread may lock the mutex several times, as long as it unlocks the mutex the same number of times)\&. 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBmutex\fP 
+.RE
+.PP
+
+.PP
+Definition at line 251 of file tinythread\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "void tthread::recursive_mutex::lock ()\fC [inline]\fP"
+
+.PP
+Lock the mutex\&. The method will block the calling thread until a lock on the mutex can be obtained\&. The mutex remains locked until \fC\fBunlock()\fP\fP is called\&. 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBlock_guard\fP 
+.RE
+.PP
+
+.PP
+Definition at line 280 of file tinythread\&.h\&.
+.SS "bool tthread::recursive_mutex::try_lock ()\fC [inline]\fP"
+
+.PP
+Try to lock the mutex\&. The method will try to lock the mutex\&. If it fails, the function will return immediately (non-blocking)\&. 
+.PP
+\fBReturns:\fP
+.RS 4
+\fCtrue\fP if the lock was acquired, or \fCfalse\fP if the lock could not be acquired\&. 
+.RE
+.PP
+
+.PP
+Definition at line 294 of file tinythread\&.h\&.
+.SS "void tthread::recursive_mutex::unlock ()\fC [inline]\fP"
+
+.PP
+Unlock the mutex\&. If any threads are waiting for the lock on this mutex, one of them will be unblocked\&. 
+.PP
+Definition at line 306 of file tinythread\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

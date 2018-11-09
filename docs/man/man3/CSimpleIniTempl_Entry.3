@@ -1,0 +1,65 @@
+.TH "CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Entry" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Entry \- key entry  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <SimpleIni\&.h>\fP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBKeyOrder\fP"
+.br
+.RI "\fIStrict less ordering by name of key only\&. \fP"
+.ti -1c
+.RI "struct \fBLoadOrder\fP"
+.br
+.RI "\fIStrict less ordering by order, and then name of key\&. \fP"
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBEntry\fP (const SI_CHAR *a_pszItem=NULL, int a_nOrder=0)"
+.br
+.ti -1c
+.RI "\fBEntry\fP (const SI_CHAR *a_pszItem, const SI_CHAR *a_pszComment, int a_nOrder)"
+.br
+.ti -1c
+.RI "\fBEntry\fP (const \fBEntry\fP &rhs)"
+.br
+.ti -1c
+.RI "\fBEntry\fP & \fBoperator=\fP (const \fBEntry\fP &rhs)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "const SI_CHAR * \fBpItem\fP"
+.br
+.ti -1c
+.RI "const SI_CHAR * \fBpComment\fP"
+.br
+.ti -1c
+.RI "int \fBnOrder\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
+.br
+struct CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Entry"
+key entry 
+.PP
+Definition at line 301 of file SimpleIni\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

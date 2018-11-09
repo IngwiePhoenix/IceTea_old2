@@ -1,0 +1,103 @@
+\hypertarget{classpluma_1_1_d_library}{}\section{pluma\+:\+:D\+Library Class Reference}
+\label{classpluma_1_1_d_library}\index{pluma\+::\+D\+Library@{pluma\+::\+D\+Library}}
+
+
+Manages a Dynamic Linking Library.  
+
+
+
+
+{\ttfamily \#include $<$D\+Library.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classpluma_1_1_d_library_a3fa679bc824b36ce61b67716bedd15c7}{$\sim$\+D\+Library} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{classpluma_1_1_d_library_a57dd3726140cce08957e40cb5b001d84}{get\+Symbol} (const std\+::string \&symbol)
+\begin{DoxyCompactList}\small\item\em Get a symbol from the library. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Static Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+static \hyperlink{classpluma_1_1_d_library}{D\+Library} $\ast$ \hyperlink{classpluma_1_1_d_library_a32400d8e50c0f03cb525ca7500b4516e}{load} (const std\+::string \&path)
+\begin{DoxyCompactList}\small\item\em Load a library. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Manages a Dynamic Linking Library. 
+
+Definition at line 49 of file D\+Library.\+hpp.
+
+
+
+\subsection{Constructor \& Destructor Documentation}
+\index{pluma\+::\+D\+Library@{pluma\+::\+D\+Library}!````~D\+Library@{$\sim$\+D\+Library}}
+\index{````~D\+Library@{$\sim$\+D\+Library}!pluma\+::\+D\+Library@{pluma\+::\+D\+Library}}
+\subsubsection[{\texorpdfstring{$\sim$\+D\+Library()}{~DLibrary()}}]{\setlength{\rightskip}{0pt plus 5cm}pluma\+::\+D\+Library\+::$\sim$\+D\+Library (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)}\hypertarget{classpluma_1_1_d_library_a3fa679bc824b36ce61b67716bedd15c7}{}\label{classpluma_1_1_d_library_a3fa679bc824b36ce61b67716bedd15c7}
+
+
+Destructor. 
+
+Close and free the opened library (if any). 
+
+Definition at line 67 of file D\+Library.\+cpp.
+
+
+
+\subsection{Member Function Documentation}
+\index{pluma\+::\+D\+Library@{pluma\+::\+D\+Library}!get\+Symbol@{get\+Symbol}}
+\index{get\+Symbol@{get\+Symbol}!pluma\+::\+D\+Library@{pluma\+::\+D\+Library}}
+\subsubsection[{\texorpdfstring{get\+Symbol(const std\+::string \&symbol)}{getSymbol(const std::string &symbol)}}]{\setlength{\rightskip}{0pt plus 5cm}void $\ast$ pluma\+::\+D\+Library\+::get\+Symbol (
+\begin{DoxyParamCaption}
+\item[{const std\+::string \&}]{symbol}
+\end{DoxyParamCaption}
+)}\hypertarget{classpluma_1_1_d_library_a57dd3726140cce08957e40cb5b001d84}{}\label{classpluma_1_1_d_library_a57dd3726140cce08957e40cb5b001d84}
+
+
+Get a symbol from the library. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em symbol} & Symbol that we\textquotesingle{}re looking for.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Pointer to what the symbol refers to, or N\+U\+LL if the symbol is not found. 
+\end{DoxyReturn}
+
+
+Definition at line 79 of file D\+Library.\+cpp.
+
+\index{pluma\+::\+D\+Library@{pluma\+::\+D\+Library}!load@{load}}
+\index{load@{load}!pluma\+::\+D\+Library@{pluma\+::\+D\+Library}}
+\subsubsection[{\texorpdfstring{load(const std\+::string \&path)}{load(const std::string &path)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf D\+Library} $\ast$ pluma\+::\+D\+Library\+::load (
+\begin{DoxyParamCaption}
+\item[{const std\+::string \&}]{path}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}\hypertarget{classpluma_1_1_d_library_a32400d8e50c0f03cb525ca7500b4516e}{}\label{classpluma_1_1_d_library_a32400d8e50c0f03cb525ca7500b4516e}
+
+
+Load a library. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em path} & Path to the library.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Pointer to the loaded library, or N\+U\+LL if failed. 
+\end{DoxyReturn}
+
+
+Definition at line 37 of file D\+Library.\+cpp.
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/D\+Library.\+hpp\item 
+src/D\+Library.\+cpp\end{DoxyCompactItemize}

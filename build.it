@@ -1,0 +1,127 @@
+require "./ext/Extensions.it";
+
+function isDarwin() {
+    return @{
+        var s,e,o = $("uname");
+        if(s && e==0) return o[1].trim();
+    } == "Darwin";
+}
+
+target("icetea", "exe") {
+    title: "IceTea",
+    needs: ["icetea-scripts"],
+    input: pfs.glob("src", "*.cpp"),
+    init: function() {
+        cli.group "IceTea"
+        cli.insert {
+            longopt: "--it-optimize",
+            desc: "Run optimizations when compiling."
+        };
+        cli.insert {
+            longopt: "--it-debug",
+            desc: "Build IceTea with debug symbols enabled."
+        };
+    },
+    configure: function() {
+        detect.line "Do we want to optimize IceTea (aka. release build)?";
+        if(DEBUG && cli.check("--it-optimize")) {
+            detect.fail "Can not optimize on debug build."
+        } else if(!DEBUG && cli.check("--it-optimize")) {
+            detect.success "Yes.";
+            @settings.CXX.optimization = "size";
+            if(sys.type == "unix") {
+                for(var _,flag in [
+                    "-ffunction-sections",
+                    "-fdata-sections",
+                    "-dead_strip"
+                ]) {
+                    if(detect.tryCompilerFlag(flag, "CXX")) {
+                        @settings.LINK.flags[] = flag;
+                    }
+                }
+            }
+        } else {
+            detect.status "No."
+        }
+
+        if(detect.lib("dl")) {
+            @settings.LINK.libraries[] = "dl";
+        }
+
+        @settings.CXX.shouldDebug = (DEBUG || cli.check("--it-debug"));
+
+        if(detect.lib("pthread")) {
+            @settings.LINK.libraries[] = "pthread";
+        } else if(detect.lib("pthreads")) {
+            @settings.LINK.libraries[] = "pthreads";
+        } else if(detect.tryCompilerFlag("-pthread", "CXX")) {
+            @settings.LINK.flags[] = "-pthread";
+        }
+
+        // TODO: Generate plugin listing and load that, instead of this.
+        if(detect.tryCompilerFlag("-all_load", "CXX")) {
+            @settings.LINK.flags[] = "-all_load";
+        }
+
+        var exts = IceTeaInternal.getExtensions();
+        for(var _,ext in exts) {
+            var extName = "icetea-${ext}";
+            @needs[] = extName;
+        }
+
+        return true;
+    },
+    settings: {
+        CXX: {
+            includeDirs: ["src"],
+            flags: [],
+            warnings: (sys.type == "unix" ? [
+                // ObjectScript
+                "no-switch"
+            ] : []),
+            defines: [
+                // We can go all-out now. Include everything.
+                "ICETEA_FULL",
+
+                // Force IceTea into using INCBIN_EXTERNAL instead.
+                // Allows for the generated incbin script file to be used.
+                // Not needed on Windows.
+                "ICETEA_INCBIN_FORCE_EXTERNAL"
+            ]
+        },
+        LINK: {
+            libraries: [],
+            flags: []
+        }
+    },
+}
+
+target("icetea-scripts","incbin") {
+    title: "IceTea internal scripts",
+    input: {
+        STD:                    "lib/std.os",
+        Underscore:             "lib/underscore.os",
+        Configurable:           "lib/configurable.os",
+        Detector:               "lib/detect.os",
+        Autoconf:               "lib/autoconf.os",
+        DetectorUtils:          "lib/detect.utils.os",
+        libIceTea:              "lib/IceTea.os",
+        InternalBootstrapIt:    "bootstrap.it"
+    },
+    settings: {
+        INCBIN: {
+            includeDirs: [__DIR__]
+        }
+    },
+    for: "icetea"
+}
+
+action("tests"){|scheme|
+    require "tests/run_tests"
+}
+
+action("all") {
+    build: ["icetea"],
+    clean: ["icetea"],
+    install: ["icetea"]
+}

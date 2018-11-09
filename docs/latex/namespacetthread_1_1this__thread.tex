@@ -1,0 +1,68 @@
+\hypertarget{namespacetthread_1_1this__thread}{}\section{tthread\+:\+:this\+\_\+thread Namespace Reference}
+\label{namespacetthread_1_1this__thread}\index{tthread\+::this\+\_\+thread@{tthread\+::this\+\_\+thread}}
+
+
+The namespace {\ttfamily \hyperlink{namespacetthread_1_1this__thread}{this\+\_\+thread}} provides methods for dealing with the calling thread.  
+
+
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classtthread_1_1thread_1_1id}{thread\+::id} \hyperlink{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}{get\+\_\+id} ()\hypertarget{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}{}\label{namespacetthread_1_1this__thread_ab9370620a3920b9ec550f84fb44fb032}
+
+\begin{DoxyCompactList}\small\item\em Return the thread ID of the calling thread. \end{DoxyCompactList}\item 
+void \hyperlink{namespacetthread_1_1this__thread_a867ef7ad1dd6026b7ee13bb013e00edd}{yield} ()
+\begin{DoxyCompactList}\small\item\em Yield execution to another thread. \end{DoxyCompactList}\item 
+{\footnotesize template$<$class \+\_\+\+Rep , class \+\_\+\+Period $>$ }\\void \hyperlink{namespacetthread_1_1this__thread_a5dfe77c8ca4df7d32511caa2cb7ffa7f}{sleep\+\_\+for} (const \hyperlink{classtthread_1_1chrono_1_1duration}{chrono\+::duration}$<$ \+\_\+\+Rep, \+\_\+\+Period $>$ \&a\+Time)
+\begin{DoxyCompactList}\small\item\em Blocks the calling thread for a period of time. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The namespace {\ttfamily \hyperlink{namespacetthread_1_1this__thread}{this\+\_\+thread}} provides methods for dealing with the calling thread. 
+
+
+
+\subsection{Function Documentation}
+\index{tthread\+::this\+\_\+thread@{tthread\+::this\+\_\+thread}!sleep\+\_\+for@{sleep\+\_\+for}}
+\index{sleep\+\_\+for@{sleep\+\_\+for}!tthread\+::this\+\_\+thread@{tthread\+::this\+\_\+thread}}
+\subsubsection[{\texorpdfstring{sleep\+\_\+for(const chrono\+::duration$<$ \+\_\+\+Rep, \+\_\+\+Period $>$ \&a\+Time)}{sleep_for(const chrono::duration< _Rep, _Period > &aTime)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$class \+\_\+\+Rep , class \+\_\+\+Period $>$ void tthread\+::this\+\_\+thread\+::sleep\+\_\+for (
+\begin{DoxyParamCaption}
+\item[{const {\bf chrono\+::duration}$<$ \+\_\+\+Rep, \+\_\+\+Period $>$ \&}]{a\+Time}
+\end{DoxyParamCaption}
+)}\hypertarget{namespacetthread_1_1this__thread_a5dfe77c8ca4df7d32511caa2cb7ffa7f}{}\label{namespacetthread_1_1this__thread_a5dfe77c8ca4df7d32511caa2cb7ffa7f}
+
+
+Blocks the calling thread for a period of time. 
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\tt in}  & {\em a\+Time} & Minimum time to put the thread to sleep. Example usage\+: 
+\begin{DoxyCode}
+\textcolor{comment}{// Sleep for 100 milliseconds}
+\hyperlink{namespacetthread_1_1this__thread_a5dfe77c8ca4df7d32511caa2cb7ffa7f}{this\_thread::sleep\_for}(\hyperlink{namespacetthread_1_1chrono_a8bf64c23d4a358a24065fc6d6190205f}{chrono::milliseconds}(100));
+\end{DoxyCode}
+ \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+Supported duration types are\+: nanoseconds, microseconds, milliseconds, seconds, minutes and hours. 
+\end{DoxyNote}
+
+
+Definition at line 699 of file tinythread.\+h.
+
+\index{tthread\+::this\+\_\+thread@{tthread\+::this\+\_\+thread}!yield@{yield}}
+\index{yield@{yield}!tthread\+::this\+\_\+thread@{tthread\+::this\+\_\+thread}}
+\subsubsection[{\texorpdfstring{yield()}{yield()}}]{\setlength{\rightskip}{0pt plus 5cm}void tthread\+::this\+\_\+thread\+::yield (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacetthread_1_1this__thread_a867ef7ad1dd6026b7ee13bb013e00edd}{}\label{namespacetthread_1_1this__thread_a867ef7ad1dd6026b7ee13bb013e00edd}
+
+
+Yield execution to another thread. 
+
+Offers the operating system the opportunity to schedule another thread that is ready to run on the current processor. 
+
+Definition at line 681 of file tinythread.\+h.
+

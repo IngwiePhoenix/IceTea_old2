@@ -1,0 +1,115 @@
+.TH "pluma::Pluma" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+pluma::Pluma \- \fBPluma\fP plugins management\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <Pluma\&.hpp>\fP
+.PP
+Inherits \fBpluma::PluginManager\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBPluma\fP ()"
+.br
+.RI "\fIDefault Constructor\&. \fP"
+.ti -1c
+.RI "template<typename ProviderType > void \fBacceptProviderType\fP ()"
+.br
+.RI "\fITell \fBPluma\fP to accept a certain type of providers\&. \fP"
+.ti -1c
+.RI "template<typename ProviderType > void \fBgetProviders\fP (std::vector< ProviderType * > &providers)"
+.br
+.RI "\fIGet the stored providers of a certain type\&. \fP"
+.ti -1c
+.RI "template<typename ProviderType > void \fBacceptProviderType\fP ()"
+.br
+.ti -1c
+.RI "template<typename ProviderType > void \fBgetProviders\fP (std::vector< ProviderType * > &providers)"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+\fBPluma\fP plugins management\&. 
+
+\fBPluma\fP is the main class of \fBPluma\fP library\&.
+.PP
+Allows hosting applications to load/unload dlls in runtime (plugins), and to get providers of shared interface objects\&.
+.PP
+Example: 
+.PP
+.nf
+pluma::Pluma pluma;
+// Tell it to accept providers of the type DeviceProvider
+pluma\&.acceptProviderType<DeviceProvider>();
+// Load some dll
+pluma\&.load("plugins/standard_devices");
+// Get device providers into a vector
+std::vector<DeviceProvider*> providers;
+pluma\&.getProviders(providers);
+// create a Device from the first provider
+if (!providers\&.empty()){
+    Device* myDevice = providers\&.first()->create();
+    // do something with myDevice
+    std::cout << device->getDescription() << std::endl;
+    // (\&.\&.\&.)
+    delete myDevice;
+}
+
+.fi
+.PP
+.PP
+It is also possible to add local providers, providers that are defined directly on the host application\&. That can be useful to provide and use default implementations of certain interfaces, along with plugin implementations\&. 
+.PP
+Definition at line 94 of file Pluma\&.hpp\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "Pluma::Pluma ()\fC [inline]\fP"
+
+.PP
+Default Constructor\&. 
+.PP
+Definition at line 28 of file Pluma\&.hpp\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "template<typename ProviderType > void pluma::Pluma::acceptProviderType ()"
+
+.PP
+Tell \fBPluma\fP to accept a certain type of providers\&. A \fBPluma\fP object is able to accept multiple types of providers\&. When a plugin is loaded, it tries to register it's providers implementations\&. Those are only accepted by the host application if it's accepting providers of that kind\&.
+.PP
+\fBTemplate Parameters:\fP
+.RS 4
+\fIProviderType\fP type of provider\&. 
+.RE
+.PP
+
+.PP
+Definition at line 35 of file Pluma\&.hpp\&.
+.SS "template<typename ProviderType > void pluma::Pluma::getProviders (std::vector< ProviderType * > & providers)"
+
+.PP
+Get the stored providers of a certain type\&. Providers are added at the end of the \fIproviders\fP vector\&.
+.PP
+\fBTemplate Parameters:\fP
+.RS 4
+\fIProviderType\fP type of provider to be returned\&. 
+.RE
+.PP
+\fBParameters:\fP
+.RS 4
+\fIproviders\fP Vector to fill with the existing providers\&. 
+.RE
+.PP
+
+.PP
+Definition at line 46 of file Pluma\&.hpp\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

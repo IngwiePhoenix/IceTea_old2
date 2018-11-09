@@ -1,0 +1,44 @@
+# Generic
+OUTPUT_DIRECTORY       = docs/
+INPUT                  = src/ ./
+USE_MDFILE_AS_MAINPAGE = README.md
+
+# General infos
+PROJECT_NAME           = IceTea
+PROJECT_BRIEF          = Next-Generation build tool for everyone!
+DOCSET_PUBLISHER_NAME  = Ingwie Phoenix
+DOCSET_FEEDNAME        = Ingwie Phoenix
+DOCSET_BUNDLE_ID       = io.ingwie.icetea
+DOCSET_PUBLISHER_ID    = io.ingwie
+
+# Settings
+EXCLUDE_SYMLINKS       = YES
+JAVADOC_AUTOBRIEF      = YES
+SOURCE_BROWSER         = YES
+
+# Preprocessor
+# This is to enable OS_FUNC to be evaluated
+SKIP_FUNCTION_MACROS   = NO
+MACRO_EXPANSION        = YES
+
+# Generators
+GENERATE_DOCSET        = YES
+GENERATE_MAN           = YES
+
+# Files
+INCLUDE_FILE_PATTERNS  = *.h *.hpp
+
+# Warnings
+WARN_IF_UNDOCUMENTED   = NO
+
+
+
+# With the PROJECT_LOGO tag one can specify an logo or icon that is included
+#  in the documentation. The maximum height of the logo should not exceed 55
+#  pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
+#  the logo to the output directory.
+
+# Example configuration. Not for now
+# EXAMPLE_PATH = examples/
+# EXAMPLE_PATTERNS = *.it
+# EXAMPLE_RECURSIVE = YES

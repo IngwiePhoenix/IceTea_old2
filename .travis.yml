@@ -1,0 +1,23 @@
+language: cpp
+
+os:
+  - linux
+  - osx
+
+env:
+  - TRCXX=g++
+  - TRCXX=clang++
+  - TRCXX=i586-mingw32msvc-g++
+
+script:
+  - export CXX=$TRCXX
+  - $CXX src/*.cpp -Wno-switch -lpthread -ldl -o ./icetea.flat
+  - ./icetea.flat --detail-output --no-color
+  - ./out/icetea -x tests/run_tests.os || ( [ "$?" == "2" ] && exit 0 || exit 1 )
+  - ./out/icetea -m
+
+matrix:
+  allow_failures:
+    - env: TRCXX=clang++
+    - env: TRCXX=i586-mingw32msvc-g++
+  fast_finish: true

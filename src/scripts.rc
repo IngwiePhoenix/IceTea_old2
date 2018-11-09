@@ -1,0 +1,11 @@
+#include "incbin.h"
+#include "incbin.ext.h"
+
+INCBIN(STD, "lib/std.os");
+INCBIN(Underscore, "lib/underscore.os");
+INCBIN(Configurable, "lib/configurable.os");
+INCBIN(Detector, "lib/detect.os");
+INCBIN(DetectorUtils, "lib/detect.utils.os");
+INCBIN(libIceTea, "lib/IceTea.os");
+INCBIN(Autoconf, "lib/autoconf.os");
+INCBIN(InternalBootstrapIt, "bootstrap.it");

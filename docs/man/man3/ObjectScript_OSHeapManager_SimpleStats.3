@@ -1,0 +1,56 @@
+.TH "ObjectScript::OSHeapManager::SimpleStats" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OSHeapManager::SimpleStats \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OSHeapManager::Stats\fP\&.
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "unsigned __int32 \fBalloc_size\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBused_size\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBdata_size\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBalloc_count\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBfree_count\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBhit_count\fP"
+.br
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBregisterAlloc\fP (unsigned __int32 used_size, unsigned __int32 data_size)"
+.br
+.ti -1c
+.RI "void \fBregisterFree\fP (unsigned __int32 used_size, unsigned __int32 data_size)"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBOSHeapManager\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 120 of file os\-heap\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

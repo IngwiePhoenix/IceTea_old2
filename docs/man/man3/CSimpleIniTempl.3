@@ -1,0 +1,888 @@
+.TH "CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER >" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER > \- Simple INI file reader\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <SimpleIni\&.h>\fP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBConverter\fP"
+.br
+.RI "\fICharacterset conversion utility class to convert strings to the same format as is used for the storage\&. \fP"
+.ti -1c
+.RI "struct \fBEntry\fP"
+.br
+.RI "\fIkey entry \fP"
+.ti -1c
+.RI "class \fBFileWriter\fP"
+.br
+.RI "\fI\fBOutputWriter\fP class to write the INI data to a file\&. \fP"
+.ti -1c
+.RI "class \fBOutputWriter\fP"
+.br
+.RI "\fIinterface definition for the \fBOutputWriter\fP object to pass to \fBSave()\fP in order to output the INI file data\&. \fP"
+.ti -1c
+.RI "class \fBStringWriter\fP"
+.br
+.RI "\fI\fBOutputWriter\fP class to write the INI data to a string\&. \fP"
+.in -1c
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "typedef SI_CHAR \fBSI_CHAR_T\fP"
+.br
+.ti -1c
+.RI "typedef std::multimap< \fBEntry\fP, const SI_CHAR *, typename \fBEntry::KeyOrder\fP > \fBTKeyVal\fP"
+.br
+.RI "\fImap keys to values \fP"
+.ti -1c
+.RI "typedef std::map< \fBEntry\fP, \fBTKeyVal\fP, typename \fBEntry::KeyOrder\fP > \fBTSection\fP"
+.br
+.RI "\fImap sections to key/value map \fP"
+.ti -1c
+.RI "typedef std::list< \fBEntry\fP > \fBTNamesDepend\fP"
+.br
+.RI "\fIset of dependent string pointers\&. \fP"
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBCSimpleIniTempl\fP (bool a_bIsUtf8=false, bool a_bMultiKey=false, bool a_bMultiLine=false)"
+.br
+.RI "\fIDefault constructor\&. \fP"
+.ti -1c
+.RI "\fB~CSimpleIniTempl\fP ()"
+.br
+.RI "\fIDestructor\&. \fP"
+.ti -1c
+.RI "void \fBReset\fP ()"
+.br
+.RI "\fIDeallocate all memory stored by this object\&. \fP"
+.ti -1c
+.RI "bool \fBIsEmpty\fP () const "
+.br
+.RI "\fIHas any data been loaded\&. \fP"
+.ti -1c
+.RI "SI_Error \fBLoadFile\fP (const char *a_pszFile)"
+.br
+.RI "\fILoad an INI file from disk into memory\&. \fP"
+.ti -1c
+.RI "SI_Error \fBLoadFile\fP (FILE *a_fpFile)"
+.br
+.RI "\fILoad the file from a file pointer\&. \fP"
+.ti -1c
+.RI "SI_Error \fBLoadData\fP (const std::string &a_strData)"
+.br
+.RI "\fILoad INI file data direct from a std::string\&. \fP"
+.ti -1c
+.RI "SI_Error \fBLoadData\fP (const char *a_pData, size_t a_uDataLen)"
+.br
+.RI "\fILoad INI file data direct from memory\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSaveFile\fP (const char *a_pszFile, bool a_bAddSignature=true) const "
+.br
+.RI "\fISave an INI file from memory to disk\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSaveFile\fP (FILE *a_pFile, bool a_bAddSignature=false) const "
+.br
+.RI "\fISave the INI data to a file\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSave\fP (\fBOutputWriter\fP &a_oOutput, bool a_bAddSignature=false) const "
+.br
+.RI "\fISave the INI data\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSave\fP (std::string &a_sBuffer, bool a_bAddSignature=false) const "
+.br
+.RI "\fIAppend the INI data to a string\&. \fP"
+.ti -1c
+.RI "void \fBGetAllSections\fP (\fBTNamesDepend\fP &a_names) const "
+.br
+.RI "\fIRetrieve all section names\&. \fP"
+.ti -1c
+.RI "bool \fBGetAllKeys\fP (const SI_CHAR *a_pSection, \fBTNamesDepend\fP &a_names) const "
+.br
+.RI "\fIRetrieve all unique key names in a section\&. \fP"
+.ti -1c
+.RI "bool \fBGetAllValues\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, \fBTNamesDepend\fP &a_values) const "
+.br
+.RI "\fIRetrieve all values for a specific key\&. \fP"
+.ti -1c
+.RI "int \fBGetSectionSize\fP (const SI_CHAR *a_pSection) const "
+.br
+.RI "\fIQuery the number of keys in a specific section\&. \fP"
+.ti -1c
+.RI "const \fBTKeyVal\fP * \fBGetSection\fP (const SI_CHAR *a_pSection) const "
+.br
+.RI "\fIRetrieve all key and value pairs for a section\&. \fP"
+.ti -1c
+.RI "const SI_CHAR * \fBGetValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, const SI_CHAR *a_pDefault=NULL, bool *a_pHasMultiple=NULL) const "
+.br
+.RI "\fIRetrieve the value for a specific key\&. \fP"
+.ti -1c
+.RI "long \fBGetLongValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, long a_nDefault=0, bool *a_pHasMultiple=NULL) const "
+.br
+.RI "\fIRetrieve a numeric value for a specific key\&. \fP"
+.ti -1c
+.RI "double \fBGetDoubleValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, double a_nDefault=0, bool *a_pHasMultiple=NULL) const "
+.br
+.RI "\fIRetrieve a numeric value for a specific key\&. \fP"
+.ti -1c
+.RI "bool \fBGetBoolValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, bool a_bDefault=false, bool *a_pHasMultiple=NULL) const "
+.br
+.RI "\fIRetrieve a boolean value for a specific key\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSetValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, const SI_CHAR *a_pValue, const SI_CHAR *a_pComment=NULL, bool a_bForceReplace=false)"
+.br
+.RI "\fIAdd or update a section or value\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSetLongValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, long a_nValue, const SI_CHAR *a_pComment=NULL, bool a_bUseHex=false, bool a_bForceReplace=false)"
+.br
+.RI "\fIAdd or update a numeric value\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSetDoubleValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, double a_nValue, const SI_CHAR *a_pComment=NULL, bool a_bForceReplace=false)"
+.br
+.RI "\fIAdd or update a double value\&. \fP"
+.ti -1c
+.RI "SI_Error \fBSetBoolValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, bool a_bValue, const SI_CHAR *a_pComment=NULL, bool a_bForceReplace=false)"
+.br
+.RI "\fIAdd or update a boolean value\&. \fP"
+.ti -1c
+.RI "bool \fBDelete\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, bool a_bRemoveEmpty=false)"
+.br
+.RI "\fIDelete an entire section, or a key from a section\&. \fP"
+.ti -1c
+.RI "bool \fBDeleteValue\fP (const SI_CHAR *a_pSection, const SI_CHAR *a_pKey, const SI_CHAR *a_pValue, bool a_bRemoveEmpty=false)"
+.br
+.RI "\fIDelete an entire section, or a key from a section\&. \fP"
+.ti -1c
+.RI "\fBConverter\fP \fBGetConverter\fP () const "
+.br
+.RI "\fIReturn a conversion object to convert text to the same encoding as is used by the \fBSave()\fP, \fBSaveFile()\fP and SaveString() functions\&. \fP"
+.in -1c
+.PP
+.RI "\fBSettings\fP"
+.br
+
+.in +1c
+.in +1c
+.ti -1c
+.RI "void \fBSetUnicode\fP (bool a_bIsUtf8=true)"
+.br
+.RI "\fISet the storage format of the INI data\&. \fP"
+.ti -1c
+.RI "bool \fBIsUnicode\fP () const "
+.br
+.RI "\fIGet the storage format of the INI data\&. \fP"
+.ti -1c
+.RI "void \fBSetMultiKey\fP (bool a_bAllowMultiKey=true)"
+.br
+.RI "\fIShould multiple identical keys be permitted in the file\&. \fP"
+.ti -1c
+.RI "bool \fBIsMultiKey\fP () const "
+.br
+.RI "\fIGet the storage format of the INI data\&. \fP"
+.ti -1c
+.RI "void \fBSetMultiLine\fP (bool a_bAllowMultiLine=true)"
+.br
+.RI "\fIShould data values be permitted to span multiple lines in the file\&. \fP"
+.ti -1c
+.RI "bool \fBIsMultiLine\fP () const "
+.br
+.RI "\fIQuery the status of multi-line data\&. \fP"
+.ti -1c
+.RI "void \fBSetSpaces\fP (bool a_bSpaces=true)"
+.br
+.RI "\fIShould spaces be added around the equals sign when writing key/value pairs out\&. \fP"
+.ti -1c
+.RI "bool \fBUsingSpaces\fP () const "
+.br
+.RI "\fIQuery the status of spaces output\&. \fP"
+.in -1c
+.in -1c
+.SH "Detailed Description"
+.PP 
+
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER>
+.br
+class CSimpleIniTempl< SI_CHAR, SI_STRLESS, SI_CONVERTER >"
+Simple INI file reader\&. 
+
+This can be instantiated with the choice of unicode or native characterset, and case sensitive or insensitive comparisons of section and key names\&. The supported combinations are pre-defined with the following typedefs:
+.PP
+Interface Case-sensitive Typedef char No CSimpleIniA char Yes CSimpleIniCaseA wchar_t No CSimpleIniW wchar_t Yes CSimpleIniCaseW 
+.PP
+Note that using other types for the SI_CHAR is supported\&. For instance, unsigned char, unsigned short, etc\&. Note that where the alternative type is a different size to char/wchar_t you may need to supply new helper classes for SI_STRLESS and SI_CONVERTER\&. 
+.PP
+Definition at line 295 of file SimpleIni\&.h\&.
+.SH "Member Typedef Documentation"
+.PP 
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> typedef std::list<\fBEntry\fP> \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::\fBTNamesDepend\fP"
+
+.PP
+set of dependent string pointers\&. Note that these pointers are dependent on memory owned by CSimpleIni\&. 
+.PP
+Definition at line 358 of file SimpleIni\&.h\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::\fBCSimpleIniTempl\fP (bool a_bIsUtf8 = \fCfalse\fP, bool a_bMultiKey = \fCfalse\fP, bool a_bMultiLine = \fCfalse\fP)"
+
+.PP
+Default constructor\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_bIsUtf8\fP See the method \fBSetUnicode()\fP for details\&. 
+.br
+\fIa_bMultiKey\fP See the method \fBSetMultiKey()\fP for details\&. 
+.br
+\fIa_bMultiLine\fP See the method \fBSetMultiLine()\fP for details\&. 
+.RE
+.PP
+
+.PP
+Definition at line 1280 of file SimpleIni\&.h\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Delete (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, bool a_bRemoveEmpty = \fCfalse\fP)"
+
+.PP
+Delete an entire section, or a key from a section\&. Note that the data returned by GetSection is invalid and must not be used after anything has been deleted from that section using this method\&. Note when multiple keys is enabled, this will delete all keys with that name; to selectively delete individual key/values, use DeleteValue\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to delete key from, or if a_pKey is NULL, the section to remove\&. 
+.br
+\fIa_pKey\fP Key to remove from the section\&. Set to NULL to remove the entire section\&. 
+.br
+\fIa_bRemoveEmpty\fP If the section is empty after this key has been deleted, should the empty section be removed?
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true Key or section was deleted\&. 
+.PP
+false Key or section was not found\&. 
+.RE
+.PP
+
+.PP
+Definition at line 2554 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::DeleteValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, const SI_CHAR * a_pValue, bool a_bRemoveEmpty = \fCfalse\fP)"
+
+.PP
+Delete an entire section, or a key from a section\&. If value is provided, only remove keys with the value\&. Note that the data returned by GetSection is invalid and must not be used after anything has been deleted from that section using this method\&. Note when multiple keys is enabled, all keys with the value will be deleted\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to delete key from, or if a_pKey is NULL, the section to remove\&. 
+.br
+\fIa_pKey\fP Key to remove from the section\&. Set to NULL to remove the entire section\&. 
+.br
+\fIa_pValue\fP Value of key to remove from the section\&. Set to NULL to remove all keys\&. 
+.br
+\fIa_bRemoveEmpty\fP If the section is empty after this key has been deleted, should the empty section be removed?
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true Key/value or section was deleted\&. 
+.PP
+false Key/value or section was not found\&. 
+.RE
+.PP
+
+.PP
+Definition at line 2565 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetAllKeys (const SI_CHAR * a_pSection, \fBTNamesDepend\fP & a_names) const"
+
+.PP
+Retrieve all unique key names in a section\&. The sort order of the returned strings is NOT DEFINED\&. You can sort the names into the load order if desired\&. Search this file for '\&.sort' for an example\&. Only unique key names are returned\&.
+.PP
+NOTE! This structure contains only pointers to strings\&. The actual string data is stored in memory owned by CSimpleIni\&. Ensure that the CSimpleIni object is not destroyed or \fBReset()\fP while these strings are in use!
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to request data for 
+.br
+\fIa_names\fP List that will receive all of the key names\&. See note above!
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true Section was found\&. 
+.PP
+false Matching section was not found\&. 
+.RE
+.PP
+
+.PP
+Definition at line 2310 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > void \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetAllSections (\fBTNamesDepend\fP & a_names) const"
+
+.PP
+Retrieve all section names\&. The list is returned as an STL vector of names and can be iterated or searched as necessary\&. Note that the sort order of the returned strings is NOT DEFINED\&. You can sort the names into the load order if desired\&. Search this file for '\&.sort' for an example\&.
+.PP
+NOTE! This structure contains only pointers to strings\&. The actual string data is stored in memory owned by CSimpleIni\&. Ensure that the CSimpleIni object is not destroyed or \fBReset()\fP while these pointers are in use!
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_names\fP Vector that will receive all of the section names\&. See note above! 
+.RE
+.PP
+
+.PP
+Definition at line 2297 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetAllValues (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, \fBTNamesDepend\fP & a_values) const"
+
+.PP
+Retrieve all values for a specific key\&. This method can be used when multiple keys are both enabled and disabled\&. Note that the sort order of the returned strings is NOT DEFINED\&. You can sort the names into the load order if desired\&. Search this file for '\&.sort' for an example\&.
+.PP
+NOTE! The returned values are pointers to string data stored in memory owned by CSimpleIni\&. Ensure that the CSimpleIni object is not destroyed or Reset while you are using this pointer!
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to search 
+.br
+\fIa_pKey\fP Key to search for 
+.br
+\fIa_values\fP List to return if the key is not found
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+true Key was found\&. 
+.PP
+false Matching section/key was not found\&. 
+.RE
+.PP
+
+.PP
+Definition at line 2212 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetBoolValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, bool a_bDefault = \fCfalse\fP, bool * a_pHasMultiple = \fCNULL\fP) const"
+
+.PP
+Retrieve a boolean value for a specific key\&. If multiple keys are enabled (see SetMultiKey) then only the first value associated with that key will be returned, see GetAllValues for getting all values with multikey\&.
+.PP
+Strings starting with 't', 'y', 'on' or '1' are returned as logically true\&. Strings starting with 'f', 'n', 'of' or '0' are returned as logically false\&. For all other values the default is returned\&. Character comparisons are case-insensitive\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to search 
+.br
+\fIa_pKey\fP Key to search for 
+.br
+\fIa_bDefault\fP Value to return if the key is not found 
+.br
+\fIa_pHasMultiple\fP Optionally receive notification of if there are multiple entries for this key\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a_nDefault Key was not found in the section 
+.PP
+other Value of the key 
+.RE
+.PP
+
+.PP
+Definition at line 2151 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> \fBConverter\fP \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetConverter () const\fC [inline]\fP"
+
+.PP
+Return a conversion object to convert text to the same encoding as is used by the \fBSave()\fP, \fBSaveFile()\fP and SaveString() functions\&. Use this to prepare the strings that you wish to append or prepend to the output INI data\&. 
+.PP
+Definition at line 1121 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > double \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetDoubleValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, double a_nDefault = \fC0\fP, bool * a_pHasMultiple = \fCNULL\fP) const"
+
+.PP
+Retrieve a numeric value for a specific key\&. If multiple keys are enabled (see SetMultiKey) then only the first value associated with that key will be returned, see GetAllValues for getting all values with multikey\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to search 
+.br
+\fIa_pKey\fP Key to search for 
+.br
+\fIa_nDefault\fP Value to return if the key is not found 
+.br
+\fIa_pHasMultiple\fP Optionally receive notification of if there are multiple entries for this key\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a_nDefault Key was not found in the section 
+.PP
+other Value of the key 
+.RE
+.PP
+
+.PP
+Definition at line 2089 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > long \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetLongValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, long a_nDefault = \fC0\fP, bool * a_pHasMultiple = \fCNULL\fP) const"
+
+.PP
+Retrieve a numeric value for a specific key\&. If multiple keys are enabled (see SetMultiKey) then only the first value associated with that key will be returned, see GetAllValues for getting all values with multikey\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to search 
+.br
+\fIa_pKey\fP Key to search for 
+.br
+\fIa_nDefault\fP Value to return if the key is not found 
+.br
+\fIa_pHasMultiple\fP Optionally receive notification of if there are multiple entries for this key\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a_nDefault Key was not found in the section 
+.PP
+other Value of the key 
+.RE
+.PP
+
+.PP
+Definition at line 2018 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > const \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::\fBTKeyVal\fP * \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetSection (const SI_CHAR * a_pSection) const"
+
+.PP
+Retrieve all key and value pairs for a section\&. The data is returned as a pointer to an STL map and can be iterated or searched as desired\&. Note that multiple entries for the same key may exist when multiple keys have been enabled\&.
+.PP
+NOTE! This structure contains only pointers to strings\&. The actual string data is stored in memory owned by CSimpleIni\&. Ensure that the CSimpleIni object is not destroyed or \fBReset()\fP while these strings are in use!
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Name of the section to return 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+boolean Was a section matching the supplied name found\&. 
+.RE
+.PP
+
+.PP
+Definition at line 2282 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > int \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetSectionSize (const SI_CHAR * a_pSection) const"
+
+.PP
+Query the number of keys in a specific section\&. Note that if multiple keys are enabled, then this value may be different to the number of keys returned by GetAllKeys\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to request data for
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+-1 Section does not exist in the file 
+.PP
+>=0 Number of keys in the section 
+.RE
+.PP
+
+.PP
+Definition at line 2247 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > const SI_CHAR * \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::GetValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, const SI_CHAR * a_pDefault = \fCNULL\fP, bool * a_pHasMultiple = \fCNULL\fP) const"
+
+.PP
+Retrieve the value for a specific key\&. If multiple keys are enabled (see SetMultiKey) then only the first value associated with that key will be returned, see GetAllValues for getting all values with multikey\&.
+.PP
+NOTE! The returned value is a pointer to string data stored in memory owned by CSimpleIni\&. Ensure that the CSimpleIni object is not destroyed or Reset while you are using this pointer!
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to search 
+.br
+\fIa_pKey\fP Key to search for 
+.br
+\fIa_pDefault\fP Value to return if the key is not found 
+.br
+\fIa_pHasMultiple\fP Optionally receive notification of if there are multiple entries for this key\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+a_pDefault Key was not found in the section 
+.PP
+other Value of the key 
+.RE
+.PP
+
+.PP
+Definition at line 1981 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::IsMultiKey () const\fC [inline]\fP"
+
+.PP
+Get the storage format of the INI data\&. 
+.PP
+Definition at line 516 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> bool \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::IsUnicode () const\fC [inline]\fP"
+
+.PP
+Get the storage format of the INI data\&. 
+.PP
+Definition at line 491 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::LoadData (const std::string & a_strData)\fC [inline]\fP"
+
+.PP
+Load INI file data direct from a std::string\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_strData\fP Data to be loaded
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 601 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::LoadData (const char * a_pData, size_t a_uDataLen)"
+
+.PP
+Load INI file data direct from memory\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pData\fP Data to be loaded 
+.br
+\fIa_uDataLen\fP Length of the data in bytes
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 1412 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::LoadFile (const char * a_pszFile)"
+
+.PP
+Load an INI file from disk into memory\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pszFile\fP Path of the file to be loaded\&. This will be passed to fopen() and so must be a valid path for the current platform\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 1326 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::LoadFile (FILE * a_fpFile)"
+
+.PP
+Load the file from a file pointer\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_fpFile\fP Valid file pointer to read the file data from\&. The file will be read until end of file\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 1372 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Save (\fBOutputWriter\fP & a_oOutput, bool a_bAddSignature = \fCfalse\fP) const"
+
+.PP
+Save the INI data\&. The data will be written to the output device in a format appropriate to the current data, selected by:
+.PP
+SI_CHAR FORMAT char same format as when loaded (MBCS or UTF-8) wchar_t UTF-8 other UTF-8 
+.PP
+Note that comments from the original data is preserved as per the documentation on comments\&. The order of the sections and values from the original file will be preserved\&.
+.PP
+Any data prepended or appended to the output device must use the the same format (MBCS or UTF-8)\&. You may use the \fBGetConverter()\fP method to convert text to the correct format regardless of the output format being used by SimpleIni\&.
+.PP
+To add a BOM to UTF-8 data, write it out manually at the very beginning like is done in SaveFile when a_bUseBOM is true\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_oOutput\fP Output writer to write the data to\&.
+.br
+\fIa_bAddSignature\fP Prepend the UTF-8 BOM if the output data is in UTF-8 format\&. If it is not UTF-8 then this value is ignored\&. Do not set this to true if anything has already been written to the \fBOutputWriter\fP\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 2398 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::Save (std::string & a_sBuffer, bool a_bAddSignature = \fCfalse\fP) const\fC [inline]\fP"
+
+.PP
+Append the INI data to a string\&. See \fBSave()\fP for details\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_sBuffer\fP String to have the INI data appended to\&.
+.br
+\fIa_bAddSignature\fP Prepend the UTF-8 BOM if the output data is in UTF-8 format\&. If it is not UTF-8 then this value is ignored\&. Do not set this to true if anything has already been written to the string\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 740 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SaveFile (const char * a_pszFile, bool a_bAddSignature = \fCtrue\fP) const"
+
+.PP
+Save an INI file from memory to disk\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pszFile\fP Path of the file to be saved\&. This will be passed to fopen() and so must be a valid path for the current platform\&.
+.br
+\fIa_bAddSignature\fP Prepend the UTF-8 BOM if the output data is in UTF-8 format\&. If it is not UTF-8 then this parameter is ignored\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 2341 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR , class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SaveFile (FILE * a_pFile, bool a_bAddSignature = \fCfalse\fP) const"
+
+.PP
+Save the INI data to a file\&. See \fBSave()\fP for details\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pFile\fP Handle to a file\&. File should be opened for binary output\&.
+.br
+\fIa_bAddSignature\fP Prepend the UTF-8 BOM if the output data is in UTF-8 format\&. If it is not UTF-8 then this value is ignored\&. Do not set this to true if anything has already been written to the file\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.RE
+.PP
+
+.PP
+Definition at line 2387 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetBoolValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, bool a_bValue, const SI_CHAR * a_pComment = \fCNULL\fP, bool a_bForceReplace = \fCfalse\fP)"
+
+.PP
+Add or update a boolean value\&. This will always insert when multiple keys are enabled\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to add or update 
+.br
+\fIa_pKey\fP Key to add or update\&. 
+.br
+\fIa_bValue\fP Value to set\&. 
+.br
+\fIa_pComment\fP Comment to be associated with the key\&. See the notes on \fBSetValue()\fP for comments\&. 
+.br
+\fIa_bForceReplace\fP Should all existing values in a multi-key INI file be replaced with this entry\&. This option has no effect if not using multi-key files\&. The difference between Delete/SetBoolValue and SetBoolValue with a_bForceReplace = true, is that the load order and comment will be preserved this way\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.PP
+SI_UPDATED Value was updated 
+.PP
+SI_INSERTED Value was inserted 
+.RE
+.PP
+
+.PP
+Definition at line 2186 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetDoubleValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, double a_nValue, const SI_CHAR * a_pComment = \fCNULL\fP, bool a_bForceReplace = \fCfalse\fP)"
+
+.PP
+Add or update a double value\&. This will always insert when multiple keys are enabled\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to add or update 
+.br
+\fIa_pKey\fP Key to add or update\&. 
+.br
+\fIa_nValue\fP Value to set\&. 
+.br
+\fIa_pComment\fP Comment to be associated with the key\&. See the notes on \fBSetValue()\fP for comments\&. 
+.br
+\fIa_bForceReplace\fP Should all existing values in a multi-key INI file be replaced with this entry\&. This option has no effect if not using multi-key files\&. The difference between Delete/SetDoubleValue and SetDoubleValue with a_bForceReplace = true, is that the load order and comment will be preserved this way\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.PP
+SI_UPDATED Value was updated 
+.PP
+SI_INSERTED Value was inserted 
+.RE
+.PP
+
+.PP
+Definition at line 2120 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS , class SI_CONVERTER > SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetLongValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, long a_nValue, const SI_CHAR * a_pComment = \fCNULL\fP, bool a_bUseHex = \fCfalse\fP, bool a_bForceReplace = \fCfalse\fP)"
+
+.PP
+Add or update a numeric value\&. This will always insert when multiple keys are enabled\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to add or update 
+.br
+\fIa_pKey\fP Key to add or update\&. 
+.br
+\fIa_nValue\fP Value to set\&. 
+.br
+\fIa_pComment\fP Comment to be associated with the key\&. See the notes on \fBSetValue()\fP for comments\&. 
+.br
+\fIa_bUseHex\fP By default the value will be written to the file in decimal format\&. Set this to true to write it as hexadecimal\&. 
+.br
+\fIa_bForceReplace\fP Should all existing values in a multi-key INI file be replaced with this entry\&. This option has no effect if not using multi-key files\&. The difference between Delete/SetLongValue and SetLongValue with a_bForceReplace = true, is that the load order and comment will be preserved this way\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.PP
+SI_UPDATED Value was updated 
+.PP
+SI_INSERTED Value was inserted 
+.RE
+.PP
+
+.PP
+Definition at line 2057 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> void \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetMultiKey (bool a_bAllowMultiKey = \fCtrue\fP)\fC [inline]\fP"
+
+.PP
+Should multiple identical keys be permitted in the file\&. If set to false then the last value encountered will be used as the value of the key\&. If set to true, then all values will be available to be queried\&. For example, with the following input:
+.PP
+.PP
+.nf
+
+[section]
+test=value1
+test=value2
+.fi
+.PP
+.PP
+Then with SetMultiKey(true), both of the values 'value1' and 'value2' will be returned for the key test\&. If SetMultiKey(false) is used, then the value for 'test' will only be 'value2'\&. This value may be changed at any time\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_bAllowMultiKey\fP Allow multi-keys in the source? 
+.RE
+.PP
+
+.PP
+Definition at line 511 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> void \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetMultiLine (bool a_bAllowMultiLine = \fCtrue\fP)\fC [inline]\fP"
+
+.PP
+Should data values be permitted to span multiple lines in the file\&. If set to false then the multi-line construct <<<TAG as a value will be returned as is instead of loading the data\&. This value may be changed at any time\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_bAllowMultiLine\fP Allow multi-line values in the source? 
+.RE
+.PP
+
+.PP
+Definition at line 525 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> void \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetSpaces (bool a_bSpaces = \fCtrue\fP)\fC [inline]\fP"
+
+.PP
+Should spaces be added around the equals sign when writing key/value pairs out\&. When true, the result will be 'key = value'\&. When false, the result will be 'key=value'\&. This value may be changed at any time\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_bSpaces\fP Add spaces around the equals sign? 
+.RE
+.PP
+
+.PP
+Definition at line 538 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> void \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetUnicode (bool a_bIsUtf8 = \fCtrue\fP)\fC [inline]\fP"
+
+.PP
+Set the storage format of the INI data\&. This affects both the loading and saving of the INI data using all of the Load/Save API functions\&. This value cannot be changed after any INI data has been loaded\&.
+.PP
+If the file is not set to Unicode (UTF-8), then the data encoding is assumed to be the OS native encoding\&. This encoding is the system locale on Linux/Unix and the legacy MBCS encoding on Windows NT/2K/XP\&. If the storage format is set to Unicode then the file will be loaded as UTF-8 encoded data regardless of the native file encoding\&. If SI_CHAR == char then all of the char* parameters take and return UTF-8 encoded data regardless of the system locale\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_bIsUtf8\fP Assume UTF-8 encoding for the source? 
+.RE
+.PP
+
+.PP
+Definition at line 486 of file SimpleIni\&.h\&.
+.SS "template<class SI_CHAR, class SI_STRLESS, class SI_CONVERTER> SI_Error \fBCSimpleIniTempl\fP< SI_CHAR, SI_STRLESS, SI_CONVERTER >::SetValue (const SI_CHAR * a_pSection, const SI_CHAR * a_pKey, const SI_CHAR * a_pValue, const SI_CHAR * a_pComment = \fCNULL\fP, bool a_bForceReplace = \fCfalse\fP)\fC [inline]\fP"
+
+.PP
+Add or update a section or value\&. This will always insert when multiple keys are enabled\&.
+.PP
+\fBParameters:\fP
+.RS 4
+\fIa_pSection\fP Section to add or update 
+.br
+\fIa_pKey\fP Key to add or update\&. Set to NULL to create an empty section\&. 
+.br
+\fIa_pValue\fP Value to set\&. Set to NULL to create an empty section\&. 
+.br
+\fIa_pComment\fP Comment to be associated with the section or the key\&. If a_pKey is NULL then it will be associated with the section, otherwise the key\&. Note that a comment may be set ONLY when the section or key is first created (i\&.e\&. when this function returns the value SI_INSERTED)\&. If you wish to create a section with a comment then you need to create the section separately to the key\&. The comment string must be in full comment form already (have a comment character starting every line)\&. 
+.br
+\fIa_bForceReplace\fP Should all existing values in a multi-key INI file be replaced with this entry\&. This option has no effect if not using multi-key files\&. The difference between Delete/SetValue and SetValue with a_bForceReplace = true, is that the load order and comment will be preserved this way\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+SI_Error See error definitions 
+.PP
+SI_UPDATED Value was updated 
+.PP
+SI_INSERTED Value was inserted 
+.RE
+.PP
+
+.PP
+Definition at line 963 of file SimpleIni\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

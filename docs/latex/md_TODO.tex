@@ -1,0 +1,252 @@
+I have set up myself to make an awesome build tool. But as each project\textquotesingle{}s nature, it has a todo list. Here it goes!
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Support creation and manipulation of files by mapping the oldschool {\ttfamily F\+I\+L\+E$\ast$ f$\ast$()} functions into the {\ttfamily os-\/pfs} module.
+\item \mbox{[}X\mbox{]} Finally introduce the usage of actions instead of building all targets.
+\item \mbox{[}X\mbox{]} Implement sanity checks to make sure that an action/target/rule object is correctly entered.
+\item \mbox{[}-\/\mbox{]} Introduce {\ttfamily external(name) \{... opts ...\}}
+\item \mbox{[}X\mbox{]} Implement the detector module.
+\item \mbox{[}X\mbox{]} Implement an overall caching storage to make it possible for the app to store a cache for detector and alike.
+\item \mbox{[}X\mbox{]} Somehow introduce console colors for all platforms.
+\item \mbox{[}X\mbox{]} Introduce pre-\/inclusion ({\ttfamily require()}ing all files within a specified subfolder)
+\item \mbox{[} \mbox{]} Introduce addition to {\ttfamily require()} to automatically include a project. I.\+e.\+: {\ttfamily require.\+project \char`\"{}submodule/\char`\"{}}
+\begin{DoxyItemize}
+\item And what if the project has a custom {\ttfamily bootstrap.\+it}? o.\+o It shouldn\textquotesingle{}t, but that might actually matter. Therefore, this feature should come along with actual Project support.
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Begin using the {\ttfamily prepare()} method for rules.
+\item \mbox{[}X\mbox{]} Implement the {\ttfamily tag()} mechanism for usage inside targets/externals and the function to do a proper lookup.
+\item \mbox{[}X\mbox{]} Introduce the array {\ttfamily +} operator. I.\+e.\+: {\ttfamily var a=\mbox{[}\char`\"{}foo\char`\"{}\mbox{]} + \mbox{[}\char`\"{}bar\char`\"{}\mbox{]}}. {\ttfamily o} should now contain\+: {\ttfamily \mbox{[}\char`\"{}foo\char`\"{},\char`\"{}bar\char`\"{}\mbox{]}}
+\item \mbox{[}X\mbox{]} Proper S\+H\+A2 implementation
+\item \mbox{[}X\mbox{]} Properly implement the lib+func checks (libdl on linux and what on Win32?)
+\end{DoxyItemize}
+
+\subsubsection*{Added 19th Dec. 2014, 3.\+40\+AM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Introduce dependency tracker
+\item \mbox{[}X\mbox{]} Rewrite {\ttfamily void Run(void$\ast$)} for a better update tracker. It currently will happily rerun a task {\bfseries multiple} times. It needs to learn to only run a task once, and only once.
+\item \mbox{[}X\mbox{]} Add {\ttfamily +} operator for {\ttfamily Object}.
+\item \mbox{[}X\mbox{]} Better error handling if OS actually crashed. Currently {\ttfamily int main(int,char$\ast$$\ast$)} will report that no targets were built whilst it actually has an exception written ontop of it.
+\item \mbox{[} \mbox{]} Separate debug/non-\/debug builds
+\begin{DoxyItemize}
+\item Should allow some options to be set for output folder, etc... Maybe use a Profile kinda thing?
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Better Windows linker support / flag passing / warning handling.
+\item \mbox{[}X\mbox{]} Implement a {\ttfamily build(\+Array)} method to allow scripted builds (i.\+e. from within a function, add tasks to the queue.)
+\item \mbox{[}X\mbox{]} Make rules able to depend upon targets also.
+\item \mbox{[}X\mbox{]} Let targets finalize themselves (i.\+e. copy resulting binary to root folder -\/ or link it at least)
+\end{DoxyItemize}
+
+\subsubsection*{Added 25th Dec. 2014, 1.\+27\+PM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Introduce a proper dependency tracking. Resolve target outputs and add them to the dependencies.
+\begin{DoxyItemize}
+\item May make it recursive.
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Finally write {\ttfamily detect.\+write\+\_\+$\ast$()} functions.
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} {\ttfamily detect.\+write\+\_\+header()}
+\item \mbox{[}X\mbox{]} {\ttfamily detect.\+write\+\_\+json()}
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Proper build flags for the {\ttfamily \hyperlink{class_ice_tea}{Ice\+Tea}} target
+\item \mbox{[} \mbox{]} Introduce an {\ttfamily install} kind of thing.
+\item \mbox{[} \mbox{]} Teach {\ttfamily bootstrap.\+it} these rules\+:
+\begin{DoxyItemize}
+\item A\+SM\+: Assembly
+\item C\#\+: C\+Sharp
+\item Framework\+: OS X Framework
+\item Component\+: A generic module
+\item Concat\+: Combine inputs into single output
+\item Shared libraries
+\item Static libraries (Partialy)
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Implement these settings\+: \mbox{[}Rules now use the settings, so they are userland-\/defined.\mbox{]}
+\begin{DoxyItemize}
+\item native.\+framework\+\_\+dirs\+: O\+B\+JC, O\+B\+J\+C\+XX
+\item O\+B\+J\+C/\+X\+X.\+GC/\+A\+RC\+: Settings for garbage collection or A\+RC
+\item L\+I\+B.\+rpath\+: Search paths and install name
+\item C\+O\+M\+P\+O\+N\+E\+NT\+: target binary, other settings
+\item A\+SM\+: Defines and such
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Finally take {\ttfamily bootstrap.\+it} into memory within a post-\/build
+\begin{DoxyItemize}
+\item Using the {\ttfamily incbin} utility.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 20th Februrary 2015, 10.\+21\+AM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Rewrite build executor (Thanks to  \+:))
+\begin{DoxyItemize}
+\item First generate all the tasks, then loop over them to execute them.
+\item Wait on multiple tasks (commands) and check for their status.
+\begin{DoxyItemize}
+\item If failed, let the other commands finish first, then exit.
+\end{DoxyItemize}
+\item Use {\ttfamily \hyperlink{classstlplus_1_1async__subprocess}{stlplus\+::async\+\_\+subprocess}}.
+\item Create a subclass that reports {\ttfamily bool done()}.
+\end{DoxyItemize}
+\item \mbox{[}-\/\mbox{]} Make {\ttfamily settings.\+L\+I\+N\+K.\+libraries} unique (i.\+e.\+: only one {\ttfamily -\/lmylib} per array)
+\begin{DoxyItemize}
+\item Should probably make {\ttfamily Array.\+dedupe}.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 20th November 2015, 11\+:07\+PM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Implement a Topsort mechanism
+\begin{DoxyItemize}
+\item Luckily, advice was retrived here\+: \href{http://stackoverflow.com/a/30249477/2423150}{\tt http\+://stackoverflow.\+com/a/30249477/2423150}
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} Possibly generate a graph.
+\item \mbox{[} \mbox{]} Maybe introduce Reg\+Ex support.
+\begin{DoxyItemize}
+\item I can, via extensions.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 10th Janurary 2016, 6\+:42\+AM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Re-\/implement a {\ttfamily describe/it} style testing framework as seen in\+:
+\begin{DoxyItemize}
+\item \href{https://github.com/stephenmathieson/describe.h/blob/master/describe.h}{\tt https\+://github.\+com/stephenmathieson/describe.\+h/blob/master/describe.\+h}
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 12th Janurary 2016, 5.\+47\+AM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Make sure that files within a target actually exist.
+\end{DoxyItemize}
+
+\subsubsection*{Added 13th Janurary 2016, 4.\+20\+PM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}X\mbox{]} Add a rule -\/ and options -\/ that allow it to be \char`\"{}not run\char`\"{}.
+\begin{DoxyItemize}
+\item Makes it possible for targets to depend on header-\/only libs.
+\item Get extra settings in or trigger other configure steps.
+\end{DoxyItemize}
+\item \mbox{[}Never\mbox{]} Build the same target for multiple rules. I.\+e. as shared and static library.
+\begin{DoxyItemize}
+\item This might result in chaos. Rather, just copy the input object to multiple targets.
+\item Or just depend on the parent as a lirary and go from there.
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Write proper process classes. {\ttfamily \$()} is nice, but more complex classes are needed.
+\begin{DoxyItemize}
+\item {\ttfamily Sub\+Process}\+: Pass{\ttfamily \{async\+:\}} with either {\ttfamily true} or {\ttfamily false}.
+\item {\ttfamily shell} will not be affected by this. It uses an entirely different routine anyway.
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Rewrite parts of {\ttfamily detect} in OS itself to simplify source.
+\item \mbox{[}X\mbox{]} Store info about input files\textquotesingle{} last-\/changed date. On subsequent runs, filter these, and manipulate the queue accordingly.
+\end{DoxyItemize}
+
+\subsubsection*{Added 16th Janurary 2016, 1.\+02\+AM}
+
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Overwrite internal Object\+Script classes to extend behaviour.
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} {\ttfamily O\+S\+::init\+Pre\+Script()}\+: can run a script for initialization. We can use that in {\ttfamily Ice\+Tea\+::initialize\+Modules()}. We can also override {\ttfamily require()}!
+\item \mbox{[} \mbox{]} {\ttfamily O\+S\+::resolve\+File(\+O\+S\+::\+String)} -\/$>$ {\ttfamily require.\+resolve}\+: Resolve a file.
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} Utilize {\ttfamily O\+S\+::\+Core} to get ahold of the backtrace.
+\begin{DoxyItemize}
+\item Useful for finding the currently executed file!
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Introduce {\ttfamily Template}. A class to take {\ttfamily .in} files and transform them.
+\begin{DoxyItemize}
+\item No extra class needed. Simply using OS now.
+\item However, I should add {\ttfamily @N\+A\+ME@} substitutions...
+\item But that would require Regex O.\+o so I might not.
+\end{DoxyItemize}
+\item \mbox{[}X\mbox{]} Export cached values into Object\+Script, so that we can process {\ttfamily .in} files.
+\end{DoxyItemize}
+
+\subsubsection*{Added 18th Janurary 2016, 5.\+12pm}
+
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Advanced A\+P\+Is\+:
+\begin{DoxyItemize}
+\item Compile a file directly, utilize \hyperlink{class_ice_tea}{Ice\+Tea}\textquotesingle{}s functionality to properly resolve the compiler and any settings. Provide a \char`\"{}\+Template target\char`\"{} to serve all the various settings.
+\item Simplify the usage of sub-\/builds.
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} Find better ways to merge as many tasks together as possible.
+\begin{DoxyItemize}
+\item Idea\+: Look-\/ahead. See if topmost task in next level has any unbuilt deps, and if not, lower it to current.
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} Improve caching and step-\/minimizing.
+\begin{DoxyItemize}
+\item File hashing is only one thing...
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} A way to have sub-\/builds trigger changes in upstream. So that generated code gets re-\/compiled into an executable.
+\begin{DoxyItemize}
+\item This actually should happen, since the hash would change. Hm...
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 13th March 2016, 4\+:40am}
+
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Overhaul {\ttfamily Task}\+:
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Implement {\ttfamily profiles} property. Each function corresponds to a scheme.
+\item \mbox{[} \mbox{]} Use double-\/underscore to indicate private methods.
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} {\ttfamily Project}s\+:
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Name, description, version.
+\item \mbox{[} \mbox{]} Each project can have it\textquotesingle{}s own steps/rules. Falls back to global ones.
+\item \mbox{[} \mbox{]} Projects can import steps/rules from others.
+\item \mbox{[} \mbox{]} Projects are imported with their {\ttfamily bootstrap.\+it} file first.
+\item \mbox{[} \mbox{]} A included project\textquotesingle{}s {\ttfamily .\hyperlink{class_ice_tea}{Ice\+Tea}} folder becomes available only to the project -\/ call it private resources.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 17th March 2016, 7\+:09am}
+
+
+\begin{DoxyItemize}
+\item \mbox{[} \mbox{]} Default paths for Pluma based plugins
+\item \mbox{[} \mbox{]} Introduce \char`\"{}install\char`\"{} step for Ice\+Tea! \subsubsection*{Later that day}
+\end{DoxyItemize}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}New concept\mbox{]} Flag targets, allowing them to\+:
+\begin{DoxyItemize}
+\item Specify the kind of tooling they want. (Native, Emscripten, Cheerp, ...)
+\item Give steps the ability to be not applied. Even if the pattern matches, but a flag is not set, dont use it.
+\end{DoxyItemize}
+\item \mbox{[} \mbox{]} Recursive dependency traversal. Ouch.
+\begin{DoxyItemize}
+\item Target A depends on B, which depends on C.
+\item Merge C into B, into A.
+\end{DoxyItemize}
+\end{DoxyItemize}
+
+\subsubsection*{Added 17th March 2016, 7\+:09am}
+
+
+\begin{DoxyItemize}
+\item \mbox{[}-\/\mbox{]} Add compiler {\ttfamily -\/target} support.
+\begin{DoxyItemize}
+\item Might not work on Windows.
+\item Will allow for stuff like Cheerp to work.
+\item Partially implemented when Toolchains become a thing. Just use an extra flag. 
+\end{DoxyItemize}
+\end{DoxyItemize}

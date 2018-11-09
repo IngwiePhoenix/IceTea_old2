@@ -1,0 +1,3 @@
+[submodule "deps/slre"]
+	path = deps/slre
+	url = https://github.com/cesanta/slre.git

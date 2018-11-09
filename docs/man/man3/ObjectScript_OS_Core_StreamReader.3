@@ -1,0 +1,109 @@
+.TH "ObjectScript::OS::Core::StreamReader" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::StreamReader \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OS::Core::FileStreamReader\fP, and \fBObjectScript::OS::Core::MemStreamReader\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBStreamReader\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "virtual int \fBgetPos\fP () const  =0"
+.br
+.ti -1c
+.RI "virtual void \fBsetPos\fP (int)=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetSize\fP () const  =0"
+.br
+.ti -1c
+.RI "virtual void \fBmovePos\fP (int len)=0"
+.br
+.ti -1c
+.RI "virtual bool \fBcheckBytes\fP (const void *, int len)=0"
+.br
+.ti -1c
+.RI "virtual void * \fBreadBytes\fP (void *, int len)=0"
+.br
+.ti -1c
+.RI "virtual void * \fBreadBytesAtPos\fP (void *, int len, int pos)=0"
+.br
+.ti -1c
+.RI "virtual unsigned char \fBreadByte\fP ()"
+.br
+.ti -1c
+.RI "virtual unsigned char \fBreadByteAtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual int \fBreadUVariable\fP ()"
+.br
+.ti -1c
+.RI "virtual unsigned short \fBreadU16\fP ()"
+.br
+.ti -1c
+.RI "virtual unsigned short \fBreadU16AtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual signed char \fBreadInt8\fP ()"
+.br
+.ti -1c
+.RI "virtual signed char \fBreadInt8AtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual short \fBreadInt16\fP ()"
+.br
+.ti -1c
+.RI "virtual short \fBreadInt16AtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual __int32 \fBreadInt32\fP ()"
+.br
+.ti -1c
+.RI "virtual __int32 \fBreadInt32AtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual __int64 \fBreadInt64\fP ()"
+.br
+.ti -1c
+.RI "virtual __int64 \fBreadInt64AtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual float \fBreadFloat\fP ()"
+.br
+.ti -1c
+.RI "virtual float \fBreadFloatAtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual double \fBreadDouble\fP ()"
+.br
+.ti -1c
+.RI "virtual double \fBreadDoubleAtPos\fP (int pos)"
+.br
+.ti -1c
+.RI "virtual long double \fBreadLongDouble\fP ()"
+.br
+.ti -1c
+.RI "virtual long double \fBreadLongDoubleAtPos\fP (int pos)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBOS\fP * \fBallocator\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 710 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

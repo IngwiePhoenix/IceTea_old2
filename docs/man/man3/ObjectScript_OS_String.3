@@ -1,0 +1,112 @@
+.TH "ObjectScript::OS::String" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::String \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherits \fBObjectScript::OS::Core::String\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "\fBString\fP (const \fBString\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP (const \fBCore::String\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP (const \fBCore::String\fP &, const \fBCore::String\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len, const char *, int len2)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const char *, int len, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBString\fP (const \fBCore::String\fP &, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const void *, int size)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, const void *buf1, int len1, const void *buf2, int len2)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, __int64 value)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, \fBFloatType\fP< double >::type value)"
+.br
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, \fBFloatType\fP< double >::type value, int precision)"
+.br
+.ti -1c
+.RI "\fBString\fP & \fBoperator=\fP (const \fBCore::String\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP & \fBoperator+=\fP (const \fBCore::String\fP &)"
+.br
+.ti -1c
+.RI "\fBString\fP & \fBoperator+=\fP (const char *)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBoperator+\fP (const \fBCore::String\fP &) const "
+.br
+.ti -1c
+.RI "\fBString\fP \fBoperator+\fP (const char *) const "
+.br
+.ti -1c
+.RI "\fBString\fP \fBtrim\fP (bool trim_left=true, bool trim_right=true) const "
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static \fBString\fP \fBformat\fP (\fBOS\fP *, const char *fmt,\&.\&.\&.)"
+.br
+.ti -1c
+.RI "static \fBString\fP \fBformatVa\fP (\fBOS\fP *, const char *fmt, va_list va)"
+.br
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBString\fP (\fBOS\fP *, \fBCore::GCStringValue\fP *)"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBCore\fP"
+.br
+.ti -1c
+.RI "class \fBBuffer\fP"
+.br
+.ti -1c
+.RI "class \fBOS\fP"
+.br
+.in -1c
+.SS "Additional Inherited Members"
+.SH "Detailed Description"
+.PP 
+Definition at line 3053 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

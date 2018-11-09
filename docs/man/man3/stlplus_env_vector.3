@@ -1,0 +1,62 @@
+.TH "stlplus::env_vector" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+stlplus::env_vector \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBenv_vector\fP (const \fBenv_vector\fP &)"
+.br
+.ti -1c
+.RI "\fBenv_vector\fP & \fBoperator=\fP (const \fBenv_vector\fP &)"
+.br
+.ti -1c
+.RI "void \fBadd\fP (const std::string &name, const std::string &value)"
+.br
+.ti -1c
+.RI "bool \fBremove\fP (const std::string &name)"
+.br
+.ti -1c
+.RI "void \fBclear\fP (void)"
+.br
+.ti -1c
+.RI "bool \fBpresent\fP (const std::string &name) const "
+.br
+.ti -1c
+.RI "std::string \fBoperator[]\fP (const std::string &name) const "
+.br
+.ti -1c
+.RI "std::string \fBget\fP (const std::string &name) const "
+.br
+.ti -1c
+.RI "unsigned \fBsize\fP (void) const "
+.br
+.ti -1c
+.RI "std::pair< std::string, std::string > \fBoperator[]\fP (unsigned index) const   throw (std::out_of_range)"
+.br
+.ti -1c
+.RI "std::pair< std::string, std::string > \fBget\fP (unsigned index) const   throw (std::out_of_range)"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBsubprocess\fP"
+.br
+.ti -1c
+.RI "class \fBasync_subprocess\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 108 of file subprocesses\&.hpp\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

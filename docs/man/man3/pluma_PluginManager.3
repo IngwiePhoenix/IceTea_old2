@@ -1,0 +1,311 @@
+.TH "pluma::PluginManager" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+pluma::PluginManager \- Manages loaded plugins\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+.PP
+\fC#include <PluginManager\&.hpp>\fP
+.PP
+Inherited by \fBpluma::Pluma\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fB~PluginManager\fP ()"
+.br
+.RI "\fIDestructor\&. \fP"
+.ti -1c
+.RI "bool \fBload\fP (const std::string &path)"
+.br
+.RI "\fILoad a plugin given it's path\&. \fP"
+.ti -1c
+.RI "bool \fBload\fP (const std::string &folder, const std::string &pluginName)"
+.br
+.RI "\fILoad a plugin from a given folder\&. \fP"
+.ti -1c
+.RI "int \fBloadFromFolder\fP (const std::string &folder, bool recursive=false)"
+.br
+.RI "\fILoad all plugins from a given folder\&. \fP"
+.ti -1c
+.RI "bool \fBunload\fP (const std::string &pluginName)"
+.br
+.RI "\fIUnload a plugin\&. \fP"
+.ti -1c
+.RI "void \fBunloadAll\fP ()"
+.br
+.RI "\fIUnload all loaded plugins\&. \fP"
+.ti -1c
+.RI "bool \fBaddProvider\fP (\fBProvider\fP *provider)"
+.br
+.RI "\fIDirectly add a new provider\&. \fP"
+.ti -1c
+.RI "void \fBgetLoadedPlugins\fP (std::vector< const std::string * > &pluginNames) const "
+.br
+.RI "\fIGet the name of all loaded plugins\&. \fP"
+.ti -1c
+.RI "bool \fBisLoaded\fP (const std::string &pluginName) const "
+.br
+.RI "\fICheck if a plug-in is loaded\&. \fP"
+.in -1c
+.SS "Protected Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBPluginManager\fP ()"
+.br
+.RI "\fIDefault constructor\&. \fP"
+.ti -1c
+.RI "void \fBregisterType\fP (const std::string &type, unsigned int version, unsigned int lowestVersion)"
+.br
+.RI "\fIRegister a provider type\&. \fP"
+.ti -1c
+.RI "const std::list< \fBProvider\fP * > * \fBgetProviders\fP (const std::string &type) const "
+.br
+.RI "\fIGet providers of a certain type\&. \fP"
+.in -1c
+.SH "Detailed Description"
+.PP 
+Manages loaded plugins\&. 
+.PP
+Definition at line 44 of file PluginManager\&.hpp\&.
+.SH "Constructor & Destructor Documentation"
+.PP 
+.SS "pluma::PluginManager::PluginManager ()\fC [protected]\fP"
+
+.PP
+Default constructor\&. \fBPluginManager\fP cannot be publicly instantiated\&. 
+.PP
+Definition at line 37 of file PluginManager\&.cpp\&.
+.SH "Member Function Documentation"
+.PP 
+.SS "bool pluma::PluginManager::addProvider (\fBProvider\fP * provider)"
+
+.PP
+Directly add a new provider\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIprovider\fP \fBProvider\fP\&. 
+.RE
+.PP
+
+.PP
+Definition at line 168 of file PluginManager\&.cpp\&.
+.SS "void pluma::PluginManager::getLoadedPlugins (std::vector< const std::string * > & pluginNames) const"
+
+.PP
+Get the name of all loaded plugins\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpluginNames\fP A vector to fill with the plugins names\&. 
+.RE
+.PP
+
+.PP
+Definition at line 178 of file PluginManager\&.cpp\&.
+.SS "const std::list< \fBProvider\fP * > * pluma::PluginManager::getProviders (const std::string & type) const\fC [protected]\fP"
+
+.PP
+Get providers of a certain type\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItype\fP \fBProvider\fP type\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Pointer to the list of providers of that \fItype\fP, or NULL if \fItype\fP is not registered\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+Host::getProviders 
+.RE
+.PP
+
+.PP
+Definition at line 194 of file PluginManager\&.cpp\&.
+.SS "bool pluma::PluginManager::isLoaded (const std::string & pluginName) const"
+
+.PP
+Check if a plug-in is loaded\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpluginName\fP the plug-in tname o check\&. 
+.RE
+.PP
+
+.PP
+Definition at line 188 of file PluginManager\&.cpp\&.
+.SS "bool pluma::PluginManager::load (const std::string & path)"
+
+.PP
+Load a plugin given it's path\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpath\fP Path for the plugin, including plugin name\&. File extension may be included, but is discouraged for better cross platform code\&. If file extension isn't present on the path, \fBPluma\fP will deduce it from the operating system\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+True if the plugin is successfully loaded\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBload(const std::string&, const std::string&)\fP 
+.PP
+\fBloadFromFolder\fP 
+.PP
+\fBunload\fP 
+.PP
+\fBunloadAll\fP 
+.RE
+.PP
+
+.PP
+Definition at line 49 of file PluginManager\&.cpp\&.
+.SS "bool pluma::PluginManager::load (const std::string & folder, const std::string & pluginName)"
+
+.PP
+Load a plugin from a given folder\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfolder\fP The folder path\&. 
+.br
+\fIpluginName\fP Name of the plugin\&. File extension may be included, but is discouraged for better cross platform code\&. If file extension is omitted, \fBPluma\fP will deduce it from the operating system\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+True if the plugin is successfully loaded\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBload(const std::string&)\fP 
+.PP
+\fBloadFromFolder\fP 
+.PP
+\fBunload\fP 
+.PP
+\fBunloadAll\fP 
+.RE
+.PP
+
+.PP
+Definition at line 85 of file PluginManager\&.cpp\&.
+.SS "int pluma::PluginManager::loadFromFolder (const std::string & folder, bool recursive = \fCfalse\fP)"
+
+.PP
+Load all plugins from a given folder\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfolder\fP Path for the folder where the plug-ins are\&. 
+.br
+\fIrecursive\fP If true it will search on sub-folders as well
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Number of successfully loaded plug-ins\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBload(const std::string&, const std::string&)\fP 
+.PP
+\fBload(const std::string&)\fP 
+.PP
+\fBunload\fP 
+.PP
+\fBunloadAll\fP 
+.RE
+.PP
+
+.PP
+Definition at line 95 of file PluginManager\&.cpp\&.
+.SS "void pluma::PluginManager::registerType (const std::string & type, unsigned int version, unsigned int lowestVersion)\fC [protected]\fP"
+
+.PP
+Register a provider type\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItype\fP \fBProvider\fP type\&. 
+.br
+\fIversion\fP Current version of that provider type\&. 
+.br
+\fIlowestVersion\fP Lowest compatible version of that provider type\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+Host::registerType 
+.RE
+.PP
+
+.PP
+Definition at line 162 of file PluginManager\&.cpp\&.
+.SS "bool pluma::PluginManager::unload (const std::string & pluginName)"
+
+.PP
+Unload a plugin\&. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIpluginName\fP Name or path of the plugin\&.
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+True if the plugin is successfully unloaded, false if no such plugin exists on the manager\&.
+.RE
+.PP
+\fBSee also:\fP
+.RS 4
+\fBload(const std::string&, const std::string&)\fP 
+.PP
+\fBload(const std::string&)\fP 
+.PP
+\fBloadFromFolder\fP 
+.PP
+\fBunloadAll\fP 
+.RE
+.PP
+
+.PP
+Definition at line 109 of file PluginManager\&.cpp\&.
+.SS "void pluma::PluginManager::unloadAll ()"
+
+.PP
+Unload all loaded plugins\&. 
+.PP
+\fBSee also:\fP
+.RS 4
+\fBload(const std::string&, const std::string&)\fP 
+.PP
+\fBload(const std::string&)\fP 
+.PP
+\fBloadFromFolder\fP 
+.PP
+\fBunload\fP 
+.RE
+.PP
+
+.PP
+Definition at line 122 of file PluginManager\&.cpp\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

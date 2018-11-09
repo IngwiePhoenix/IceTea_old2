@@ -1,0 +1,106 @@
+.TH "ObjectScript::OS::Core::StreamWriter" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::StreamWriter \- 
+.SH SYNOPSIS
+.br
+.PP
+.PP
+Inherited by \fBObjectScript::OS::Core::FileStreamWriter\fP, and \fBObjectScript::OS::Core::MemStreamWriter\fP\&.
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBStreamWriter\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "virtual int \fBgetPos\fP () const  =0"
+.br
+.ti -1c
+.RI "virtual void \fBsetPos\fP (int)=0"
+.br
+.ti -1c
+.RI "virtual int \fBgetSize\fP () const  =0"
+.br
+.ti -1c
+.RI "virtual void \fBwriteFromStream\fP (\fBStreamReader\fP *)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteBytes\fP (const void *, int len)=0"
+.br
+.ti -1c
+.RI "virtual void \fBwriteBytesAtPos\fP (const void *, int len, int pos)=0"
+.br
+.ti -1c
+.RI "virtual void \fBwriteByte\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteByteAtPos\fP (int value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteUVariable\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteU16\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteU16AtPos\fP (int value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt8\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt8AtPos\fP (int value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt16\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt16AtPos\fP (int value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt32\fP (int)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt32AtPos\fP (int value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt64\fP (__int64)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteInt64AtPos\fP (__int64 value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteFloat\fP (float)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteFloatAtPos\fP (float value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteDouble\fP (double)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteDoubleAtPos\fP (double value, int pos)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteLongDouble\fP (long double)"
+.br
+.ti -1c
+.RI "virtual void \fBwriteLongDoubleAtPos\fP (long double value, int pos)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBOS\fP * \fBallocator\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 618 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

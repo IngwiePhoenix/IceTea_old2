@@ -1,0 +1,921 @@
+.TH "ObjectScript::OS::Core" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "class \fBBuffer\fP"
+.br
+.ti -1c
+.RI "struct \fBCFuncRefs\fP"
+.br
+.ti -1c
+.RI "class \fBCompiler\fP"
+.br
+.ti -1c
+.RI "struct \fBDebugInfo\fP"
+.br
+.ti -1c
+.RI "class \fBFile\fP"
+.br
+.ti -1c
+.RI "class \fBFileStreamReader\fP"
+.br
+.ti -1c
+.RI "class \fBFileStreamWriter\fP"
+.br
+.ti -1c
+.RI "struct \fBFreeCandidateValues\fP"
+.br
+.ti -1c
+.RI "struct \fBFunctionDecl\fP"
+.br
+.ti -1c
+.RI "struct \fBGCArrayValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCCFunctionValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCFunctionValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCObjectValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCStringValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCUserdataValue\fP"
+.br
+.ti -1c
+.RI "struct \fBGCValue\fP"
+.br
+.ti -1c
+.RI "struct \fBLocals\fP"
+.br
+.ti -1c
+.RI "class \fBMemStreamReader\fP"
+.br
+.ti -1c
+.RI "class \fBMemStreamWriter\fP"
+.br
+.ti -1c
+.RI "class \fBProgram\fP"
+.br
+.ti -1c
+.RI "struct \fBProperty\fP"
+.br
+.ti -1c
+.RI "struct \fBStackFunction\fP"
+.br
+.ti -1c
+.RI "struct \fBStackValues\fP"
+.br
+.ti -1c
+.RI "class \fBStreamReader\fP"
+.br
+.ti -1c
+.RI "class \fBStreamWriter\fP"
+.br
+.ti -1c
+.RI "class \fBString\fP"
+.br
+.ti -1c
+.RI "struct \fBStringRefs\fP"
+.br
+.ti -1c
+.RI "struct \fBStrings\fP"
+.br
+.ti -1c
+.RI "struct \fBTable\fP"
+.br
+.ti -1c
+.RI "class \fBTokenizer\fP"
+.br
+.ti -1c
+.RI "struct \fBUserptrRefs\fP"
+.br
+.ti -1c
+.RI "struct \fBValue\fP"
+.br
+.ti -1c
+.RI "struct \fBValues\fP"
+.br
+.ti -1c
+.RI "union \fBValueUnion\fP"
+.br
+.in -1c
+.SS "Public Types"
+
+.in +1c
+.ti -1c
+.RI "enum { \fBOP_MULTI_GET_ARGUMENTS\fP, \fBOP_MULTI_GET_REST_ARGUMENTS\fP, \fBOP_MULTI_SUPER\fP, \fBOP_MULTI_DEBUGGER\fP, \fBOP_MULTI_THROW\fP }"
+.br
+.ti -1c
+.RI "enum \fBOpcodeType\fP { \fBOP_NEW_FUNCTION\fP, \fBOP_NEW_ARRAY\fP, \fBOP_NEW_OBJECT\fP, \fBOP_RETURN\fP, \fBOP_JUMP\fP, \fBOP_MULTI\fP, \fBOP_MOVE\fP, \fBOP_MOVE2\fP, \fBOP_GET_XCONST\fP, \fBOP_SUPER_CALL\fP, \fBOP_CALL\fP, \fBOP_CALL_METHOD\fP, \fBOP_INIT_ITER\fP, \fBOP_GET_PROPERTY\fP, \fBOP_SET_PROPERTY\fP, \fBOP_INIT_PROPERTY\fP, \fBOP_GET_UPVALUE\fP, \fBOP_SET_UPVALUE\fP, \fBOP_LOGIC_PTR_EQ\fP, \fBOP_LOGIC_EQ\fP, \fBOP_LOGIC_GREATER\fP, \fBOP_LOGIC_GE\fP, \fBOP_LOGIC_BOOL\fP, \fBOP_BIT_AND\fP, \fBOP_BIT_OR\fP, \fBOP_BIT_XOR\fP, \fBOP_COMPARE\fP, \fBOP_ADD\fP, \fBOP_SUB\fP, \fBOP_MUL\fP, \fBOP_DIV\fP, \fBOP_MOD\fP, \fBOP_LSHIFT\fP, \fBOP_RSHIFT\fP, \fBOP_POW\fP, \fBOP_BIT_NOT\fP, \fBOP_PLUS\fP, \fBOP_MINUS\fP, \fBOP_NUMBER_LOGIC_EQ\fP, \fBOP_NUMBER_LOGIC_GREATER\fP, \fBOP_NUMBER_LOGIC_GE\fP, \fBOP_NUMBER_BIT_AND\fP, \fBOP_NUMBER_BIT_OR\fP, \fBOP_NUMBER_BIT_XOR\fP, \fBOP_NUMBER_ADD\fP, \fBOP_NUMBER_SUB\fP, \fBOP_NUMBER_MUL\fP, \fBOP_NUMBER_DIV\fP, \fBOP_NUMBER_MOD\fP, \fBOP_NUMBER_LSHIFT\fP, \fBOP_NUMBER_RSHIFT\fP, \fBOP_NUMBER_POW\fP, \fBOP_NUMBER_ADD_LC\fP, \fBOP_NUMBER_SUB_LC\fP, \fBOP_NUMBER_ADD_LL\fP, \fBOP_NUMBER_SUB_LL\fP, \fBOPCODE_COUNT\fP }"
+.br
+.ti -1c
+.RI "enum { \fBPRE_VAR_FUNC\fP, \fBPRE_VAR_THIS\fP, \fBPRE_VARS\fP }"
+.br
+.ti -1c
+.RI "enum { \fBPOST_VAR_ENV\fP, \fBPOST_VAR_GLOBALS\fP }"
+.br
+.ti -1c
+.RI "enum { \fBCONST_NULL\fP, \fBCONST_TRUE\fP, \fBCONST_FALSE\fP, \fBCONST_STD_VALUES\fP }"
+.br
+.ti -1c
+.RI "enum { \fBPROTOTYPE_BOOL\fP, \fBPROTOTYPE_NUMBER\fP, \fBPROTOTYPE_STRING\fP, \fBPROTOTYPE_OBJECT\fP, \fBPROTOTYPE_ARRAY\fP, \fBPROTOTYPE_FUNCTION\fP, \fBPROTOTYPE_USERDATA\fP, \fBPROTOTYPE_COUNT\fP }"
+.br
+.ti -1c
+.RI "enum { \fBRAND_STATE_SIZE\fP = 624 }"
+.br
+.ti -1c
+.RI "typedef Tokenizer::TokenType \fBTokenType\fP"
+.br
+.ti -1c
+.RI "typedef \fBTokenizer::TokenData\fP \fBTokenData\fP"
+.br
+.ti -1c
+.RI "typedef \fBTokenizer::TextData\fP \fBTextData\fP"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBreserveStackValues\fP (int new_capacity)"
+.br
+.ti -1c
+.RI "void \fBgrowStackValues\fP (int new_capacity)"
+.br
+.ti -1c
+.RI "void \fBaddFreeCandidateValue\fP (\fBGCValue\fP *value)"
+.br
+.ti -1c
+.RI "void \fBregisterFreeCandidateValue\fP (\fBGCValue\fP *value)"
+.br
+.ti -1c
+.RI "void \fBunregisterFreeCandidateValue\fP (\fBGCValue\fP *value)"
+.br
+.ti -1c
+.RI "void \fBdeleteFreeCandidateValues\fP ()"
+.br
+.ti -1c
+.RI "void \fBgcFreeCandidateValues\fP (bool full=false)"
+.br
+.ti -1c
+.RI "void \fBgcFull\fP ()"
+.br
+.ti -1c
+.RI "void \fBdumpValues\fP (\fBBuffer\fP &out)"
+.br
+.ti -1c
+.RI "void \fBdumpValuesToFile\fP (const char *filename)"
+.br
+.ti -1c
+.RI "void \fBappendQuotedString\fP (\fBBuffer\fP &buf, const \fBString\fP &string)"
+.br
+.ti -1c
+.RI "int \fBgetRandSeed\fP ()"
+.br
+.ti -1c
+.RI "void \fBsetRandSeed\fP (int seed)"
+.br
+.ti -1c
+.RI "void \fBrandReload\fP ()"
+.br
+.ti -1c
+.RI "double \fBgetRand\fP ()"
+.br
+.ti -1c
+.RI "double \fBgetRand\fP (double up)"
+.br
+.ti -1c
+.RI "double \fBgetRand\fP (double min, double max)"
+.br
+.ti -1c
+.RI "void * \fBmalloc\fP (int size)"
+.br
+.ti -1c
+.RI "void \fBfree\fP (void *p)"
+.br
+.ti -1c
+.RI "\fBDebugInfo\fP \fBgetDebugInfo\fP ()"
+.br
+.ti -1c
+.RI "void \fBerrorDivisionByZero\fP ()"
+.br
+.ti -1c
+.RI "void \fBtriggerValueDestructor\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBclearValue\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBdeleteValue\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBsaveFreeCandidateValue\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBretainValue\fP (const \fBValue\fP &)"
+.br
+.ti -1c
+.RI "void \fBretainValue\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBretainValues\fP (const \fBValue\fP *, int count)"
+.br
+.ti -1c
+.RI "void \fBreleaseValue\fP (const \fBValue\fP &)"
+.br
+.ti -1c
+.RI "void \fBreleaseValueAndClear\fP (\fBValue\fP &)"
+.br
+.ti -1c
+.RI "void \fBreleaseValue\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "template<class T > void \fBreleaseValueAndClear\fP (T *&out)"
+.br
+.ti -1c
+.RI "void \fBreleaseValues\fP (const \fBValue\fP *, int count)"
+.br
+.ti -1c
+.RI "void \fBreleaseValuesAndClear\fP (\fBValue\fP *, int count)"
+.br
+.ti -1c
+.RI "void \fBclearStackValues\fP (\fBValue\fP *, int count)"
+.br
+.ti -1c
+.RI "void \fBsetValue\fP (\fBValue\fP &out, const \fBValue\fP &b)"
+.br
+.ti -1c
+.RI "template<class T , class T2 > void \fBsetValue\fP (T *&out, T2 *b)"
+.br
+.ti -1c
+.RI "\fBGCFunctionValue\fP * \fBpushFunctionValue\fP (\fBStackFunction\fP *, \fBProgram\fP *, \fBFunctionDecl\fP *, \fBValue\fP env, \fBValue\fP self)"
+.br
+.ti -1c
+.RI "void \fBclearFunctionValue\fP (\fBGCFunctionValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBreleaseLocals\fP (\fBLocals\fP *)"
+.br
+.ti -1c
+.RI "void \fBdeleteLocals\fP (\fBLocals\fP *)"
+.br
+.ti -1c
+.RI "void \fBclearStackFunction\fP (\fBStackFunction\fP *)"
+.br
+.ti -1c
+.RI "bool \fBpushRecursion\fP (\fBValue\fP root, \fBValue\fP obj, \fBValue\fP name)"
+.br
+.ti -1c
+.RI "void \fBpopRecursion\fP (\fBValue\fP root, \fBValue\fP obj, \fBValue\fP name)"
+.br
+.ti -1c
+.RI "bool \fBpushGetRecursion\fP (const \fBValue\fP &obj, const \fBValue\fP &name)"
+.br
+.ti -1c
+.RI "void \fBpopGetRecursion\fP (const \fBValue\fP &obj, const \fBValue\fP &name)"
+.br
+.ti -1c
+.RI "bool \fBpushSetRecursion\fP (const \fBValue\fP &obj, const \fBValue\fP &name)"
+.br
+.ti -1c
+.RI "void \fBpopSetRecursion\fP (const \fBValue\fP &obj, const \fBValue\fP &name)"
+.br
+.ti -1c
+.RI "bool \fBpushValueOfRecursion\fP (\fBValue\fP obj)"
+.br
+.ti -1c
+.RI "void \fBpopValueOfRecursion\fP (\fBValue\fP obj)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const \fBString\fP &)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const \fBString\fP &, const \fBString\fP &)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const \fBString\fP &, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const char *)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const char *, int len)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const char *, int len, const char *, int len2)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const char *, int len, bool trim_left, bool trim_right)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const void *buf, int size)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const void *buf1, int size1, const void *buf2, int size2)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (const void *buf1, int size1, const void *buf2, int size2, const void *buf3, int size3)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (\fBGCStringValue\fP *)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (\fBGCStringValue\fP *, \fBGCStringValue\fP *)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (__int64)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (\fBFloatType\fP< double >::type)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (\fBFloatType\fP< double >::type, int)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValue\fP (int temp_buf_len, const char *fmt,\&.\&.\&.)"
+.br
+.ti -1c
+.RI "\fBGCStringValue\fP * \fBpushStringValueVa\fP (int temp_buf_len, const char *fmt, va_list va)"
+.br
+.ti -1c
+.RI "\fBGCCFunctionValue\fP * \fBpushCFunctionValue\fP (OS_CFunction func, void *user_param)"
+.br
+.ti -1c
+.RI "\fBGCCFunctionValue\fP * \fBpushCFunctionValue\fP (OS_CFunction func, int closure_values, void *user_param)"
+.br
+.ti -1c
+.RI "\fBGCUserdataValue\fP * \fBpushUserdataValue\fP (int crc, int data_size, OS_UserdataDtor dtor, void *user_param)"
+.br
+.ti -1c
+.RI "\fBGCUserdataValue\fP * \fBpushUserPointerValue\fP (int crc, void *data, OS_UserdataDtor dtor, void *user_param)"
+.br
+.ti -1c
+.RI "\fBGCUserdataValue\fP * \fBfindUserPointerValue\fP (void *data)"
+.br
+.ti -1c
+.RI "\fBGCObjectValue\fP * \fBpushObjectValue\fP ()"
+.br
+.ti -1c
+.RI "\fBGCObjectValue\fP * \fBpushObjectValue\fP (\fBGCValue\fP *prototype)"
+.br
+.ti -1c
+.RI "\fBGCArrayValue\fP * \fBpushArrayValue\fP (int initial_capacity=0)"
+.br
+.ti -1c
+.RI "\fBGCValue\fP * \fBinitNewInstance\fP (\fBGCValue\fP *)"
+.br
+.ti -1c
+.RI "template<class T > T * \fBpushValue\fP (T *val)"
+.br
+.ti -1c
+.RI "void \fBpushValue\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "void \fBpushStackValue\fP (int offs)"
+.br
+.ti -1c
+.RI "void \fBcopyValue\fP (int raw_from, int raw_to)"
+.br
+.ti -1c
+.RI "void \fBinsertValue\fP (\fBValue\fP val, int offs)"
+.br
+.ti -1c
+.RI "void \fBpushNull\fP ()"
+.br
+.ti -1c
+.RI "void \fBpushBool\fP (bool)"
+.br
+.ti -1c
+.RI "template<class T > void \fBpushNumber\fP (const T &val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetTypeStr\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "void \fBpushTypeOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "bool \fBpushBoolOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "bool \fBpushNumberOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "bool \fBpushStringOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "bool \fBpushValueOf\fP (\fBValue\fP val)"
+.br
+.ti -1c
+.RI "\fBGCArrayValue\fP * \fBpushArrayOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "\fBGCObjectValue\fP * \fBpushObjectOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "\fBGCUserdataValue\fP * \fBpushUserdataOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "bool \fBpushFunctionOf\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "void \fBpushCloneValue\fP (\fBValue\fP val)"
+.br
+.ti -1c
+.RI "void \fBpushCloneValueFrom\fP (\fBOS\fP *other, \fBValue\fP other_val)"
+.br
+.ti -1c
+.RI "void \fBpushOpResultValue\fP (OpcodeType opcode, const \fBValue\fP &value)"
+.br
+.ti -1c
+.RI "bool \fBpushOpResultValue\fP (OpcodeType opcode, const \fBValue\fP &left_value, const \fBValue\fP &right_value)"
+.br
+.ti -1c
+.RI "void \fBsetGlobalValue\fP (const \fBString\fP &name, \fBValue\fP value, bool setter_enabled)"
+.br
+.ti -1c
+.RI "void \fBsetGlobalValue\fP (const char *name, \fBValue\fP value, bool setter_enabled)"
+.br
+.ti -1c
+.RI "int \fBgetStackOffs\fP (int offs)"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBgetStackValue\fP (int offs)"
+.br
+.ti -1c
+.RI "void \fBsetExceptionValue\fP (\fBValue\fP)"
+.br
+.ti -1c
+.RI "void \fBremoveStackValues\fP (int offs, int count)"
+.br
+.ti -1c
+.RI "void \fBremoveStackValue\fP (int offs=\-1)"
+.br
+.ti -1c
+.RI "void \fBremoveAllStackValues\fP ()"
+.br
+.ti -1c
+.RI "void \fBpop\fP (int count=1)"
+.br
+.ti -1c
+.RI "void \fBmoveStackValues\fP (int offs, int count, int new_offs)"
+.br
+.ti -1c
+.RI "void \fBmoveStackValue\fP (int offs, int new_offs)"
+.br
+.ti -1c
+.RI "void \fBexchangeStackValues\fP (int offs)"
+.br
+.ti -1c
+.RI "void \fBregisterStringRef\fP (\fBGCStringValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBunregisterStringRef\fP (\fBGCStringValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBdeleteStringRefs\fP ()"
+.br
+.ti -1c
+.RI "void \fBregisterUserptrRef\fP (\fBGCUserdataValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBunregisterUserptrRef\fP (\fBGCUserdataValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBunregisterUserptrRef\fP (void *, int)"
+.br
+.ti -1c
+.RI "void \fBdeleteUserptrRefs\fP ()"
+.br
+.ti -1c
+.RI "void \fBregisterCFuncRef\fP (\fBGCCFunctionValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBunregisterCFuncRef\fP (\fBGCCFunctionValue\fP *)"
+.br
+.ti -1c
+.RI "void \fBunregisterCFuncRef\fP (OS_CFunction, void *, int)"
+.br
+.ti -1c
+.RI "void \fBdeleteCFuncRefs\fP ()"
+.br
+.ti -1c
+.RI "void \fBregisterValueAndPush\fP (\fBGCValue\fP *val)"
+.br
+.ti -1c
+.RI "\fBGCValue\fP * \fBunregisterValue\fP (int value_id)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueClassname\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueClassname\fP (\fBGCValue\fP *val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueName\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueName\fP (\fBGCValue\fP *val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueNameOrClassname\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBgetValueNameOrClassname\fP (\fBGCValue\fP *val)"
+.br
+.ti -1c
+.RI "bool \fBvalueToBool\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "__int64 \fBvalueToInt\fP (const \fBValue\fP &val, bool valueof_enabled=false)"
+.br
+.ti -1c
+.RI "__int64 \fBvalueToIntRadix\fP (const \fBValue\fP &val, int radix, bool valueof_enabled=false)"
+.br
+.ti -1c
+.RI "double \fBvalueToNumberRadix\fP (const \fBValue\fP &val, int radix, bool valueof_enabled)"
+.br
+.ti -1c
+.RI "double \fBvalueToNumber\fP (const \fBValue\fP &val, bool valueof_enabled=false)"
+.br
+.ti -1c
+.RI "\fBString\fP \fBvalueToString\fP (const \fBValue\fP &val, bool valueof_enabled=false)"
+.br
+.ti -1c
+.RI "\fBOS::String\fP \fBvalueToStringOS\fP (const \fBValue\fP &val, bool valueof_enabled=false)"
+.br
+.ti -1c
+.RI "bool \fBisValueNumber\fP (const \fBValue\fP &val, double *out=NULL)"
+.br
+.ti -1c
+.RI "bool \fBisValueString\fP (const \fBValue\fP &val, \fBString\fP *out=NULL)"
+.br
+.ti -1c
+.RI "bool \fBisValueStringOS\fP (const \fBValue\fP &val, \fBOS::String\fP *out=NULL)"
+.br
+.ti -1c
+.RI "bool \fBisValueInstanceOf\fP (\fBGCValue\fP *val, \fBGCValue\fP *prototype_val)"
+.br
+.ti -1c
+.RI "bool \fBisValueInstanceOf\fP (const \fBValue\fP &val, const \fBValue\fP &prototype_val)"
+.br
+.ti -1c
+.RI "bool \fBisValueOf\fP (\fBGCValue\fP *val, \fBGCValue\fP *prototype_val)"
+.br
+.ti -1c
+.RI "bool \fBisValueOfUserdata\fP (\fBGCValue\fP *val, int prototype_crc)"
+.br
+.ti -1c
+.RI "bool \fBisValueOf\fP (const \fBValue\fP &val, const \fBValue\fP &prototype_val)"
+.br
+.ti -1c
+.RI "bool \fBisValueInValue\fP (const \fBValue\fP &val, const \fBValue\fP &prototype_val)"
+.br
+.ti -1c
+.RI "\fBTable\fP * \fBnewTable\fP ()"
+.br
+.ti -1c
+.RI "void \fBclearTable\fP (\fBTable\fP *)"
+.br
+.ti -1c
+.RI "void \fBdeleteTable\fP (\fBTable\fP *)"
+.br
+.ti -1c
+.RI "\fBProperty\fP * \fBaddTableProperty\fP (\fBTable\fP *table, const \fBValue\fP &index, const \fBValue\fP &value)"
+.br
+.ti -1c
+.RI "void \fBchangePropertyIndex\fP (\fBTable\fP *table, \fBProperty\fP *prop, const \fBValue\fP &new_index)"
+.br
+.ti -1c
+.RI "bool \fBdeleteTableProperty\fP (\fBTable\fP *table, const \fBValue\fP &index)"
+.br
+.ti -1c
+.RI "void \fBdeleteValueProperty\fP (\fBGCValue\fP *table_value, \fBValue\fP index, bool del_enabled, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "void \fBdeleteValueProperty\fP (const \fBValue\fP &table_value, const \fBValue\fP &index, bool del_enabled, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "void \fBcopyTableProperties\fP (\fBTable\fP *dst, \fBTable\fP *src)"
+.br
+.ti -1c
+.RI "void \fBcopyTableProperties\fP (\fBGCValue\fP *dst_value, \fBGCValue\fP *src_value, bool setter_enabled)"
+.br
+.ti -1c
+.RI "void \fBsortTable\fP (\fBTable\fP *table, int(*comp)(\fBOS\fP *, const void *, const void *, void *), void *=NULL, bool reorder_keys=false)"
+.br
+.ti -1c
+.RI "void \fBsortArray\fP (\fBGCArrayValue\fP *arr, int(*comp)(\fBOS\fP *, const void *, const void *, void *), void *=NULL)"
+.br
+.ti -1c
+.RI "\fBProperty\fP * \fBsetTableValue\fP (\fBTable\fP *table, const \fBValue\fP &index, const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "void \fBsetPropertyValue\fP (\fBGCValue\fP *table_value, const \fBValue\fP &index, \fBValue\fP val, bool setter_enabled)"
+.br
+.ti -1c
+.RI "void \fBsetPropertyValue\fP (const \fBValue\fP &table_value, const \fBValue\fP &index, const \fBValue\fP &val, bool setter_enabled)"
+.br
+.ti -1c
+.RI "bool \fBgetPropertyValue\fP (\fBValue\fP &result, \fBGCValue\fP *table_value, const \fBValue\fP &index, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "bool \fBgetPropertyValue\fP (\fBValue\fP &result, const \fBValue\fP &table_value, const \fBValue\fP &index, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "bool \fBgetPropertyValueByPrototype\fP (\fBValue\fP &result, const \fBValue\fP &table_value, const \fBValue\fP &index, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "bool \fBhasProperty\fP (\fBGCValue\fP *table_value, \fBValue\fP index, bool getter_enabled, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "void \fBpushPropertyValue\fP (\fBGCValue\fP *table_value, const \fBValue\fP &index, bool getter_enabled, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "void \fBpushPropertyValue\fP (const \fBValue\fP &table_value, const \fBValue\fP &index, bool getter_enabled, bool prototype_enabled)"
+.br
+.ti -1c
+.RI "void \fBsetPrototypeValue\fP (const \fBValue\fP &val, const \fBValue\fP &proto)"
+.br
+.ti -1c
+.RI "void \fBsetPrototypeValue\fP (const \fBValue\fP &val, const \fBValue\fP &proto, int userdata_crc)"
+.br
+.ti -1c
+.RI "void \fBpushPrototypeValue\fP (const \fBValue\fP &val)"
+.br
+.ti -1c
+.RI "void \fBpushBackTrace\fP (int skip_funcs, int max_trace_funcs=20)"
+.br
+.ti -1c
+.RI "void \fBpushArguments\fP (\fBStackFunction\fP *)"
+.br
+.ti -1c
+.RI "void \fBpushArgumentsWithNames\fP (\fBStackFunction\fP *)"
+.br
+.ti -1c
+.RI "void \fBpushRestArguments\fP (\fBStackFunction\fP *)"
+.br
+.ti -1c
+.RI "void \fBexecute\fP ()"
+.br
+.ti -1c
+.RI "void \fBreloadStackFunctionCache\fP ()"
+.br
+.ti -1c
+.RI "void \fBcallFT\fP (int start_pos, int call_params, int ret_values, \fBGCValue\fP *self_for_proto, OS_ECallEnter call_enter, OS_ECallType call_type, OS_ECallThisUsage call_this_usage)"
+.br
+.ti -1c
+.RI "void \fBcallFT\fP (int params, int ret_values, \fBGCValue\fP *self_for_proto, OS_ECallEnter call_enter, OS_ECallType call_type, OS_ECallThisUsage call_this_usage)"
+.br
+.ti -1c
+.RI "void \fBcallFT\fP (int params, int ret_values, OS_ECallType call_type=OS_CALLTYPE_AUTO, OS_ECallThisUsage call_this_usage=OS_CALLTHIS_KEEP_STACK_VALUE)"
+.br
+.ti -1c
+.RI "void \fBcallTF\fP (int params, int ret_values, OS_ECallType call_type=OS_CALLTYPE_AUTO, OS_ECallThisUsage call_this_usage=OS_CALLTHIS_KEEP_STACK_VALUE)"
+.br
+.ti -1c
+.RI "void \fBcallF\fP (int params, int ret_values, OS_ECallType call_type=OS_CALLTYPE_AUTO)"
+.br
+.ti -1c
+.RI "\fBCore\fP (\fBOS\fP *)"
+.br
+.ti -1c
+.RI "bool \fBinit\fP ()"
+.br
+.ti -1c
+.RI "void \fBshutdown\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static bool \fBisEqual\fP (const \fBValue\fP &index, int hash, const void *b, int size)"
+.br
+.ti -1c
+.RI "static bool \fBisEqual\fP (const \fBValue\fP &index, int hash, const void *buf1, int size1, const void *buf2, int size2)"
+.br
+.ti -1c
+.RI "static int \fBgetValueHash\fP (const \fBValue\fP &index, int index_type)"
+.br
+.ti -1c
+.RI "static bool \fBisEqualExactly\fP (const \fBValue\fP &left_value, const \fBValue\fP &right_value)"
+.br
+.ti -1c
+.RI "static int \fBcompareGCValues\fP (const void *a, const void *b)"
+.br
+.ti -1c
+.RI "static int \fBcomparePropValues\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcomparePropValuesReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareObjectProperties\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareObjectPropertiesReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserPropValues\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserPropValuesReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcomparePropKeys\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcomparePropKeysReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserPropKeys\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserPropKeysReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareArrayValues\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareArrayValuesReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserArrayValues\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserArrayValuesReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBcompareUserReverse\fP (\fBOS\fP *, const void *, const void *, void *)"
+.br
+.ti -1c
+.RI "static int \fBprototypeFunctionApply\fP (\fBOS\fP *os, int params, int, int need_ret_values, void *)"
+.br
+.ti -1c
+.RI "static int \fBprototypeFunctionCall\fP (\fBOS\fP *os, int params, int, int need_ret_values, void *)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBOS\fP * \fBallocator\fP"
+.br
+.ti -1c
+.RI "struct \fBObjectScript::OS::Core::Strings\fP * \fBstrings\fP"
+.br
+.ti -1c
+.RI "\fBValues\fP \fBvalues\fP"
+.br
+.ti -1c
+.RI "int \fBnum_created_values\fP"
+.br
+.ti -1c
+.RI "int \fBnum_destroyed_values\fP"
+.br
+.ti -1c
+.RI "\fBStringRefs\fP \fBstring_refs\fP"
+.br
+.ti -1c
+.RI "\fBUserptrRefs\fP \fBuserptr_refs\fP"
+.br
+.ti -1c
+.RI "\fBCFuncRefs\fP \fBcfunc_refs\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBglobal_vars\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBuser_pool\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBretain_pool\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBcheck_get_recursion\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBcheck_set_recursion\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBcheck_valueof_recursion\fP"
+.br
+.ti -1c
+.RI "\fBGCObjectValue\fP * \fBprototypes\fP [PROTOTYPE_COUNT]"
+.br
+.ti -1c
+.RI "struct \fBObjectScript::OS::Core::StackValues\fP \fBstack_values\fP"
+.br
+.ti -1c
+.RI "\fBVector\fP< \fBStackFunction\fP > \fBcall_stack_funcs\fP"
+.br
+.ti -1c
+.RI "int \fBmax_call_stack\fP"
+.br
+.ti -1c
+.RI "\fBStackFunction\fP * \fBstack_func\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP * \fBstack_func_locals\fP"
+.br
+.ti -1c
+.RI "int \fBstack_func_env_index\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP * \fBstack_func_prog_values\fP"
+.br
+.ti -1c
+.RI "\fBFreeCandidateValues\fP \fBgc_candidate_values\fP"
+.br
+.ti -1c
+.RI "int \fBgc_start_when_used_bytes\fP"
+.br
+.ti -1c
+.RI "int \fBgc_next_when_used_bytes\fP"
+.br
+.ti -1c
+.RI "int \fBgc_step_type\fP"
+.br
+.ti -1c
+.RI "bool \fBgc_in_progress\fP"
+.br
+.ti -1c
+.RI "bool \fBgc_fix_in_progress\fP"
+.br
+.ti -1c
+.RI "struct {"
+.br
+.ti -1c
+.RI "   bool \fBcreate_text_opcodes\fP"
+.br
+.ti -1c
+.RI "   bool \fBcreate_text_eval_opcodes\fP"
+.br
+.ti -1c
+.RI "   bool \fBcreate_debug_info\fP"
+.br
+.ti -1c
+.RI "   bool \fBcreate_compiled_file\fP"
+.br
+.ti -1c
+.RI "   bool \fBprimary_compiled_file\fP"
+.br
+.ti -1c
+.RI "   bool \fBsourcecode_must_exist\fP"
+.br
+.ti -1c
+.RI "} \fBsettings\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBrand_state\fP [RAND_STATE_SIZE+1]"
+.br
+.ti -1c
+.RI "unsigned __int32 \fBrand_seed\fP"
+.br
+.ti -1c
+.RI "unsigned __int32 * \fBrand_next\fP"
+.br
+.ti -1c
+.RI "int \fBrand_left\fP"
+.br
+.ti -1c
+.RI "bool \fBterminated\fP"
+.br
+.ti -1c
+.RI "bool \fBcall_stack_overflow\fP"
+.br
+.ti -1c
+.RI "int \fBterminated_code\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP \fBterminated_exception\fP"
+.br
+.in -1c
+.SS "Friends"
+
+.in +1c
+.ti -1c
+.RI "class \fBOSMemoryManagerOld\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 611 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

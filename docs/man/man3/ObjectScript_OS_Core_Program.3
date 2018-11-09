@@ -1,0 +1,89 @@
+.TH "ObjectScript::OS::Core::Program" 3 "Sat Mar 26 2016" "IceTea" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+ObjectScript::OS::Core::Program \- 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Classes"
+
+.in +1c
+.ti -1c
+.RI "struct \fBDebugInfoItem\fP"
+.br
+.in -1c
+.SS "Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "\fBProgram\fP (\fBOS\fP *allocator)"
+.br
+.ti -1c
+.RI "\fBProgram\fP * \fBretain\fP ()"
+.br
+.ti -1c
+.RI "void \fBrelease\fP ()"
+.br
+.ti -1c
+.RI "bool \fBloadFromStream\fP (\fBStreamReader\fP *reader)"
+.br
+.ti -1c
+.RI "\fBDebugInfoItem\fP * \fBgetDebugInfo\fP (int opcode_pos)"
+.br
+.ti -1c
+.RI "void \fBpushStartFunction\fP ()"
+.br
+.in -1c
+.SS "Static Public Member Functions"
+
+.in +1c
+.ti -1c
+.RI "static OpcodeType \fBgetOpcodeType\fP (Compiler::ExpressionType, Compiler::ECompiledValueType=Compiler::CVT_UNKNOWN)"
+.br
+.in -1c
+.SS "Public Attributes"
+
+.in +1c
+.ti -1c
+.RI "\fBOS\fP * \fBallocator\fP"
+.br
+.ti -1c
+.RI "\fBString\fP \fBfilename\fP"
+.br
+.ti -1c
+.RI "int \fBnum_strings\fP"
+.br
+.ti -1c
+.RI "int \fBnum_numbers\fP"
+.br
+.ti -1c
+.RI "\fBValue\fP * \fBconst_values\fP"
+.br
+.ti -1c
+.RI "\fBFunctionDecl\fP * \fBfunctions\fP"
+.br
+.ti -1c
+.RI "int \fBnum_functions\fP"
+.br
+.ti -1c
+.RI "\fBVector\fP< unsigned __int32 > \fBopcodes\fP"
+.br
+.ti -1c
+.RI "\fBVector\fP< \fBDebugInfoItem\fP > \fBdebug_info\fP"
+.br
+.in -1c
+.SS "Protected Attributes"
+
+.in +1c
+.ti -1c
+.RI "int \fBref_count\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Definition at line 2256 of file objectscript\&.h\&.
+
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for IceTea from the source code\&.

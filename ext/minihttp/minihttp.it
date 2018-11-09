@@ -1,0 +1,9 @@
+target("icetea-minihttp", "lib") {
+    title: "IceTea: miniHTTP",
+    input: pfs.glob(__DIR__, "*.cpp"),
+    needs: ["minihttp"],
+    settings: IceTeaInternal.CommonSettings,
+    init: function() {
+        IceTeaInternal.addExtension("minihttp");
+    }
+}
